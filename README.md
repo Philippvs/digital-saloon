@@ -61,7 +61,7 @@ Vite only (no emulators): `pnpm dev`
 | M3    | Availability engine + transactional booking | Done   |
 | M4    | Customer booking + manage-by-token          | Done   |
 | M5    | Admin calendar, confirm/decline, manual     | Done   |
-| M6    | Notifications, pending expiry, launch       | Next   |
+| M6    | Notifications, pending expiry, launch       | Done   |
 
 ## Scripts
 
@@ -107,9 +107,37 @@ Project skills live under `.agents/skills/`:
 - Firebase basics / auth / Firestore / hosting / rules auditor
 - Frontend design
 
-## Firebase project checklist
+## Notifications
 
-1. Create a Firebase project; enable Auth (Email/Password), Firestore, Storage, Functions.
-2. Update `.firebaserc` and env vars (`VITE_SALON_ID` / `SALON_ID`).
-3. Deploy rules: `firebase deploy --only firestore:rules,storage`
-4. Deploy functions and hosting when ready.
+Reservation mutations enqueue `salons/{salonId}/notificationJobs` in the **same Firestore transaction** (transactional outbox). Processors:
+
+| Callable / schedule                        | Role                                              |
+| ------------------------------------------ | ------------------------------------------------- |
+| `processNotificationJobs` (every 1 min)    | Claim jobs with a lease and send email            |
+| `processPendingReservations` (every 5 min) | PENDING past `pendingExpirationHours` → `EXPIRED` |
+
+Email delivery:
+
+- With `RESEND_API_KEY` + `RESEND_FROM_EMAIL`: send via Resend HTTP API.
+- Functions emulator (or `NOTIFICATIONS_ALLOW_LOG_ONLY=true`): log and mark `SENT`.
+- Production without Resend config: jobs are **not** silently discarded (stay retryable / fail).
+
+Admin home → **Wartung** can trigger both processors manually (used by E2E).
+
+## Firebase project checklist / deploy
+
+Live production deploy is intentionally deferred for this MVP slice. When you are ready:
+
+1. Create a Firebase project; enable Auth (Email/Password), Firestore, Storage, Functions (`europe-west8`).
+2. Copy `.env.example` → `.env` / Functions env: `SALON_ID`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`. Do **not** set `NOTIFICATIONS_ALLOW_LOG_ONLY` in production.
+3. Update `.firebaserc` and Vite `VITE_FIREBASE_*` values.
+4. Deploy rules + indexes: `firebase deploy --only firestore:rules,firestore:indexes,storage`
+5. Deploy functions: `firebase deploy --only functions` (schedulers need Blaze).
+6. Build and deploy hosting: `pnpm build && firebase deploy --only hosting`
+7. Seed admin user / salon config for the real project (do not reuse emulator-only passwords).
+
+Security notes reviewed in M6:
+
+- `notificationJobs`: client write denied; admin read only; all writes via Admin SDK in Functions.
+- Reservations / slotLocks remain function-mediated.
+- Customer manage links use hashed tokens; no public reservation reads.

@@ -5,6 +5,7 @@ import { functionsRegion, getSalonId } from '../config'
 import { isSlotAvailable } from '../domain/availability'
 import { isObject } from '../schemas'
 import { findReservationByManagementToken, toPublicReservationView } from './findByToken'
+import { enqueueNotificationJob } from './notificationOutbox'
 import { lockIdForStart } from './reservationWrite'
 import { loadSalonContext } from './salonContext'
 
@@ -57,12 +58,23 @@ export const cancelReservation = onCall({ region: functionsRegion }, async (requ
     const fresh = await tx.get(doc.ref)
     const lockSnap = await tx.get(lockRef)
     if (!fresh.exists) throw new Error('NOT_FOUND')
-    const status = String(fresh.data()?.status)
+    const row = fresh.data()!
+    const status = String(row.status)
     if (!ACTIVE.has(status)) throw new Error('INACTIVE')
     tx.update(doc.ref, { status: 'CANCELLED', updatedAt })
     if (lockSnap.exists && lockSnap.data()?.reservationId === doc.id) {
       tx.delete(lockRef)
     }
+    enqueueNotificationJob(tx, db, salonId, {
+      type: 'RESERVATION_CANCELLED',
+      reservationId: doc.id,
+      toEmail: typeof row.email === 'string' ? row.email : null,
+      payload: {
+        firstName: row.firstName,
+        serviceName: row.serviceName,
+        startAt: row.startAt,
+      },
+    })
   })
 
   const after = await doc.ref.get()
@@ -191,6 +203,19 @@ export const rescheduleReservation = onCall({ region: functionsRegion }, async (
         startAt: newStartAt.toISOString(),
         endAt: newEndAt.toISOString(),
         createdAt: updatedAt,
+      })
+
+      enqueueNotificationJob(tx, db, salonId, {
+        type: 'RESERVATION_RESCHEDULED',
+        reservationId: doc.id,
+        toEmail: typeof freshData.email === 'string' ? freshData.email : null,
+        payload: {
+          firstName: freshData.firstName,
+          serviceName: freshData.serviceName,
+          startAt: newStartAt.toISOString(),
+        },
+        idempotencyKey: `RESERVATION_RESCHEDULED:${doc.id}:${newStartAt.toISOString()}`,
+        now,
       })
     })
   } catch (error) {

@@ -190,4 +190,38 @@ export async function seedSalonData(firestore, config = salonSeedConfig()) {
     },
     { merge: true },
   )
+
+  // Stale pending used by expiry E2E (createdAt far in the past).
+  const staleCreatedAt = '2020-01-01T00:00:00.000Z'
+  await salonRef.collection('reservations').doc('demo-stale-pending').set(
+    {
+      firstName: 'Alt',
+      lastName: 'Anfrage',
+      phone: '+43 660 3333333',
+      email: 'stale@example.com',
+      serviceId: 'haircut',
+      serviceName: 'Haircut',
+      durationMinutes: 30,
+      priceCents: 2500,
+      startAt: '2026-05-01T08:00:00.000Z',
+      endAt: '2026-05-01T08:30:00.000Z',
+      status: 'PENDING',
+      source: 'ONLINE',
+      managementTokenHash: 'seed-hash-demo-stale-pending',
+      internalNote: null,
+      idempotencyKey: 'seed-demo-stale-pending',
+      createdAt: staleCreatedAt,
+      updatedAt: staleCreatedAt,
+    },
+    { merge: true },
+  )
+  await salonRef.collection('slotLocks').doc('2026-05-01T08-00-00-000Z').set(
+    {
+      reservationId: 'demo-stale-pending',
+      startAt: '2026-05-01T08:00:00.000Z',
+      endAt: '2026-05-01T08:30:00.000Z',
+      createdAt: staleCreatedAt,
+    },
+    { merge: true },
+  )
 }

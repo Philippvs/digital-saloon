@@ -70,8 +70,10 @@ service cloud.firestore {
         allow read, write: if false;
       }
 
+      // Outbox is Admin-SDK-only (Cloud Functions). Clients must not read PII or forge jobs.
       match /notificationJobs/{jobId} {
-        allow read, write: if false;
+        allow read: if isAdmin();
+        allow write: if false;
       }
     }
   }

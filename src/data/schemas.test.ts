@@ -56,6 +56,29 @@ describe('schemas', () => {
     expect(settings.maxAdvanceBookingDays).toBe(60)
   })
 
+  it('accepts EXPIRED reservation status', () => {
+    const reservation = v.parse(reservationSchema, {
+      firstName: 'Alt',
+      lastName: 'Anfrage',
+      phone: '+43 660 1',
+      email: 'a@example.com',
+      serviceId: 'svc1',
+      serviceName: 'Haircut',
+      durationMinutes: 30,
+      priceCents: 2500,
+      startAt: '2026-03-10T09:00:00.000Z',
+      endAt: '2026-03-10T09:30:00.000Z',
+      status: 'EXPIRED',
+      source: 'ONLINE',
+      managementTokenHash: 'abc',
+      internalNote: null,
+      idempotencyKey: null,
+      createdAt: '2026-03-01T00:00:00.000Z',
+      updatedAt: '2026-03-01T00:00:00.000Z',
+    })
+    expect(reservation.status).toBe('EXPIRED')
+  })
+
   it('rejects invalid reservation status', () => {
     expect(() =>
       v.parse(reservationSchema, {

@@ -8,6 +8,7 @@ import { rangeForView, shiftAnchor, type CalendarView } from '../data/calendarRa
 import { todayYmdInTimeZone } from '../data/calendarMath'
 import { upcomingViennaDates } from '../data/dateFormat'
 import { optionalSearchParam } from '../data/schemas'
+import { useAdminOps } from '../hooks/useAdminOps'
 import { useAdminReservation } from '../hooks/useAdminReservation'
 import { useAdminReservationActions, useAdminReservations } from '../hooks/useAdminReservations'
 import { useAllServices } from '../hooks/useAllServices'
@@ -66,10 +67,30 @@ export const adminRoute = createRoute({
 const AdminIndexRoute: React.FunctionComponent = () => {
   const salon = useSalon()
   const navigate = useNavigate()
+  const ops = useAdminOps()
+
+  const opsError =
+    ops.processNotifications.error instanceof Error
+      ? ops.processNotifications.error.message
+      : ops.processPending.error instanceof Error
+        ? ops.processPending.error.message
+        : null
+
+  let opsMessage: string | null = null
+  if (ops.processNotifications.isSuccess && ops.processNotifications.data) {
+    const data = ops.processNotifications.data
+    opsMessage = `Benachrichtigungen: ${data.sent} gesendet, ${data.failed} fehlgeschlagen, ${data.claimed} beansprucht.`
+  } else if (ops.processPending.isSuccess && ops.processPending.data) {
+    const data = ops.processPending.data
+    opsMessage = `Ablauf: ${data.expired} von ${data.scanned} ausstehenden Anfragen abgelaufen.`
+  }
 
   return (
     <AdminHomePage
       salonName={salon.data?.name ?? 'Salon'}
+      opsBusy={ops.processNotifications.isPending || ops.processPending.isPending}
+      opsMessage={opsMessage}
+      opsError={opsError}
       onCalendarClick={() => {
         void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
       }}
@@ -78,6 +99,12 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       }}
       onSettingsClick={() => {
         void navigate({ to: '/admin/settings' })
+      }}
+      onProcessNotificationsClick={() => {
+        ops.processNotifications.mutate()
+      }}
+      onProcessPendingClick={() => {
+        ops.processPending.mutate()
       }}
     />
   )

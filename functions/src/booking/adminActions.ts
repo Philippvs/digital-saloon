@@ -5,6 +5,7 @@ import { assertAdmin } from '../authz'
 import { functionsRegion, getSalonId } from '../config'
 import { isObject } from '../schemas'
 import { toPublicReservationView } from './findByToken'
+import { enqueueNotificationJob } from './notificationOutbox'
 import { lockIdForStart } from './reservationWrite'
 
 const ACTIVE = new Set(['PENDING', 'CONFIRMED'])
@@ -35,12 +36,30 @@ export const confirmReservation = onCall({ region: functionsRegion }, async (req
   await assertAdmin(request)
   if (!isObject(request.data)) throw new HttpsError('invalid-argument', 'Invalid payload.')
   const reservationId = requireReservationId(request.data)
-  const { ref, snap } = await loadReservation(reservationId)
+  const { db, salonId, ref, snap } = await loadReservation(reservationId)
   if (String(snap.data()?.status) !== 'PENDING') {
     throw new HttpsError('failed-precondition', 'Only pending reservations can be confirmed.')
   }
   const updatedAt = new Date().toISOString()
-  await ref.update({ status: 'CONFIRMED', updatedAt })
+
+  await db.runTransaction(async (tx) => {
+    const fresh = await tx.get(ref)
+    if (!fresh.exists) throw new Error('NOT_FOUND')
+    const row = fresh.data()!
+    if (String(row.status) !== 'PENDING') throw new Error('INACTIVE')
+    tx.update(ref, { status: 'CONFIRMED', updatedAt })
+    enqueueNotificationJob(tx, db, salonId, {
+      type: 'RESERVATION_CONFIRMED',
+      reservationId,
+      toEmail: typeof row.email === 'string' ? row.email : null,
+      payload: {
+        firstName: row.firstName,
+        serviceName: row.serviceName,
+        startAt: row.startAt,
+      },
+    })
+  })
+
   const after = await ref.get()
   return { reservation: viewOf(after) }
 })
@@ -69,11 +88,22 @@ export const declineReservation = onCall({ region: functionsRegion }, async (req
     const fresh = await tx.get(ref)
     const lockSnap = await tx.get(lockRef)
     if (!fresh.exists) throw new Error('NOT_FOUND')
-    if (String(fresh.data()?.status) !== 'PENDING') throw new Error('INACTIVE')
+    const row = fresh.data()!
+    if (String(row.status) !== 'PENDING') throw new Error('INACTIVE')
     tx.update(ref, { status: 'DECLINED', updatedAt })
     if (lockSnap.exists && lockSnap.data()?.reservationId === reservationId) {
       tx.delete(lockRef)
     }
+    enqueueNotificationJob(tx, db, salonId, {
+      type: 'RESERVATION_DECLINED',
+      reservationId,
+      toEmail: typeof row.email === 'string' ? row.email : null,
+      payload: {
+        firstName: row.firstName,
+        serviceName: row.serviceName,
+        startAt: row.startAt,
+      },
+    })
   })
 
   const after = await ref.get()
@@ -104,11 +134,22 @@ export const adminCancelReservation = onCall({ region: functionsRegion }, async 
     const fresh = await tx.get(ref)
     const lockSnap = await tx.get(lockRef)
     if (!fresh.exists) throw new Error('NOT_FOUND')
-    if (!ACTIVE.has(String(fresh.data()?.status))) throw new Error('INACTIVE')
+    const row = fresh.data()!
+    if (!ACTIVE.has(String(row.status))) throw new Error('INACTIVE')
     tx.update(ref, { status: 'CANCELLED', updatedAt })
     if (lockSnap.exists && lockSnap.data()?.reservationId === reservationId) {
       tx.delete(lockRef)
     }
+    enqueueNotificationJob(tx, db, salonId, {
+      type: 'RESERVATION_CANCELLED',
+      reservationId,
+      toEmail: typeof row.email === 'string' ? row.email : null,
+      payload: {
+        firstName: row.firstName,
+        serviceName: row.serviceName,
+        startAt: row.startAt,
+      },
+    })
   })
 
   const after = await ref.get()
