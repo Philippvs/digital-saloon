@@ -1,0 +1,34 @@
+---
+description: Prefer explicit APIs over implicit wiring (context, globals, magic)
+alwaysApply: true
+---
+
+# Explicit APIs
+
+Prefer explicit props, parameters, and callbacks over implicit wiring.
+
+- Make component dependencies visible in their APIs.
+- Pass local dependencies explicitly via props.
+- Pass actions explicitly via callbacks.
+- Avoid global variables and hidden singleton dependencies.
+- Avoid React Context for dependencies that are local to a component subtree.
+- Use React Context only for genuinely cross-cutting concerns (theme, locale, auth).
+- Do not use hooks to implicitly discover dependencies when passing them explicitly is clearer.
+- Prefer typed props over implicit lookups.
+
+```tsx
+// BAD — hidden dependency
+function UserActions() {
+  const { user, deleteUser } = useUserContext()
+}
+
+// GOOD — explicit dependencies
+type UserActionsProps = {
+  user: User
+  onDelete: () => void
+}
+
+function UserActions({ user, onDelete }: UserActionsProps) {
+  // ...
+}
+```

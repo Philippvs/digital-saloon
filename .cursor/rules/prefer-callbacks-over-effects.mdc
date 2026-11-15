@@ -1,0 +1,27 @@
+---
+description: Prefer event callbacks over useEffect for user-driven logic
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Prefer callbacks over `useEffect`
+
+Put logic in the handler that caused it. Use `useEffect` only to sync with something outside React.
+
+## Prefer a callback (or remount)
+
+- Reset form/dialog state on close → `onClose`, or unmount with `{open ? <Dialog /> : null}` / `key=`
+- Button/link/input → `onClick` / `onChange` / submit handler
+- Derived UI → compute during render
+
+## `useEffect` is appropriate for
+
+- Auth / Firestore / observer subscriptions
+- Object URLs, canvas, third-party widgets — create + cleanup
+- One-shot browser sync when no event owns it
+
+## Checklist
+
+1. Is there already a user/event handler? → use that.
+2. Can the child remount instead of resetting in an effect?
+3. Is the value derivable during render? → no state, no effect.

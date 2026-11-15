@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+- Answer briefly; expand only for trade-offs or risks.
+- Follow existing repository patterns before introducing new ones.
+- Make minimal, local changes. No drive-by refactors.
+- No new dependencies without an explicit reason.
+- After changes: run relevant typecheck/lint/tests/build, or name exactly what was skipped.
+- If requirements are unclear: state at most 3 assumptions.
+- Before multi-file edits: outline affected files and acceptance criteria.

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "firebase-basics": {
+      "source": "firebase/agent-skills"
+    },
+    "firebase-auth-basics": {
+      "source": "firebase/agent-skills"
+    },
+    "firebase-firestore": {
+      "source": "firebase/agent-skills"
+    },
+    "firebase-hosting-basics": {
+      "source": "firebase/agent-skills"
+    },
+    "firebase-security-rules-auditor": {
+      "source": "firebase/agent-skills"
+    },
+    "frontend-design": {
+      "source": "anthropic-plugin-directory/frontend-design"
+    }
+  }
+}

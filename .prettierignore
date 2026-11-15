@@ -1,0 +1,8 @@
+dist
+node_modules
+functions/lib
+emulator-data
+pnpm-lock.yaml
+.agents/skills
+coverage
+*.mdc

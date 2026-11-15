@@ -1,0 +1,29 @@
+---
+description: Keep TanStack Router navigation in route files only
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Routing isolation
+
+Navigation belongs in `src/routes/**`, not in pages, components, or hooks.
+
+- Use `useNavigate`, `navigate()`, `redirect()`, `Link`, and `Outlet` only in `src/routes/**`.
+- `src/router.ts` only assembles the route tree.
+- Pages and components receive typed callbacks (`onHomeClick`, `onSuccess`) and route-derived props.
+- Do not import `@tanstack/react-router` outside `src/routes/`, `src/router.ts`, and `src/main.tsx`.
+- ESLint and `src/architecture.test.ts` enforce this — add a callback instead of disabling rules.
+
+```tsx
+// BAD — page navigates
+function LoginPage() {
+  const navigate = useNavigate()
+  // ...
+}
+
+// GOOD — route owns navigation
+function LoginRoute() {
+  const navigate = useNavigate()
+  return <LoginPage onSuccess={() => navigate({ to: '/' })} />
+}
+```
