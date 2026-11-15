@@ -1,6 +1,9 @@
 export type Messages = {
   'nav.myBookings': string
-  'nav.admin': string
+  'nav.staffCalendar': string
+  'nav.staffLogin': string
+  'nav.signedInAs': string
+  'nav.main': string
   'nav.signOut': string
   'nav.language': string
   'nav.book': string
@@ -248,7 +251,10 @@ export type MessageKey = keyof Messages
 
 export const de: Messages = {
   'nav.myBookings': 'Meine Termine',
-  'nav.admin': 'Admin',
+  'nav.staffCalendar': 'Kalender',
+  'nav.staffLogin': 'Login für das Team',
+  'nav.signedInAs': 'Angemeldet als {email}',
+  'nav.main': 'Hauptnavigation',
   'nav.signOut': 'Abmelden',
   'nav.language': 'Sprache',
   'nav.book': 'Termin buchen',
@@ -504,7 +510,10 @@ export const de: Messages = {
 
 export const it: Messages = {
   'nav.myBookings': 'I miei appuntamenti',
-  'nav.admin': 'Admin',
+  'nav.staffCalendar': 'Calendario',
+  'nav.staffLogin': 'Accesso per il team',
+  'nav.signedInAs': 'Accesso come {email}',
+  'nav.main': 'Navigazione principale',
   'nav.signOut': 'Esci',
   'nav.language': 'Lingua',
   'nav.book': 'Prenota',

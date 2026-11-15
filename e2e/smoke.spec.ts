@@ -18,19 +18,27 @@ test.describe('smoke @smoke', () => {
     await expect(page).toHaveURL(/\/book/)
     await expect(page.getByRole('heading', { name: 'Termin buchen' })).toBeVisible()
     await expect(page.getByText(/Ohne Kundenkonto/)).toBeVisible()
-    await expect(page.getByRole('banner').getByRole('button', { name: 'Admin' })).toBeVisible()
+    await expect(
+      page.getByRole('contentinfo').getByRole('button', { name: 'Login für das Team' }),
+    ).toBeVisible()
   })
 
   test('demo admin can sign in and sign out', async ({ page }) => {
     await signInAsDemo(page)
 
     await page.getByRole('button', { name: 'Abmelden' }).click()
-    await expect(page.getByRole('banner').getByRole('button', { name: 'Admin' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Abmelden' })).toHaveCount(0)
+    await expect(
+      page.getByRole('contentinfo').getByRole('button', { name: 'Login für das Team' }),
+    ).toBeVisible()
   })
 
-  test('header admin login is for staff only', async ({ page }) => {
+  test('team login lives in the footer, not in the customer header', async ({ page }) => {
     await page.goto('/book')
-    await page.getByRole('banner').getByRole('button', { name: 'Admin' }).click()
+    await expect(page.getByRole('banner').getByRole('button', { name: /Login|Admin/ })).toHaveCount(
+      0,
+    )
+    await page.getByRole('contentinfo').getByRole('button', { name: 'Login für das Team' }).click()
 
     await expect(page).toHaveURL(/\/login/)
     await expect(page.getByRole('heading', { name: /Admin-Anmeldung|Accesso admin/ })).toBeVisible()
@@ -39,8 +47,17 @@ test.describe('smoke @smoke', () => {
 
   test('language can switch to Italian', async ({ page }) => {
     await page.goto('/book')
-    await page.getByLabel('Sprache').click()
-    await page.getByRole('option', { name: 'Italiano' }).click()
+    const languages = page.getByRole('banner').getByRole('group', { name: 'Sprache' })
+    await expect(languages.getByRole('button', { name: 'Deutsch' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await languages.getByRole('button', { name: 'Italiano' }).click()
+    await expect(
+      page.getByRole('banner').getByRole('group', { name: 'Lingua' }).getByRole('button', {
+        name: 'Italiano',
+      }),
+    ).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByRole('heading', { name: 'Prenota un appuntamento' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'I miei appuntamenti' })).toBeVisible()
   })

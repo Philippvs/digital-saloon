@@ -6,7 +6,8 @@ test.describe('admin @smoke', () => {
   test('admin opens the week planner and confirms a pending seed reservation', async ({ page }) => {
     await signInAsDemo(page)
 
-    await page.getByRole('banner').getByRole('button', { name: 'Admin' }).click()
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Kalender' }).click()
     await expect(page).toHaveURL(/\/admin/)
     await expect(page.getByRole('region', { name: 'Wochenkalender' })).toBeVisible()
 

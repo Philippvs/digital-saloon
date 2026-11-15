@@ -66,7 +66,7 @@ export const MarkStudio = styled('span')({
   },
 })
 
-export const HeaderMark = styled('button')({
+export const HeaderMark = styled('button')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'baseline',
   gap: '0.3em',
@@ -83,4 +83,9 @@ export const HeaderMark = styled('button')({
     outline: `2px solid ${brand.orange}`,
     outlineOffset: 4,
   },
-})
+  [theme.breakpoints.down('sm')]: {
+    flexShrink: 0,
+    paddingLeft: 10,
+    fontSize: '1.25rem',
+  },
+}))

@@ -1,22 +1,13 @@
 import type * as React from 'react'
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  Link,
-  MenuItem,
-  Select,
-  Stack,
-  Toolbar,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Container, IconButton, Link, Stack, Typography } from '@mui/material'
+import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined'
 
 import { telHref } from '../data/phone'
 import type { Salon } from '../data/schemas'
 import { useLocale } from '../i18n'
-import { localeLabels, locales, type Locale } from '../i18n'
+import { localeLabels, locales } from '../i18n'
 import { brand } from '../theme'
+import { Header, LanguageSwitch, NavLink, StaffBar } from './AppShell.styles'
 import { HeaderWordmark } from './Wordmark'
 
 export type AppShellProps = {
@@ -49,62 +40,63 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar
-        position="static"
-        elevation={0}
-        color="inherit"
-        sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}
-      >
-        <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ gap: 1, flexWrap: 'wrap', minHeight: { xs: 64, sm: 72 } }}>
-            <Box sx={{ flexGrow: 1 }}>
-              <HeaderWordmark label={t('nav.home')} onClick={onHomeClick} />
-            </Box>
-            <Select
-              size="small"
-              value={locale}
-              aria-label={t('nav.language')}
-              onChange={(event) => {
-                setLocale(event.target.value as Locale)
-              }}
-              sx={{ minWidth: 110, fontSize: '0.875rem' }}
+      {email ? (
+        <StaffBar>
+          <Container maxWidth="lg" className="staff-inner">
+            <span className="staff-email">{t('nav.signedInAs', { email })}</span>
+            <button type="button" onClick={onAdminClick}>
+              {t('nav.staffCalendar')}
+            </button>
+            <button type="button" onClick={onSignOutClick}>
+              {t('nav.signOut')}
+            </button>
+          </Container>
+        </StaffBar>
+      ) : null}
+
+      <Header>
+        <Container maxWidth="lg" className="header-inner">
+          <HeaderWordmark label={t('nav.home')} onClick={onHomeClick} />
+          <nav className="header-nav" aria-label={t('nav.main')}>
+            <NavLink
+              type="button"
+              onClick={onMyBookingsClick}
+              sx={{ display: { xs: 'none', sm: 'inline' } }}
             >
-              {locales.map((code) => (
-                <MenuItem key={code} value={code}>
-                  {localeLabels[code]}
-                </MenuItem>
-              ))}
-            </Select>
-            <Button color="primary" size="small" onClick={onMyBookingsClick}>
               {t('nav.myBookings')}
-            </Button>
-            {email ? (
-              <>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ display: { xs: 'none', md: 'block' } }}
+            </NavLink>
+            <IconButton
+              aria-label={t('nav.myBookings')}
+              onClick={onMyBookingsClick}
+              sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
+            >
+              <EventNoteOutlinedIcon />
+            </IconButton>
+            <LanguageSwitch role="group" aria-label={t('nav.language')}>
+              {locales.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  lang={code}
+                  aria-label={localeLabels[code]}
+                  aria-pressed={code === locale}
+                  onClick={() => setLocale(code)}
                 >
-                  {email}
-                </Typography>
-                <Button color="primary" size="small" onClick={onAdminClick}>
-                  {t('nav.admin')}
-                </Button>
-                <Button color="primary" size="small" onClick={onSignOutClick}>
-                  {t('nav.signOut')}
-                </Button>
-              </>
-            ) : (
-              <Button color="primary" size="small" onClick={onLoginClick}>
-                {t('nav.admin')}
-              </Button>
-            )}
-            <Button variant="contained" color="primary" onClick={onBookClick}>
+                  {code.toUpperCase()}
+                </button>
+              ))}
+            </LanguageSwitch>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={onBookClick}
+              sx={{ whiteSpace: 'nowrap', px: { xs: 1.5, sm: 2.5 } }}
+            >
               {t('nav.book')}
             </Button>
-          </Toolbar>
+          </nav>
         </Container>
-      </AppBar>
+      </Header>
 
       <Box component="main" sx={{ flexGrow: 1 }}>
         {contentWidth === 'full' ? (
@@ -144,6 +136,30 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                 ) : null}
               </>
             ) : null}
+            {email ? null : (
+              <Box
+                component="button"
+                type="button"
+                onClick={onLoginClick}
+                sx={{
+                  ml: { sm: 'auto !important' },
+                  alignSelf: { xs: 'flex-start', sm: 'baseline' },
+                  p: 0,
+                  border: 0,
+                  background: 'none',
+                  color: 'inherit',
+                  font: 'inherit',
+                  fontSize: '0.875rem',
+                  opacity: 0.7,
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  textUnderlineOffset: 4,
+                  '&:hover, &:focus-visible': { opacity: 1 },
+                }}
+              >
+                {t('nav.staffLogin')}
+              </Box>
+            )}
           </Stack>
         </Container>
       </Box>

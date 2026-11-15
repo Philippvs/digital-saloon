@@ -42,8 +42,17 @@ test.describe('salon home page @smoke', () => {
 
   test('home page is available in Italian', async ({ page }) => {
     await page.goto('/')
-    await page.getByLabel('Sprache').click()
-    await page.getByRole('option', { name: 'Italiano' }).click()
+    const languages = page.getByRole('banner').getByRole('group', { name: 'Sprache' })
+    await expect(languages.getByRole('button', { name: 'Deutsch' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await languages.getByRole('button', { name: 'Italiano' }).click()
+    await expect(
+      page.getByRole('banner').getByRole('group', { name: 'Lingua' }).getByRole('button', {
+        name: 'Italiano',
+      }),
+    ).toHaveAttribute('aria-pressed', 'true')
 
     await expect(page.getByRole('heading', { name: 'Servizi e prezzi' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Orari di apertura' })).toBeVisible()
@@ -59,5 +68,12 @@ test.describe('salon home page @smoke', () => {
       () => document.documentElement.scrollWidth > window.innerWidth,
     )
     expect(overflow).toBe(false)
+
+    const header = page.getByRole('banner')
+    const headerBox = await header.boundingBox()
+    expect(headerBox?.height).toBeLessThanOrEqual(64)
+    await expect(header.getByRole('button', { name: 'Termin buchen' })).toBeInViewport()
+    await header.getByRole('button', { name: 'Meine Termine' }).click()
+    await expect(page.getByRole('heading', { name: 'Meine Termine' })).toBeVisible()
   })
 })
