@@ -4,7 +4,6 @@ import { onSchedule } from 'firebase-functions/v2/scheduler'
 
 import { assertAdmin } from '../authz'
 import { functionsRegion, getSalonId } from '../config'
-import { enqueueNotificationJob } from './notificationOutbox'
 import { lockIdForStart } from './reservationWrite'
 import { loadSalonContext } from './salonContext'
 
@@ -44,9 +43,9 @@ export async function processPendingReservationsOnce(input?: {
     const didExpire = await db.runTransaction(async (tx) => {
       const fresh = await tx.get(doc.ref)
       if (!fresh.exists) return false
-      const row = fresh.data()!
-      if (String(row.status) !== 'PENDING') return false
-      if (String(row.createdAt) > cutoffIso) return false
+      const data = fresh.data()!
+      if (String(data.status) !== 'PENDING') return false
+      if (String(data.createdAt) > cutoffIso) return false
 
       const lockSnap = await tx.get(lockRef)
       const updatedAt = now.toISOString()
@@ -54,18 +53,6 @@ export async function processPendingReservationsOnce(input?: {
       if (lockSnap.exists && lockSnap.data()?.reservationId === doc.id) {
         tx.delete(lockRef)
       }
-
-      enqueueNotificationJob(tx, db, salonId, {
-        type: 'RESERVATION_EXPIRED',
-        reservationId: doc.id,
-        toEmail: typeof row.email === 'string' ? row.email : null,
-        payload: {
-          firstName: row.firstName,
-          serviceName: row.serviceName,
-          startAt: row.startAt,
-        },
-        now,
-      })
       return true
     })
 

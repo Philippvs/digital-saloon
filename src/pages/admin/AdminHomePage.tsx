@@ -9,7 +9,6 @@ export type AdminHomePageProps = {
   onCalendarClick: () => void
   onServicesClick: () => void
   onSettingsClick: () => void
-  onProcessNotificationsClick: () => void
   onProcessPendingClick: () => void
 }
 
@@ -21,7 +20,6 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
   onCalendarClick,
   onServicesClick,
   onSettingsClick,
-  onProcessNotificationsClick,
   onProcessPendingClick,
 }) => {
   return (
@@ -45,20 +43,15 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
       </Stack>
 
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h2" gutterBottom>
+        <Typography variant="h2" gutterBottom sx={{ fontSize: '1.25rem' }}>
           Wartung
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 2 }}>
-          Benachrichtigungen und abgelaufene Anfragen manuell anstoßen (auch per Zeitplan).
+          Abgelaufene ausstehende Anfragen manuell prüfen (auch per Zeitplan).
         </Typography>
-        <Stack spacing={1}>
-          <Button variant="outlined" disabled={opsBusy} onClick={onProcessNotificationsClick}>
-            Benachrichtigungen verarbeiten
-          </Button>
-          <Button variant="outlined" disabled={opsBusy} onClick={onProcessPendingClick}>
-            Ausstehende Anfragen ablaufen lassen
-          </Button>
-        </Stack>
+        <Button variant="outlined" disabled={opsBusy} onClick={onProcessPendingClick}>
+          Ausstehende Anfragen ablaufen lassen
+        </Button>
         {opsMessage ? (
           <Alert severity="success" sx={{ mt: 2 }}>
             {opsMessage}

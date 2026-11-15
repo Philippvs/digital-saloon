@@ -125,26 +125,3 @@ export const blockedSlotSchema = v.object({
   createdAt: v.string(),
 })
 export type BlockedSlot = v.InferOutput<typeof blockedSlotSchema>
-
-export const notificationJobStatusSchema = v.picklist([
-  'PENDING',
-  'PROCESSING',
-  'SENT',
-  'FAILED',
-] as const)
-
-export const notificationJobSchema = v.object({
-  type: v.pipe(v.string(), v.minLength(1)),
-  reservationId: v.pipe(v.string(), v.minLength(1)),
-  toEmail: v.nullable(v.pipe(v.string(), v.email())),
-  payload: v.record(v.string(), v.unknown()),
-  status: notificationJobStatusSchema,
-  attempts: v.pipe(v.number(), v.integer(), v.minValue(0)),
-  idempotencyKey: v.pipe(v.string(), v.minLength(1)),
-  leaseUntil: v.nullable(v.string()),
-  leaseOwner: v.nullable(v.string()),
-  lastError: v.nullable(v.string()),
-  createdAt: v.string(),
-  updatedAt: v.string(),
-})
-export type NotificationJob = v.InferOutput<typeof notificationJobSchema>

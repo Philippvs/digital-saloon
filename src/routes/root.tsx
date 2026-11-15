@@ -19,6 +19,9 @@ const RootRoute: React.FunctionComponent = () => {
       onHomeClick={() => {
         void navigate({ to: '/' })
       }}
+      onMyBookingsClick={() => {
+        void navigate({ to: '/my-bookings' })
+      }}
       onLoginClick={() => {
         void navigate({ to: '/login', search: { redirect: '/admin' } })
       }}

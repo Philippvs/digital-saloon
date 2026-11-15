@@ -3,7 +3,6 @@ import { randomBytes } from 'node:crypto'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 
 import { isSlotAvailable, listAvailableSlots } from '../domain/availability'
-import { enqueueNotificationJob } from './notificationOutbox'
 import { loadBusyIntervals, loadSalonContext, type SalonContext } from './salonContext'
 import { hashManagementToken } from './tokens'
 
@@ -187,19 +186,6 @@ export async function createReservationTransactional(
         idempotencyKey: input.idempotencyKey,
         createdAt,
         updatedAt: createdAt,
-      })
-
-      enqueueNotificationJob(tx, db, context.salonId, {
-        type: status === 'CONFIRMED' ? 'RESERVATION_CONFIRMED' : 'RESERVATION_CREATED',
-        reservationId: reservationRef.id,
-        toEmail: input.email,
-        payload: {
-          firstName: input.firstName,
-          serviceName: String(service.name),
-          startAt: input.startAt.toISOString(),
-          source: input.source,
-        },
-        now,
       })
     })
   } catch (error) {

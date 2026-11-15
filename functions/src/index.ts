@@ -20,10 +20,6 @@ import {
 } from './booking/processPendingReservations'
 import { getAvailableSlots } from './booking/getAvailableSlots'
 import { functionsRegion, getSalonId } from './config'
-import {
-  processNotificationJobs,
-  processNotificationJobsSchedule,
-} from './notifications/processNotificationJobs'
 
 initializeApp()
 
@@ -38,8 +34,6 @@ export {
   declineReservation,
   adminCancelReservation,
   completeReservation,
-  processNotificationJobs,
-  processNotificationJobsSchedule,
   processPendingReservations,
   processPendingReservationsSchedule,
 }

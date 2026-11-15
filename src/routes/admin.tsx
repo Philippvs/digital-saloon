@@ -70,25 +70,16 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const ops = useAdminOps()
 
   const opsError =
-    ops.processNotifications.error instanceof Error
-      ? ops.processNotifications.error.message
-      : ops.processPending.error instanceof Error
-        ? ops.processPending.error.message
-        : null
-
-  let opsMessage: string | null = null
-  if (ops.processNotifications.isSuccess && ops.processNotifications.data) {
-    const data = ops.processNotifications.data
-    opsMessage = `Benachrichtigungen: ${data.sent} gesendet, ${data.failed} fehlgeschlagen, ${data.claimed} beansprucht.`
-  } else if (ops.processPending.isSuccess && ops.processPending.data) {
-    const data = ops.processPending.data
-    opsMessage = `Ablauf: ${data.expired} von ${data.scanned} ausstehenden Anfragen abgelaufen.`
-  }
+    ops.processPending.error instanceof Error ? ops.processPending.error.message : null
+  const opsMessage =
+    ops.processPending.isSuccess && ops.processPending.data
+      ? `Ablauf: ${ops.processPending.data.expired} von ${ops.processPending.data.scanned} ausstehenden Anfragen abgelaufen.`
+      : null
 
   return (
     <AdminHomePage
       salonName={salon.data?.name ?? 'Salon'}
-      opsBusy={ops.processNotifications.isPending || ops.processPending.isPending}
+      opsBusy={ops.processPending.isPending}
       opsMessage={opsMessage}
       opsError={opsError}
       onCalendarClick={() => {
@@ -99,9 +90,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       }}
       onSettingsClick={() => {
         void navigate({ to: '/admin/settings' })
-      }}
-      onProcessNotificationsClick={() => {
-        ops.processNotifications.mutate()
       }}
       onProcessPendingClick={() => {
         ops.processPending.mutate()

@@ -17,25 +17,6 @@ export function emulatorFirestore(): Firestore {
   return db
 }
 
-export async function listNotificationJobs(
-  salonId = 'pilot',
-): Promise<Array<{ id: string; type: string; status: string; toEmail: string | null }>> {
-  const snap = await emulatorFirestore()
-    .collection('salons')
-    .doc(salonId)
-    .collection('notificationJobs')
-    .get()
-  return snap.docs.map((doc) => {
-    const data = doc.data()
-    return {
-      id: doc.id,
-      type: String(data.type ?? ''),
-      status: String(data.status ?? ''),
-      toEmail: data.toEmail == null ? null : String(data.toEmail),
-    }
-  })
-}
-
 export async function getReservationStatus(
   reservationId: string,
   salonId = 'pilot',

@@ -12,6 +12,7 @@ export function useManageReservation(token: string | null) {
     queryKey: queryKeyOf('managedReservation', token),
     queryFn: () => fetchManagedReservation(token!),
     enabled: token !== null && token.length >= 16,
+    retry: false,
   })
 }
 

@@ -4,16 +4,6 @@ export type ConfirmationMode = 'AUTOMATIC' | 'MANUAL'
 export type ReservationStatus =
   'PENDING' | 'CONFIRMED' | 'DECLINED' | 'EXPIRED' | 'CANCELLED' | 'COMPLETED'
 
-export type NotificationJobStatus = 'PENDING' | 'PROCESSING' | 'SENT' | 'FAILED'
-
-export type NotificationJobType =
-  | 'RESERVATION_CREATED'
-  | 'RESERVATION_CONFIRMED'
-  | 'RESERVATION_DECLINED'
-  | 'RESERVATION_CANCELLED'
-  | 'RESERVATION_RESCHEDULED'
-  | 'RESERVATION_EXPIRED'
-
 export type ReservationSource = 'ONLINE' | 'MANUAL'
 
 export type BookingSettings = {

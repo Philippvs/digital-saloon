@@ -5,6 +5,7 @@ export type AppShellProps = {
   title: string
   email: string | null
   onHomeClick: () => void
+  onMyBookingsClick: () => void
   onLoginClick: () => void
   onAdminClick: () => void
   onSignOutClick: () => void
@@ -15,6 +16,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   title,
   email,
   onHomeClick,
+  onMyBookingsClick,
   onLoginClick,
   onAdminClick,
   onSignOutClick,
@@ -23,7 +25,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="static" elevation={0} color="primary">
-        <Toolbar sx={{ gap: 1.5 }}>
+        <Toolbar sx={{ gap: 1.5, flexWrap: 'wrap' }}>
           <Typography
             variant="h6"
             component="button"
@@ -40,6 +42,9 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
           >
             {title}
           </Typography>
+          <Button color="inherit" size="small" onClick={onMyBookingsClick}>
+            Meine Termine
+          </Button>
           {email ? (
             <>
               <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>

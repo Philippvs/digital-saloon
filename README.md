@@ -107,37 +107,26 @@ Project skills live under `.agents/skills/`:
 - Firebase basics / auth / Firestore / hosting / rules auditor
 - Frontend design
 
-## Notifications
+## Customer booking links (no email/SMS provider)
 
-Reservation mutations enqueue `salons/{salonId}/notificationJobs` in the **same Firestore transaction** (transactional outbox). Processors:
-
-| Callable / schedule                        | Role                                              |
-| ------------------------------------------ | ------------------------------------------------- |
-| `processNotificationJobs` (every 1 min)    | Claim jobs with a lease and send email            |
-| `processPendingReservations` (every 5 min) | PENDING past `pendingExpirationHours` → `EXPIRED` |
-
-Email delivery:
-
-- With `RESEND_API_KEY` + `RESEND_FROM_EMAIL`: send via Resend HTTP API.
-- Functions emulator (or `NOTIFICATIONS_ALLOW_LOG_ONLY=true`): log and mark `SENT`.
-- Production without Resend config: jobs are **not** silently discarded (stay retryable / fail).
-
-Admin home → **Wartung** can trigger both processors manually (used by E2E).
+- Each booking creates a cryptographically secure management token; Firestore stores only the SHA-256 hash.
+- After booking, the personal `/manage/{token}` URL is shown prominently (copy / Web Share / optional `mailto:` to the customer’s own mail app).
+- Successful bookings are saved in `localStorage` and listed under **Meine Termine** (`/my-bookings`). Details are always loaded via Cloud Functions — never trusted from local storage alone.
+- Pending requests older than `pendingExpirationHours` become `EXPIRED` via `processPendingReservations` (callable + schedule). Admin **Wartung** can trigger this manually.
 
 ## Firebase project checklist / deploy
 
 Live production deploy is intentionally deferred for this MVP slice. When you are ready:
 
 1. Create a Firebase project; enable Auth (Email/Password), Firestore, Storage, Functions (`europe-west8`).
-2. Copy `.env.example` → `.env` / Functions env: `SALON_ID`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`. Do **not** set `NOTIFICATIONS_ALLOW_LOG_ONLY` in production.
+2. Copy `.env.example` → `.env` / Functions env: `SALON_ID`.
 3. Update `.firebaserc` and Vite `VITE_FIREBASE_*` values.
 4. Deploy rules + indexes: `firebase deploy --only firestore:rules,firestore:indexes,storage`
 5. Deploy functions: `firebase deploy --only functions` (schedulers need Blaze).
 6. Build and deploy hosting: `pnpm build && firebase deploy --only hosting`
 7. Seed admin user / salon config for the real project (do not reuse emulator-only passwords).
 
-Security notes reviewed in M6:
+Security notes:
 
-- `notificationJobs`: client write denied; admin read only; all writes via Admin SDK in Functions.
-- Reservations / slotLocks remain function-mediated.
-- Customer manage links use hashed tokens; no public reservation reads.
+- Reservations / slotLocks are function-mediated; no public reservation PII reads.
+- Management tokens are bearer secrets (hash-only at rest); validate every access server-side.

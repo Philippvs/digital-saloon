@@ -39,7 +39,3 @@ export function dayExceptionsCollectionPath(salonId: string): string {
 export function blockedSlotsCollectionPath(salonId: string): string {
   return `salons/${salonId}/blockedSlots`
 }
-
-export function notificationJobsCollectionPath(salonId: string): string {
-  return `salons/${salonId}/notificationJobs`
-}
