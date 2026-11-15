@@ -30,37 +30,41 @@ export const LoginPage: React.FunctionComponent<LoginPageProps> = ({ onSuccess, 
     <Paper sx={{ p: 3, maxWidth: 420, mx: 'auto' }}>
       <Stack component="form" spacing={2} onSubmit={onSubmit}>
         <Typography variant="h1" sx={{ fontSize: '1.5rem' }}>
-          Sign in
+          Admin-Anmeldung
         </Typography>
         <Typography color="text.secondary">
-          Local demo: admin@salonflow.local / password123 (after `pnpm seed` / `pnpm dev:local`)
+          Nur für Salon-Mitarbeiter. Kunden buchen Termine ohne Login — zurück zur Startseite und
+          „Termin buchen“ wählen.
         </Typography>
+        <Alert severity="info">Lokal nach Seed: admin@salonflow.local / password123</Alert>
         <TextField
-          label="Email"
+          label="E-Mail"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           required
           fullWidth
+          autoComplete="username"
         />
         <TextField
-          label="Password"
+          label="Passwort"
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           required
           fullWidth
+          autoComplete="current-password"
         />
         {signIn.isError ? (
           <Alert severity="error">
-            {signIn.error instanceof Error ? signIn.error.message : 'Sign-in failed'}
+            {signIn.error instanceof Error ? signIn.error.message : 'Anmeldung fehlgeschlagen'}
           </Alert>
         ) : null}
         <Button type="submit" variant="contained" disabled={signIn.isPending}>
-          {signIn.isPending ? 'Signing in…' : 'Sign in'}
+          {signIn.isPending ? 'Wird angemeldet…' : 'Als Admin anmelden'}
         </Button>
         <Button type="button" onClick={onHomeClick}>
-          Back home
+          Zur Kunden-Startseite
         </Button>
       </Stack>
     </Paper>

@@ -8,29 +8,29 @@ test.describe('smoke @smoke', () => {
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Termin buchen' })).toBeVisible()
+    await expect(page.getByText('kein Kundenkonto nötig')).toBeVisible()
     await expect(page.getByText('Lokale Firebase-Emulatoren aktiv.')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Admin Login' })).toBeVisible()
+    await expect(page.getByRole('banner').getByRole('button', { name: 'Admin' })).toBeVisible()
   })
 
-  test('demo user can sign in and sign out', async ({ page }) => {
+  test('demo admin can sign in and sign out', async ({ page }) => {
     await signInAsDemo(page)
 
     await page.getByRole('button', { name: 'Abmelden' }).click()
-    await expect(
-      page.getByRole('banner').getByRole('button', { name: 'Admin Login' }),
-    ).toBeVisible()
+    await expect(page.getByRole('banner').getByRole('button', { name: 'Admin' })).toBeVisible()
   })
 
-  test('navigation from header to admin login works', async ({ page }) => {
+  test('header admin login is for staff only', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('banner').getByRole('button', { name: 'Admin Login' }).click()
+    await page.getByRole('banner').getByRole('button', { name: 'Admin' }).click()
 
     await expect(page).toHaveURL(/\/login/)
-    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-    await expect(page.getByLabel('Email')).toHaveValue(demoAccount.email)
+    await expect(page.getByRole('heading', { name: 'Admin-Anmeldung' })).toBeVisible()
+    await expect(page.getByText(/Kunden buchen Termine ohne Login/)).toBeVisible()
+    await expect(page.getByLabel('E-Mail')).toHaveValue(demoAccount.email)
   })
 
-  test('customer can open booking from home', async ({ page }) => {
+  test('customer can open booking from home without signing in', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Termin buchen' }).click()
     await expect(page).toHaveURL(/\/book/)

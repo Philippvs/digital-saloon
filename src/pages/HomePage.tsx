@@ -45,8 +45,8 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
           {title}
         </Typography>
         <Typography color="text.secondary" sx={{ maxWidth: 520 }}>
-          Online Termine buchen — ohne Registrierung. Wählen Sie eine Leistung und einen freien
-          Zeitslot.
+          Online Termine buchen — kein Kundenkonto nötig. Leistung wählen, Zeitslot sichern, fertig.
+          Zur späteren Verwaltung erhalten Sie einen persönlichen Link.
         </Typography>
         <Button variant="contained" size="large" onClick={onBookClick} sx={{ mt: 3 }}>
           Termin buchen

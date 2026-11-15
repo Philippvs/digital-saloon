@@ -53,8 +53,8 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
               </Button>
             </>
           ) : (
-            <Button color="inherit" onClick={onLoginClick}>
-              Admin Login
+            <Button color="inherit" size="small" onClick={onLoginClick}>
+              Admin
             </Button>
           )}
         </Toolbar>
