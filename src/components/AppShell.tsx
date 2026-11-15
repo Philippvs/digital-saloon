@@ -6,6 +6,7 @@ export type AppShellProps = {
   email: string | null
   onHomeClick: () => void
   onLoginClick: () => void
+  onAdminClick: () => void
   onSignOutClick: () => void
   children: React.ReactNode
 }
@@ -15,13 +16,14 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   email,
   onHomeClick,
   onLoginClick,
+  onAdminClick,
   onSignOutClick,
   children,
 }) => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="static" elevation={0} color="primary">
-        <Toolbar sx={{ gap: 2 }}>
+        <Toolbar sx={{ gap: 1.5 }}>
           <Typography
             variant="h6"
             component="button"
@@ -40,14 +42,19 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
           </Typography>
           {email ? (
             <>
-              <Typography variant="body2">{email}</Typography>
+              <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                {email}
+              </Typography>
+              <Button color="inherit" onClick={onAdminClick}>
+                Admin
+              </Button>
               <Button color="inherit" onClick={onSignOutClick}>
-                Sign out
+                Abmelden
               </Button>
             </>
           ) : (
             <Button color="inherit" onClick={onLoginClick}>
-              Sign in
+              Admin Login
             </Button>
           )}
         </Toolbar>

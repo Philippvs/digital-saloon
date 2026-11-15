@@ -1,21 +1,27 @@
 import type * as React from 'react'
 import { createRoute, useNavigate } from '@tanstack/react-router'
 
-import { useAuth } from '../auth/AuthProvider'
 import { usesEmulators } from '../firebase'
+import { useActiveServices } from '../hooks/useActiveServices'
+import { useSalon } from '../hooks/useSalon'
 import { HomePage } from '../pages/HomePage'
 import { rootRoute } from './root'
 
 const HomeRoute: React.FunctionComponent = () => {
-  const { user } = useAuth()
   const navigate = useNavigate()
+  const salon = useSalon()
+  const services = useActiveServices()
 
   return (
     <HomePage
-      email={user?.email ?? null}
+      salon={salon.data}
+      services={services.data}
+      salonLoading={salon.isLoading}
+      servicesLoading={services.isLoading}
+      servicesError={services.isError}
       usesEmulators={usesEmulators}
-      onLoginClick={() => {
-        void navigate({ to: '/login' })
+      onBookClick={() => {
+        void navigate({ to: '/book' })
       }}
     />
   )

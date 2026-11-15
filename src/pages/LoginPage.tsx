@@ -11,7 +11,7 @@ export type LoginPageProps = {
 
 export const LoginPage: React.FunctionComponent<LoginPageProps> = ({ onSuccess, onHomeClick }) => {
   const signIn = useSignIn()
-  const [email, setEmail] = useState('demo@example.com')
+  const [email, setEmail] = useState('admin@salonflow.local')
   const [password, setPassword] = useState('password123')
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -33,7 +33,7 @@ export const LoginPage: React.FunctionComponent<LoginPageProps> = ({ onSuccess, 
           Sign in
         </Typography>
         <Typography color="text.secondary">
-          Local demo: demo@example.com / password123 (after `pnpm seed` / `pnpm dev:local`)
+          Local demo: admin@salonflow.local / password123 (after `pnpm seed` / `pnpm dev:local`)
         </Typography>
         <TextField
           label="Email"

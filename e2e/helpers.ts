@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test'
 
 export const demoAccount = {
-  email: 'demo@example.com',
+  email: 'admin@salonflow.local',
   password: 'password123',
 } as const
 
@@ -13,6 +13,6 @@ export async function signInAsDemo(page: Page): Promise<void> {
   await page.getByLabel('Password').fill(demoAccount.password)
   await page.locator('form').getByRole('button', { name: 'Sign in' }).click()
 
-  await expect(page.getByRole('heading', { name: 'React Firebase Template' })).toBeVisible()
-  await expect(page.getByText(`Signed in as ${demoAccount.email}`)).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(page.getByRole('banner').getByRole('button', { name: 'Admin' })).toBeVisible()
 }

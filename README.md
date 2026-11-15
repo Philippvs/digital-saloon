@@ -1,6 +1,8 @@
-# React Firebase Template
+# SalonFlow
 
-GitHub template for new Vite + React + TypeScript + Firebase apps, with the same local emulator DX and agent rules used across your projects.
+Single-salon online appointment booking (pilot MVP) on the React + Firebase template stack.
+
+Customers book without an account. Administrators manage services, hours, and reservations after sign-in.
 
 ## Stack
 
@@ -10,14 +12,6 @@ GitHub template for new Vite + React + TypeScript + Firebase apps, with the same
 - Firebase (Auth, Firestore, Storage, Functions) + Emulator Suite
 - Valibot for boundary validation
 - `pnpm`, ESLint, Prettier, Vitest, Playwright
-
-## Use as a GitHub template
-
-1. Push this repo to GitHub.
-2. Settings → **Template repository**.
-3. Create new repos with **Use this template**.
-
-Then replace `demo-react-firebase-template` in `.firebaserc`, `scripts/emulator-ports.mjs`, and `src/data/emulatorPorts.ts`, and fill `.env` from `.env.example`.
 
 ## Prerequisites
 
@@ -33,20 +27,22 @@ npm --prefix functions ci
 cp .env.example .env
 ```
 
+Optional salon overrides (see `.env.example`): `VITE_SALON_ID`, `SEED_SALON_NAME`, `SEED_SALON_TIMEZONE` (default `Europe/Vienna`), `SEED_ADMIN_EMAIL`.
+
 ## Daily development
 
 ```bash
-pnpm dev:local
+pnpm start
 ```
 
-Starts emulators, seeds a demo user, and Vite:
+Alias: `pnpm start:local` / `pnpm dev:local`. Frees occupied ports, starts emulators, seeds the pilot salon + admin, then Vite:
 
 | URL         | Port                  |
 | ----------- | --------------------- |
 | App         | http://127.0.0.1:3100 |
 | Emulator UI | http://127.0.0.1:4100 |
 
-Demo login (after seed): `demo@example.com` / `password123`
+Demo admin (after seed): `admin@salonflow.local` / `password123`
 
 Ports are non-default so this stack can run next to other Firebase projects. Free them with:
 
@@ -55,6 +51,15 @@ pnpm free:ports
 ```
 
 Vite only (no emulators): `pnpm dev`
+
+## Milestone status
+
+| Slice | Scope                                              | Status                        |
+| ----- | -------------------------------------------------- | ----------------------------- |
+| M1    | Foundation, seed, rules, admin gate                | Done (`feat/salonflow-m1-m3`) |
+| M2    | Config data access (services, settings)            | Done                          |
+| M3    | Availability engine + transactional booking        | Done                          |
+| M4–M6 | Customer booking UI, admin calendar, notifications | Mandatory roadmap (next)      |
 
 ## Scripts
 
@@ -76,7 +81,7 @@ Vite only (no emulators): `pnpm dev`
 
 ```bash
 pnpm test:e2e:install   # once
-pnpm test:e2e           # starts emulators, seeds demo user, runs smoke journeys
+pnpm test:e2e           # starts emulators, seeds, runs smoke journeys
 ```
 
 Specs live in `e2e/`. The webServer entry is `scripts/start-e2e.mjs` (same ports as `dev:local`, no Emulator UI).
@@ -87,6 +92,10 @@ Layers (enforced by `src/architecture.test.ts` + ESLint):
 
 `routes` → `pages` → `components` → `hooks` → `data` → `firebase.ts`
 
+- Public: salon profile + active services via Firestore
+- Occupancy changes: Cloud Functions + Firestore transactions
+- Availability math: pure domain under `functions/src/domain/`
+
 Routing APIs stay in `src/routes/`. See `AGENTS.md` and `.cursor/rules/`.
 
 ## Agent skills
@@ -96,9 +105,9 @@ Project skills live under `.agents/skills/`:
 - Firebase basics / auth / Firestore / hosting / rules auditor
 - Frontend design
 
-## New Firebase project checklist
+## Firebase project checklist
 
 1. Create a Firebase project; enable Auth (Email/Password), Firestore, Storage, Functions.
-2. Update `.firebaserc` and env vars.
+2. Update `.firebaserc` and env vars (`VITE_SALON_ID` / `SALON_ID`).
 3. Deploy rules: `firebase deploy --only firestore:rules,storage`
 4. Deploy functions and hosting when ready.

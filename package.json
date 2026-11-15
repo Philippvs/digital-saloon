@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "vite --port 3100 --host 127.0.0.1",
     "dev:local": "node scripts/start-dev.mjs",
+    "start": "node scripts/start-dev.mjs",
+    "start:local": "node scripts/start-dev.mjs",
     "free:ports": "node scripts/free-ports.mjs",
     "emulators": "node scripts/free-ports.mjs && firebase emulators:start --only auth,firestore,storage,functions,ui --project demo-react-firebase-template",
     "seed": "node scripts/seed-emulator.mjs",

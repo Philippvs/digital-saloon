@@ -9,12 +9,70 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && userDoc().data.role == 'admin';
+    }
+
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId)
         && request.resource.data.keys().hasOnly(['email', 'displayName', 'role', 'createdAt'])
         && request.resource.data.role == 'user';
       allow update, delete: if false;
+    }
+
+    match /salons/{salonId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /settings/{docId} {
+        allow read: if isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /services/{serviceId} {
+        allow read: if resource.data.active == true || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /openingHours/{weekday} {
+        allow read: if isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /holidays/{holidayId} {
+        allow read: if isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /dayExceptions/{exceptionId} {
+        allow read: if isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /reservations/{reservationId} {
+        // Client SDK: admin read for calendar; all writes go through Cloud Functions.
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+
+      match /blockedSlots/{blockedSlotId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+
+      match /slotLocks/{lockId} {
+        allow read, write: if false;
+      }
+
+      match /notificationJobs/{jobId} {
+        allow read, write: if false;
+      }
     }
   }
 }
