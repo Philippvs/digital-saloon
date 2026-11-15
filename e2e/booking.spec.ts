@@ -1,42 +1,17 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
-async function pickFirstAvailableSlot(page: Page): Promise<void> {
-  const dateButtons = page.locator('button').filter({ hasText: /\d{2}\.\d{2}\.\d{4}/ })
-  const dateCount = await dateButtons.count()
-  expect(dateCount).toBeGreaterThan(0)
-
-  for (let index = 0; index < dateCount; index += 1) {
-    await dateButtons.nth(index).click()
-    const empty = page.getByText('Keine freien Termine an diesem Tag.')
-    const slotButton = page.getByRole('button', { name: /^\d{2}:\d{2}$/ }).first()
-    try {
-      await expect(slotButton).toBeVisible({ timeout: 8_000 })
-      await slotButton.click()
-      return
-    } catch {
-      if (await empty.isVisible().catch(() => false)) continue
-    }
-  }
-
-  throw new Error('No available slot found in the next 14 days')
-}
+import { selectServiceDateAndTime } from './bookingHelpers'
 
 test.describe('customer booking @smoke', () => {
   test('customer books without account and can cancel via manage link', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: 'Termin buchen' }).click()
-    await expect(page).toHaveURL(/\/book$/)
+    await expect(page).toHaveURL(/\/book/)
 
-    await page.getByRole('button', { name: 'Auswählen' }).first().click()
-    await expect(page).toHaveURL(/\/book\/slots/)
-
-    await pickFirstAvailableSlot(page)
-    await expect(page).toHaveURL(/\/book\/checkout/)
+    await selectServiceDateAndTime(page)
 
     await page.getByLabel('Vorname').fill('Erika')
     await page.getByLabel('Nachname').fill('Muster')
-    await page.getByLabel('Telefon').fill('+43 660 9999999')
-    await page.getByLabel('E-Mail (optional)').fill('erika@example.com')
+    await page.getByLabel('Telefon').fill('0660 9999999')
     await page.getByLabel(/Datenschutzhinweise/).check()
     await page.getByRole('button', { name: 'Termin verbindlich anfragen' }).click()
 

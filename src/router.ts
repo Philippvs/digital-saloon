@@ -12,7 +12,7 @@ import {
   adminServicesRoute,
   adminSettingsRoute,
 } from './routes/admin'
-import { bookCheckoutRoute, bookRoute, bookSlotsRoute } from './routes/book'
+import { bookRoute } from './routes/book'
 import { bookingConfirmedRoute } from './routes/bookingConfirmed'
 import { homeRoute } from './routes/home'
 import { loginRoute } from './routes/login'
@@ -27,8 +27,6 @@ export const router = createRouter({
   routeTree: rootRoute.addChildren([
     homeRoute,
     bookRoute,
-    bookSlotsRoute,
-    bookCheckoutRoute,
     bookingConfirmedRoute,
     myBookingsRoute,
     manageRoute,

@@ -2,7 +2,8 @@
 
 Single-salon online appointment booking (pilot MVP) on the React + Firebase template stack.
 
-Customers book without an account. Administrators manage services, hours, and reservations after sign-in.
+Customers book without an account via a single-page, step-based wizard (`/book`; `/` redirects there).
+Administrators manage services, hours, and reservations after sign-in.
 
 ## Stack
 

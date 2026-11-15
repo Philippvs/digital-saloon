@@ -1,112 +1,55 @@
 import { createRoute, useNavigate } from '@tanstack/react-router'
 import * as v from 'valibot'
 
-import { upcomingViennaDates } from '../data/dateFormat'
+import { addMonths, viennaTodayYmd } from '../data/bookingCalendar'
 import { optionalSearchParam } from '../data/schemas'
 import { useActiveServices } from '../hooks/useActiveServices'
 import { useAvailableSlots } from '../hooks/useAvailableSlots'
 import { useCreateReservation } from '../hooks/useCreateReservation'
-import { BookCheckoutPage } from '../pages/BookCheckoutPage'
-import { BookPage } from '../pages/BookPage'
-import { BookSlotsPage } from '../pages/BookSlotsPage'
+import { BookingWizardPage } from '../pages/BookingWizardPage'
 import { rootRoute } from './root'
 
-const bookSlotsSearchSchema = v.object({
-  serviceId: v.pipe(v.string(), v.minLength(1)),
+const bookSearchSchema = v.object({
+  serviceId: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
   date: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
-})
-
-const bookCheckoutSearchSchema = v.object({
-  serviceId: v.pipe(v.string(), v.minLength(1)),
-  startAt: v.pipe(v.string(), v.minLength(1)),
+  startAt: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
+  month: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
 })
 
 export const bookRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/book',
-  component: function BookIndexRoute() {
+  validateSearch: (search: Record<string, unknown>) => v.parse(bookSearchSchema, search),
+  component: function BookWizardRoute() {
     const navigate = useNavigate()
+    const search = bookRoute.useSearch()
     const services = useActiveServices()
-
-    return (
-      <BookPage
-        services={services.data}
-        isLoading={services.isLoading}
-        isError={services.isError}
-        onBackClick={() => {
-          void navigate({ to: '/' })
-        }}
-        onSelectService={(serviceId) => {
-          void navigate({
-            to: '/book/slots',
-            search: { serviceId, date: undefined },
-          })
-        }}
-      />
-    )
-  },
-})
-
-export const bookSlotsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/book/slots',
-  validateSearch: (search: Record<string, unknown>) => v.parse(bookSlotsSearchSchema, search),
-  component: function BookSlotsRoute() {
-    const navigate = useNavigate()
-    const { serviceId, date } = bookSlotsRoute.useSearch()
-    const services = useActiveServices()
-    const service = services.data?.find((item) => item.id === serviceId)
-    const dates = upcomingViennaDates(14)
-    const selectedDate = date ?? null
-    const slots = useAvailableSlots({
-      serviceId,
-      fromDateYmd: selectedDate,
-      toDateYmd: selectedDate,
-    })
-
-    return (
-      <BookSlotsPage
-        service={service}
-        dates={dates}
-        selectedDate={selectedDate}
-        slots={slots.data}
-        slotsLoading={slots.isLoading}
-        slotsError={slots.isError}
-        onBackClick={() => {
-          void navigate({ to: '/book' })
-        }}
-        onDateSelect={(dateYmd) => {
-          void navigate({
-            to: '/book/slots',
-            search: { serviceId, date: dateYmd },
-          })
-        }}
-        onSlotSelect={(startAt) => {
-          void navigate({
-            to: '/book/checkout',
-            search: { serviceId, startAt },
-          })
-        }}
-      />
-    )
-  },
-})
-
-export const bookCheckoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/book/checkout',
-  validateSearch: (search: Record<string, unknown>) => v.parse(bookCheckoutSearchSchema, search),
-  component: function BookCheckoutRoute() {
-    const navigate = useNavigate()
-    const { serviceId, startAt } = bookCheckoutRoute.useSearch()
-    const services = useActiveServices()
-    const service = services.data?.find((item) => item.id === serviceId)
     const create = useCreateReservation()
 
+    const today = viennaTodayYmd()
+    const monthAnchorYmd = search.month ?? `${today.slice(0, 8)}01`
+    const rangeFrom = today
+    const rangeTo = addMonths(today, 2)
+
+    const rangeSlots = useAvailableSlots({
+      serviceId: search.serviceId ?? null,
+      fromDateYmd: search.serviceId ? rangeFrom : null,
+      toDateYmd: search.serviceId ? rangeTo : null,
+    })
+
+    const selectedService = services.data?.find((item) => item.id === search.serviceId)
+
     return (
-      <BookCheckoutPage
-        service={service}
-        startAt={startAt}
+      <BookingWizardPage
+        services={services.data}
+        servicesLoading={services.isLoading}
+        servicesError={services.isError}
+        selectedServiceId={search.serviceId ?? null}
+        selectedDate={search.date ?? null}
+        selectedStartAt={search.startAt ?? null}
+        rangeSlots={rangeSlots.data}
+        rangeLoading={rangeSlots.isLoading}
+        rangeError={rangeSlots.isError}
         isSubmitting={create.isPending}
         submitError={
           create.isError
@@ -115,21 +58,77 @@ export const bookCheckoutRoute = createRoute({
               : 'Buchung fehlgeschlagen'
             : null
         }
-        onBackClick={() => {
+        monthAnchorYmd={monthAnchorYmd}
+        onMonthAnchorChange={(anchorYmd) => {
           void navigate({
-            to: '/book/slots',
-            search: { serviceId, date: undefined },
+            to: '/book',
+            search: {
+              serviceId: search.serviceId,
+              date: search.date,
+              startAt: search.startAt,
+              month: `${anchorYmd.slice(0, 8)}01`,
+            },
+            replace: true,
+          })
+        }}
+        onSelectService={(serviceId) => {
+          void navigate({
+            to: '/book',
+            search: {
+              serviceId,
+              date: undefined,
+              startAt: undefined,
+              month: monthAnchorYmd,
+            },
+            replace: true,
+          })
+        }}
+        onSelectDate={(dateYmd) => {
+          void navigate({
+            to: '/book',
+            search: {
+              serviceId: search.serviceId,
+              date: dateYmd,
+              startAt: undefined,
+              month: monthAnchorYmd,
+            },
+            replace: true,
+          })
+        }}
+        onSelectTime={(startAt) => {
+          void navigate({
+            to: '/book',
+            search: {
+              serviceId: search.serviceId,
+              date: search.date,
+              startAt,
+              month: monthAnchorYmd,
+            },
+            replace: true,
+          })
+        }}
+        onClearTime={() => {
+          void navigate({
+            to: '/book',
+            search: {
+              serviceId: search.serviceId,
+              date: search.date,
+              startAt: undefined,
+              month: monthAnchorYmd,
+            },
+            replace: true,
           })
         }}
         onSubmit={(input) => {
+          if (!search.serviceId || !search.startAt) return
           create.mutate(
             {
-              serviceId,
-              startAt,
+              serviceId: search.serviceId,
+              startAt: search.startAt,
               firstName: input.firstName,
               lastName: input.lastName,
               phone: input.phone,
-              email: input.email,
+              email: null,
               privacyAccepted: true,
               idempotencyKey:
                 typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -139,7 +138,7 @@ export const bookCheckoutRoute = createRoute({
             {
               onSuccess: (result) => {
                 if (!result.managementToken) {
-                  void navigate({ to: '/' })
+                  void navigate({ to: '/book' })
                   return
                 }
                 void navigate({
@@ -148,8 +147,8 @@ export const bookCheckoutRoute = createRoute({
                     reservationId: result.reservationId,
                     token: result.managementToken,
                     status: result.status,
-                    serviceName: service?.name ?? '',
-                    startAt,
+                    serviceName: selectedService?.name ?? '',
+                    startAt: search.startAt!,
                   },
                 })
               },

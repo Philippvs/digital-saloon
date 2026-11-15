@@ -3,13 +3,11 @@ import { expect, test } from '@playwright/test'
 import { demoAccount, signInAsDemo } from './helpers'
 
 test.describe('smoke @smoke', () => {
-  test('home page loads against emulators', async ({ page }) => {
+  test('home redirects to booking wizard against emulators', async ({ page }) => {
     await page.goto('/')
-
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Termin buchen' })).toBeVisible()
-    await expect(page.getByText('kein Kundenkonto nötig')).toBeVisible()
-    await expect(page.getByText('Lokale Firebase-Emulatoren aktiv.')).toBeVisible()
+    await expect(page).toHaveURL(/\/book/)
+    await expect(page.getByRole('heading', { name: 'Termin buchen' })).toBeVisible()
+    await expect(page.getByText(/Ohne Kundenkonto/)).toBeVisible()
     await expect(page.getByRole('banner').getByRole('button', { name: 'Admin' })).toBeVisible()
   })
 
@@ -21,7 +19,7 @@ test.describe('smoke @smoke', () => {
   })
 
   test('header admin login is for staff only', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/book')
     await page.getByRole('banner').getByRole('button', { name: 'Admin' }).click()
 
     await expect(page).toHaveURL(/\/login/)
@@ -30,10 +28,9 @@ test.describe('smoke @smoke', () => {
     await expect(page.getByLabel('E-Mail')).toHaveValue(demoAccount.email)
   })
 
-  test('customer can open booking from home without signing in', async ({ page }) => {
-    await page.goto('/')
-    await page.getByRole('button', { name: 'Termin buchen' }).click()
-    await expect(page).toHaveURL(/\/book/)
+  test('customer opens booking without signing in', async ({ page }) => {
+    await page.goto('/book')
     await expect(page.getByRole('heading', { name: 'Termin buchen' })).toBeVisible()
+    await expect(page.locator('[aria-labelledby="step-service"] button').first()).toBeVisible()
   })
 })
