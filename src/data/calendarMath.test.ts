@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { addCalendarDays, todayYmdInTimeZone } from './calendarMath'
-import { rangeForView, startOfWeekYmd } from './calendarRange'
+import { listRange, rangeForView, startOfWeekYmd } from './calendarRange'
 
 describe('calendarMath', () => {
   it('adds calendar days across month boundaries', () => {
@@ -24,5 +24,13 @@ describe('calendarRange', () => {
     const range = rangeForView('day', '2026-04-08')
     expect(range.startIso).toBe('2026-04-08T00:00:00.000Z')
     expect(range.endIso).toBe('2026-04-09T00:00:00.000Z')
+  })
+})
+
+describe('listRange', () => {
+  it('includes bookings after the current week ends on a Sunday', () => {
+    const range = listRange('2026-11-15')
+    expect(range.startIso).toBe('2026-11-08T00:00:00.000Z')
+    expect('2026-11-20T11:30:00.000Z' < range.endIso).toBe(true)
   })
 })

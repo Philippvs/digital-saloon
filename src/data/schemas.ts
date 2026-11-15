@@ -22,8 +22,13 @@ export const salonSchema = v.object({
   phone: v.pipe(v.string(), v.minLength(1), v.maxLength(40)),
   email: v.pipe(v.string(), v.email()),
   timezone: v.pipe(v.string(), v.minLength(1), v.maxLength(64)),
+  vatId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(40))),
 })
 export type Salon = v.InferOutput<typeof salonSchema>
+
+/** Fields an admin may edit; the timezone drives slot math and stays fixed. */
+export const salonDetailsSchema = v.omit(salonSchema, ['timezone'])
+export type SalonDetails = v.InferOutput<typeof salonDetailsSchema>
 
 export const confirmationModeSchema = v.picklist(['AUTOMATIC', 'MANUAL'] as const)
 export type ConfirmationMode = v.InferOutput<typeof confirmationModeSchema>

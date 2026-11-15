@@ -2,20 +2,21 @@ import { expect, test } from '@playwright/test'
 
 import { signInAsDemo } from './helpers'
 
-test.describe('admin calendar @smoke', () => {
-  test('admin can open calendar and confirm a pending seed reservation', async ({ page }) => {
+test.describe('admin @smoke', () => {
+  test('admin opens the week planner and confirms a pending seed reservation', async ({ page }) => {
     await signInAsDemo(page)
 
     await page.getByRole('banner').getByRole('button', { name: 'Admin' }).click()
     await expect(page).toHaveURL(/\/admin/)
-    await page.getByRole('button', { name: 'Kalender' }).click()
-    await expect(page).toHaveURL(/\/admin\/calendar/)
+    await expect(page.getByRole('region', { name: 'Wochenkalender' })).toBeVisible()
 
-    await page.goto('/admin/calendar?view=day&date=2026-04-08')
-    await expect(page.getByRole('heading', { name: 'Kalender' })).toBeVisible()
-    await expect(page.getByText('Max Mustermann')).toBeVisible({ timeout: 15_000 })
+    await page.goto('/admin?week=2026-04-06')
+    const entry = page
+      .getByRole('region', { name: 'Wochenkalender' })
+      .getByRole('button', { name: /Max Mustermann/ })
+    await expect(entry).toBeVisible({ timeout: 15_000 })
 
-    await page.getByText('Max Mustermann').click()
+    await entry.click()
     await expect(page).toHaveURL(/\/admin\/reservations\//)
     await expect(page.getByRole('heading', { name: 'Termin-Details' })).toBeVisible()
     await expect(page.getByText('Ausstehend')).toBeVisible()
@@ -29,7 +30,7 @@ test.describe('admin calendar @smoke', () => {
     await page.goto('/admin/manual')
 
     await page.getByLabel('Leistung').click()
-    await page.getByRole('option', { name: /Haircut$/ }).click()
+    await page.getByRole('option', { name: /^Herrenschnitt/ }).click()
 
     const dateButtons = page.locator('button').filter({ hasText: /\d{2}\.\d{2}\.\d{4}/ })
     const dateCount = await dateButtons.count()

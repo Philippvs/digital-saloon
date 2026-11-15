@@ -3,6 +3,24 @@ export type Messages = {
   'nav.admin': string
   'nav.signOut': string
   'nav.language': string
+  'nav.book': string
+  'nav.home': string
+
+  'home.place': string
+  'home.intro': string
+  'home.book': string
+  'home.call': string
+  'home.servicesTitle': string
+  'home.servicesHint': string
+  'home.servicesError': string
+  'home.servicesEmpty': string
+  'home.hoursTitle': string
+  'home.hoursError': string
+  'home.closed': string
+  'home.today': string
+  'home.visitTitle': string
+  'home.directions': string
+  'footer.vatId': string
 
   'book.title': string
   'book.subtitle': string
@@ -130,13 +148,9 @@ export type Messages = {
   'admin.loading': string
   'admin.signInRequired': string
   'admin.forbidden': string
-  'admin.day': string
-  'admin.week': string
   'admin.today': string
-  'admin.manualBooking': string
   'admin.allReservations': string
   'admin.calendarLoading': string
-  'admin.anchorDate': string
   'admin.detailTitle': string
   'admin.backToCalendar': string
   'admin.detailLoading': string
@@ -182,6 +196,52 @@ export type Messages = {
   'admin.closed': string
   'admin.holidays': string
   'admin.holidaysHint': string
+  'admin.statPending': string
+  'admin.pendingEmpty': string
+  'admin.manageTitle': string
+  'admin.addReservation': string
+  'admin.bookingRulesTitle': string
+  'admin.modeAutomatic': string
+  'admin.modeAutomaticHint': string
+  'admin.modeManual': string
+  'admin.modeManualHint': string
+  'admin.slotIntervalHint': string
+  'admin.minAdvanceHint': string
+  'admin.maxAdvanceHint': string
+  'admin.pendingExpirationHint': string
+  'admin.unitMinutes': string
+  'admin.unitDays': string
+  'admin.unitHours': string
+  'admin.salonDetailsTitle': string
+  'admin.salonDetailsHint': string
+  'admin.fieldName': string
+  'admin.fieldAddress': string
+  'admin.fieldPhone': string
+  'admin.fieldEmail': string
+  'admin.fieldVatId': string
+  'admin.save': string
+  'admin.saved': string
+  'admin.saveFailed': string
+  'admin.rangeError': string
+  'admin.requiredError': string
+  'admin.emailError': string
+  'admin.tooLongError': string
+  'admin.backToDashboard': string
+  'admin.weekNumber': string
+  'admin.prevWeek': string
+  'admin.nextWeek': string
+  'admin.thisWeek': string
+  'admin.weekTotals': string
+  'admin.totalCount': string
+  'admin.totalTime': string
+  'admin.totalRevenue': string
+  'admin.plannerLabel': string
+  'admin.plannerLegend': string
+  'admin.plannerAddAt': string
+  'admin.plannerAddHint': string
+  'admin.plannerDayFree': string
+  'admin.plannerCount': string
+  'admin.plannerCountOne': string
 }
 
 export type MessageKey = keyof Messages
@@ -191,6 +251,25 @@ export const de: Messages = {
   'nav.admin': 'Admin',
   'nav.signOut': 'Abmelden',
   'nav.language': 'Sprache',
+  'nav.book': 'Termin buchen',
+  'nav.home': 'KIMM Hair, zur Startseite',
+
+  'home.place': 'Friseur in Meran',
+  'home.intro':
+    'Judith Lintner und ihr Team schneiden, färben und pflegen in der Via Piave. Mit Zeit für Ihre Wünsche und Produkten, die Haar und Kopfhaut schonen.',
+  'home.book': 'Termin online buchen',
+  'home.call': 'Oder anrufen: {phone}',
+  'home.servicesTitle': 'Leistungen und Preise',
+  'home.servicesHint': 'Wählen Sie eine Leistung, um direkt einen Termin zu suchen.',
+  'home.servicesError': 'Die Preisliste konnte nicht geladen werden. Rufen Sie uns gerne an.',
+  'home.servicesEmpty': 'Die Preisliste wird gerade überarbeitet. Rufen Sie uns gerne an.',
+  'home.hoursTitle': 'Öffnungszeiten',
+  'home.hoursError': 'Die Öffnungszeiten konnten nicht geladen werden.',
+  'home.closed': 'geschlossen',
+  'home.today': 'heute',
+  'home.visitTitle': 'So finden Sie uns',
+  'home.directions': 'Route in Google Maps öffnen',
+  'footer.vatId': 'MwSt.-Nr.',
 
   'book.title': 'Termin buchen',
   'book.subtitle': 'Ohne Kundenkonto — Schritt für Schritt zum Wunschtermin.',
@@ -324,13 +403,9 @@ export const de: Messages = {
   'admin.loading': 'Laden…',
   'admin.signInRequired': 'Anmeldung erforderlich.',
   'admin.forbidden': 'Dieser Bereich ist nur für Salon-Administratoren.',
-  'admin.day': 'Tag',
-  'admin.week': 'Woche',
   'admin.today': 'Heute',
-  'admin.manualBooking': 'Manueller Termin',
   'admin.allReservations': 'Alle Termine',
   'admin.calendarLoading': 'Kalender laden',
-  'admin.anchorDate': 'Ankerdatum: {date}',
   'admin.detailTitle': 'Termin-Details',
   'admin.backToCalendar': 'Zurück zum Kalender',
   'admin.detailLoading': 'Termin laden',
@@ -363,14 +438,14 @@ export const de: Messages = {
   'admin.yes': 'Ja',
   'admin.no': 'Nein',
   'admin.minutes': '{minutes} Min',
-  'admin.settingsSubtitle': 'Bestätigungsmodus und Vorlaufzeiten für den Pilot-Salon.',
+  'admin.settingsSubtitle': 'Regeln für Online-Buchungen und die Kontaktdaten auf der Website.',
   'admin.settingsLoading': 'Einstellungen laden',
   'admin.settingsError': 'Einstellungen konnten nicht geladen werden.',
-  'admin.confirmationMode': 'Bestätigungsmodus: {mode}',
-  'admin.slotInterval': 'Slot-Intervall: {minutes} Minuten',
-  'admin.minAdvance': 'Mindestvorlauf: {minutes} Minuten',
-  'admin.maxAdvance': 'Maximalvorlauf: {days} Tage',
-  'admin.pendingExpiration': 'Ablauf ausstehend: {hours} Stunden',
+  'admin.confirmationMode': 'Neue Buchungen',
+  'admin.slotInterval': 'Raster für Startzeiten',
+  'admin.minAdvance': 'Mindestvorlauf',
+  'admin.maxAdvance': 'Höchstens im Voraus buchbar',
+  'admin.pendingExpiration': 'Offene Anfragen verfallen nach',
   'admin.openingHours': 'Öffnungszeiten',
   'admin.openingHoursLoading': 'Laden…',
   'admin.openingHoursError': 'Öffnungszeiten konnten nicht geladen werden.',
@@ -379,6 +454,52 @@ export const de: Messages = {
   'admin.holidays': 'Feiertage',
   'admin.holidaysHint':
     'Feiertags-Editor folgt später; geseedete Feiertage beeinflussen bereits die Verfügbarkeit.',
+  'admin.statPending': 'Offene Anfragen',
+  'admin.pendingEmpty': 'Keine offenen Anfragen.',
+  'admin.manageTitle': 'Verwaltung',
+  'admin.addReservation': 'Termin eintragen',
+  'admin.bookingRulesTitle': 'Online-Buchung',
+  'admin.modeAutomatic': 'Automatisch bestätigen',
+  'admin.modeAutomaticHint': 'Freie Termine sind sofort fest gebucht.',
+  'admin.modeManual': 'Jede Anfrage selbst bestätigen',
+  'admin.modeManualHint': 'Der Termin bleibt reserviert, bis Sie ihn bestätigen oder ablehnen.',
+  'admin.slotIntervalHint': 'Alle wie viele Minuten ein Termin beginnen kann.',
+  'admin.minAdvanceHint': 'So kurzfristig kann frühestens online gebucht werden.',
+  'admin.maxAdvanceHint': 'So weit im Voraus zeigt der Buchungskalender freie Termine.',
+  'admin.pendingExpirationHint': 'Gilt nur, wenn Sie Anfragen selbst bestätigen.',
+  'admin.unitMinutes': 'Minuten',
+  'admin.unitDays': 'Tage',
+  'admin.unitHours': 'Stunden',
+  'admin.salonDetailsTitle': 'Salon und Kontakt',
+  'admin.salonDetailsHint': 'Erscheint auf der Startseite und im Fußbereich der Website.',
+  'admin.fieldName': 'Name des Salons',
+  'admin.fieldAddress': 'Adresse',
+  'admin.fieldPhone': 'Telefon',
+  'admin.fieldEmail': 'E-Mail',
+  'admin.fieldVatId': 'MwSt.-Nr. (optional)',
+  'admin.save': 'Speichern',
+  'admin.saved': 'Gespeichert.',
+  'admin.saveFailed': 'Speichern fehlgeschlagen: {message}',
+  'admin.rangeError': 'Erlaubt sind ganze Zahlen von {min} bis {max}.',
+  'admin.requiredError': 'Bitte ausfüllen.',
+  'admin.emailError': 'Bitte eine gültige E-Mail-Adresse eingeben.',
+  'admin.tooLongError': 'Höchstens {max} Zeichen.',
+  'admin.backToDashboard': 'Zum Kalender',
+  'admin.weekNumber': 'KW {week}',
+  'admin.prevWeek': 'Vorherige Woche',
+  'admin.nextWeek': 'Nächste Woche',
+  'admin.thisWeek': 'Diese Woche',
+  'admin.weekTotals': 'Summe der Woche',
+  'admin.totalCount': 'Termine',
+  'admin.totalTime': 'Gebuchte Zeit',
+  'admin.totalRevenue': 'Umsatz',
+  'admin.plannerLabel': 'Wochenkalender',
+  'admin.plannerLegend': 'Legende',
+  'admin.plannerAddAt': 'Termin eintragen am {date} um {time}',
+  'admin.plannerAddHint': 'Freie Zeit anklicken, um einen Termin einzutragen.',
+  'admin.plannerDayFree': 'Noch frei',
+  'admin.plannerCount': '{count} Termine',
+  'admin.plannerCountOne': '1 Termin',
 }
 
 export const it: Messages = {
@@ -386,6 +507,25 @@ export const it: Messages = {
   'nav.admin': 'Admin',
   'nav.signOut': 'Esci',
   'nav.language': 'Lingua',
+  'nav.book': 'Prenota',
+  'nav.home': 'KIMM Hair, vai alla home',
+
+  'home.place': 'Parrucchiere a Merano',
+  'home.intro':
+    'Judith Lintner e il suo team tagliano, colorano e curano i capelli in Via Piave. Con tempo per i vostri desideri e prodotti delicati per capelli e cute.',
+  'home.book': 'Prenota online',
+  'home.call': 'Oppure chiamate: {phone}',
+  'home.servicesTitle': 'Servizi e prezzi',
+  'home.servicesHint': 'Scegliete un servizio per cercare subito un appuntamento.',
+  'home.servicesError': 'Impossibile caricare il listino. Chiamateci pure.',
+  'home.servicesEmpty': 'Stiamo aggiornando il listino. Chiamateci pure.',
+  'home.hoursTitle': 'Orari di apertura',
+  'home.hoursError': 'Impossibile caricare gli orari di apertura.',
+  'home.closed': 'chiuso',
+  'home.today': 'oggi',
+  'home.visitTitle': 'Come trovarci',
+  'home.directions': 'Apri il percorso in Google Maps',
+  'footer.vatId': 'P. IVA',
 
   'book.title': 'Prenota un appuntamento',
   'book.subtitle': 'Senza account — passo dopo passo fino all’orario desiderato.',
@@ -520,13 +660,9 @@ export const it: Messages = {
   'admin.loading': 'Caricamento…',
   'admin.signInRequired': 'Accesso richiesto.',
   'admin.forbidden': 'Area riservata agli amministratori del salone.',
-  'admin.day': 'Giorno',
-  'admin.week': 'Settimana',
   'admin.today': 'Oggi',
-  'admin.manualBooking': 'Appuntamento manuale',
   'admin.allReservations': 'Tutti gli appuntamenti',
   'admin.calendarLoading': 'Caricamento calendario',
-  'admin.anchorDate': 'Data di riferimento: {date}',
   'admin.detailTitle': 'Dettagli appuntamento',
   'admin.backToCalendar': 'Torna al calendario',
   'admin.detailLoading': 'Caricamento appuntamento',
@@ -559,14 +695,14 @@ export const it: Messages = {
   'admin.yes': 'Sì',
   'admin.no': 'No',
   'admin.minutes': '{minutes} min',
-  'admin.settingsSubtitle': 'Modalità di conferma e limiti di anticipo per il salone pilota.',
+  'admin.settingsSubtitle': 'Regole per le prenotazioni online e i contatti mostrati sul sito.',
   'admin.settingsLoading': 'Caricamento impostazioni',
   'admin.settingsError': 'Impossibile caricare le impostazioni.',
-  'admin.confirmationMode': 'Modalità di conferma: {mode}',
-  'admin.slotInterval': 'Intervallo slot: {minutes} minuti',
-  'admin.minAdvance': 'Anticipo minimo: {minutes} minuti',
-  'admin.maxAdvance': 'Anticipo massimo: {days} giorni',
-  'admin.pendingExpiration': 'Scadenza in attesa: {hours} ore',
+  'admin.confirmationMode': 'Nuove prenotazioni',
+  'admin.slotInterval': 'Intervallo degli orari di inizio',
+  'admin.minAdvance': 'Preavviso minimo',
+  'admin.maxAdvance': 'Prenotabile al massimo con',
+  'admin.pendingExpiration': 'Le richieste aperte scadono dopo',
   'admin.openingHours': 'Orari di apertura',
   'admin.openingHoursLoading': 'Caricamento…',
   'admin.openingHoursError': 'Impossibile caricare gli orari di apertura.',
@@ -575,6 +711,52 @@ export const it: Messages = {
   'admin.holidays': 'Festività',
   'admin.holidaysHint':
     'L’editor festività arriverà più avanti; le festività seed influenzano già la disponibilità.',
+  'admin.statPending': 'Richieste aperte',
+  'admin.pendingEmpty': 'Nessuna richiesta aperta.',
+  'admin.manageTitle': 'Gestione',
+  'admin.addReservation': 'Inserisci appuntamento',
+  'admin.bookingRulesTitle': 'Prenotazione online',
+  'admin.modeAutomatic': 'Conferma automatica',
+  'admin.modeAutomaticHint': 'Gli orari liberi vengono prenotati subito.',
+  'admin.modeManual': 'Confermo ogni richiesta',
+  'admin.modeManualHint': 'L’orario resta riservato finché non lo confermate o rifiutate.',
+  'admin.slotIntervalHint': 'Ogni quanti minuti può iniziare un appuntamento.',
+  'admin.minAdvanceHint': 'Con quanto anticipo minimo si può prenotare online.',
+  'admin.maxAdvanceHint': 'Fin dove il calendario di prenotazione mostra orari liberi.',
+  'admin.pendingExpirationHint': 'Vale solo se confermate voi le richieste.',
+  'admin.unitMinutes': 'minuti',
+  'admin.unitDays': 'giorni',
+  'admin.unitHours': 'ore',
+  'admin.salonDetailsTitle': 'Salone e contatti',
+  'admin.salonDetailsHint': 'Compare nella home e nel piè di pagina del sito.',
+  'admin.fieldName': 'Nome del salone',
+  'admin.fieldAddress': 'Indirizzo',
+  'admin.fieldPhone': 'Telefono',
+  'admin.fieldEmail': 'E-mail',
+  'admin.fieldVatId': 'P. IVA (facoltativa)',
+  'admin.save': 'Salva',
+  'admin.saved': 'Salvato.',
+  'admin.saveFailed': 'Salvataggio non riuscito: {message}',
+  'admin.rangeError': 'Sono ammessi numeri interi da {min} a {max}.',
+  'admin.requiredError': 'Campo obbligatorio.',
+  'admin.emailError': 'Inserite un indirizzo e-mail valido.',
+  'admin.tooLongError': 'Al massimo {max} caratteri.',
+  'admin.backToDashboard': 'Al calendario',
+  'admin.weekNumber': 'Settimana {week}',
+  'admin.prevWeek': 'Settimana precedente',
+  'admin.nextWeek': 'Settimana successiva',
+  'admin.thisWeek': 'Questa settimana',
+  'admin.weekTotals': 'Totale della settimana',
+  'admin.totalCount': 'Appuntamenti',
+  'admin.totalTime': 'Tempo prenotato',
+  'admin.totalRevenue': 'Fatturato',
+  'admin.plannerLabel': 'Calendario settimanale',
+  'admin.plannerLegend': 'Legenda',
+  'admin.plannerAddAt': 'Inserisci appuntamento {date} alle {time}',
+  'admin.plannerAddHint': 'Clicca su un orario libero per inserire un appuntamento.',
+  'admin.plannerDayFree': 'Ancora libero',
+  'admin.plannerCount': '{count} appuntamenti',
+  'admin.plannerCountOne': '1 appuntamento',
 }
 
 export const catalogs: Record<'de' | 'it', Messages> = { de, it }

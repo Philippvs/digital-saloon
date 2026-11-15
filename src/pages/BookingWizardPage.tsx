@@ -27,6 +27,7 @@ import { formatViennaDateTime, formatViennaTime } from '../data/dateFormat'
 import { bookingContactSchema } from '../data/phone'
 import type { ServiceWithId } from '../data/services'
 import { useLocale } from '../i18n'
+import { brand } from '../theme'
 
 export type BookingWizardPageProps = {
   services: ServiceWithId[] | undefined
@@ -144,7 +145,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   borderRadius: 2,
                   border: '1.5px solid',
                   borderColor: selected ? 'primary.main' : 'divider',
-                  bgcolor: selected ? 'rgba(27, 77, 62, 0.08)' : 'background.paper',
+                  bgcolor: selected ? brand.stone : 'background.paper',
                   p: 2,
                   font: 'inherit',
                   color: 'inherit',

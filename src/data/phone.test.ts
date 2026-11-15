@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import * as v from 'valibot'
 
-import { bookingContactSchema, normalizePhoneToE164 } from './phone'
+import { bookingContactSchema, normalizePhoneToE164, telHref } from './phone'
 
 describe('normalizePhoneToE164', () => {
   it('keeps valid E.164', () => {
@@ -42,5 +42,11 @@ describe('bookingContactSchema', () => {
         privacyAccepted: false,
       }),
     ).toThrow()
+  })
+})
+
+describe('telHref', () => {
+  it('strips spaces and punctuation but keeps the leading +', () => {
+    expect(telHref('+39 0473 449267')).toBe('tel:+390473449267')
   })
 })

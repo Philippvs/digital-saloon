@@ -22,6 +22,8 @@ export type AdminManualBookingPageProps = {
   dates: string[]
   selectedServiceId: string | null
   selectedDate: string | null
+  /** `HH:MM` picked in the week planner; preselects that slot when it is free. */
+  preferredTime: string | null
   slots: AvailableSlotDto[] | undefined
   slotsLoading: boolean
   isSubmitting: boolean
@@ -45,6 +47,7 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
   dates,
   selectedServiceId,
   selectedDate,
+  preferredTime,
   slots,
   slotsLoading,
   isSubmitting,
@@ -60,7 +63,11 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [internalNote, setInternalNote] = useState('')
-  const [startAt, setStartAt] = useState<string | null>(null)
+  const [pickedStartAt, setStartAt] = useState<string | null>(null)
+  const startAt =
+    pickedStartAt ??
+    slots?.find((slot) => formatViennaTime(slot.startAt, 'de-AT') === preferredTime)?.startAt ??
+    null
 
   return (
     <Stack spacing={3}>

@@ -4,8 +4,7 @@ import { selectServiceDateAndTime } from './bookingHelpers'
 
 test.describe('customer booking @smoke', () => {
   test('customer books without account and can cancel via manage link', async ({ page }) => {
-    await page.goto('/')
-    await expect(page).toHaveURL(/\/book/)
+    await page.goto('/book')
 
     await selectServiceDateAndTime(page)
 

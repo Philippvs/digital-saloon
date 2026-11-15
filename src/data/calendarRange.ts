@@ -33,6 +33,14 @@ export function rangeForView(
   }
 }
 
+/** Window for the reservations list: one week back, four weeks ahead. */
+export function listRange(todayYmd: string): { startIso: string; endIso: string } {
+  return {
+    startIso: `${addCalendarDays(todayYmd, -7)}T00:00:00.000Z`,
+    endIso: `${addCalendarDays(todayYmd, 29)}T00:00:00.000Z`,
+  }
+}
+
 export function shiftAnchor(view: CalendarView, anchorYmd: string, direction: number): string {
   return addCalendarDays(anchorYmd, view === 'day' ? direction : direction * 7)
 }

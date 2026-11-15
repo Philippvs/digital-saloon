@@ -8,7 +8,7 @@ export const queryRootVisibility = {
   availableSlots: 'public',
   managedReservation: 'public',
   bookingSettings: 'private',
-  openingHours: 'private',
+  openingHours: 'public',
   adminReservations: 'private',
   adminReservation: 'private',
   userProfile: 'private',

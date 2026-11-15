@@ -1,13 +1,15 @@
 import type * as React from 'react'
 import { useEffect } from 'react'
-import { Outlet, createRoute, useNavigate } from '@tanstack/react-router'
+import { Outlet, createRoute, redirect, useNavigate } from '@tanstack/react-router'
 import * as v from 'valibot'
 
 import { useAuth } from '../auth/AuthProvider'
-import { rangeForView, shiftAnchor, type CalendarView } from '../data/calendarRange'
-import { todayYmdInTimeZone } from '../data/calendarMath'
+import { dashboardRange, summarizeDashboard } from '../data/adminDashboard'
+import { listRange, startOfWeekYmd } from '../data/calendarRange'
+import { addCalendarDays, todayYmdInTimeZone } from '../data/calendarMath'
 import { upcomingViennaDates } from '../data/dateFormat'
 import { optionalSearchParam } from '../data/schemas'
+import { defaultWeekStartYmd, isoWeekNumber, planWeek, weekQueryRange } from '../data/weekPlanner'
 import { useAdminOps } from '../hooks/useAdminOps'
 import { useAdminReservation } from '../hooks/useAdminReservation'
 import { useAdminReservationActions, useAdminReservations } from '../hooks/useAdminReservations'
@@ -16,9 +18,10 @@ import { useAvailableSlots } from '../hooks/useAvailableSlots'
 import { useBookingSettings } from '../hooks/useBookingSettings'
 import { useOpeningHours } from '../hooks/useOpeningHours'
 import { useSalon } from '../hooks/useSalon'
+import { useSaveBookingSettings } from '../hooks/useSaveBookingSettings'
+import { useSaveSalonDetails } from '../hooks/useSaveSalonDetails'
 import { useUserProfile } from '../hooks/useUserProfile'
 import { useLocale } from '../i18n'
-import { AdminCalendarPage } from '../pages/admin/AdminCalendarPage'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
 import { AdminManualBookingPage } from '../pages/admin/AdminManualBookingPage'
 import { AdminPlaceholderPage } from '../pages/admin/AdminPlaceholderPage'
@@ -62,11 +65,61 @@ export const adminRoute = createRoute({
   component: AdminLayoutRoute,
 })
 
+const ymdSearchParam = optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/)))
+
+const adminIndexSearchSchema = v.object({
+  week: ymdSearchParam,
+})
+
 const AdminIndexRoute: React.FunctionComponent = () => {
   const salon = useSalon()
   const navigate = useNavigate()
+  const search = adminIndexRoute.useSearch()
   const ops = useAdminOps()
-  const { t } = useLocale()
+  const actions = useAdminReservationActions()
+  const openingHours = useOpeningHours(true)
+  const { t, intlLocale } = useLocale()
+  const timeZone = salon.data?.timezone ?? 'Europe/Vienna'
+  const now = new Date()
+  const today = todayYmdInTimeZone(timeZone, now)
+  const currentWeekStart = defaultWeekStartYmd(today, openingHours.data)
+  const weekStart = search.week ? startOfWeekYmd(search.week) : currentWeekStart
+
+  const weekRange = weekQueryRange(weekStart)
+  const weekReservations = useAdminReservations(weekRange.startIso, weekRange.endIso, true)
+  const plan =
+    weekReservations.data && !openingHours.isLoading
+      ? planWeek({
+          reservations: weekReservations.data,
+          weekStartYmd: weekStart,
+          openingHours: openingHours.data,
+          timeZone,
+          now,
+        })
+      : undefined
+
+  const upcomingRange = dashboardRange(today)
+  const upcoming = useAdminReservations(upcomingRange.startIso, upcomingRange.endIso, true)
+  const pending = upcoming.data
+    ? summarizeDashboard(upcoming.data, today, timeZone).pending
+    : undefined
+
+  const weekRangeLabel = new Intl.DateTimeFormat(intlLocale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).formatRange(
+    new Date(`${weekStart}T12:00:00.000Z`),
+    new Date(`${addCalendarDays(weekStart, 6)}T12:00:00.000Z`),
+  )
+
+  const goToWeek = (weekStartYmd: string) => {
+    void navigate({
+      to: '/admin',
+      search: { week: weekStartYmd === currentWeekStart ? undefined : weekStartYmd },
+    })
+  }
 
   const opsError =
     ops.processPending.error instanceof Error ? ops.processPending.error.message : null
@@ -80,12 +133,43 @@ const AdminIndexRoute: React.FunctionComponent = () => {
 
   return (
     <AdminHomePage
-      salonName={salon.data?.name ?? 'Salon'}
+      weekTitle={t('admin.weekNumber', { week: isoWeekNumber(weekStart) })}
+      weekRangeLabel={weekRangeLabel}
+      isCurrentWeek={weekStart === currentWeekStart}
+      plan={plan}
+      planLoading={weekReservations.isLoading || openingHours.isLoading}
+      planError={weekReservations.isError}
+      pending={pending}
+      confirmingReservationId={
+        actions.confirm.isPending ? (actions.confirm.variables ?? null) : null
+      }
+      confirmError={actions.confirm.error instanceof Error ? actions.confirm.error.message : null}
       opsBusy={ops.processPending.isPending}
       opsMessage={opsMessage}
       opsError={opsError}
-      onCalendarClick={() => {
-        void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
+      onPrevWeekClick={() => {
+        goToWeek(addCalendarDays(weekStart, -7))
+      }}
+      onNextWeekClick={() => {
+        goToWeek(addCalendarDays(weekStart, 7))
+      }}
+      onThisWeekClick={() => {
+        goToWeek(currentWeekStart)
+      }}
+      onSelectReservation={(reservationId) => {
+        void navigate({ to: '/admin/reservations/$reservationId', params: { reservationId } })
+      }}
+      onConfirmReservation={(reservationId) => {
+        actions.confirm.mutate(reservationId)
+      }}
+      onAddReservationClick={() => {
+        void navigate({ to: '/admin/manual' })
+      }}
+      onAddReservationAt={(dateYmd, startTime) => {
+        void navigate({ to: '/admin/manual', search: { date: dateYmd, time: startTime } })
+      }}
+      onReservationsClick={() => {
+        void navigate({ to: '/admin/reservations' })
       }}
       onServicesClick={() => {
         void navigate({ to: '/admin/services' })
@@ -103,73 +187,25 @@ const AdminIndexRoute: React.FunctionComponent = () => {
 export const adminIndexRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/',
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminIndexSearchSchema, search),
   component: AdminIndexRoute,
 })
 
 const calendarSearchSchema = v.object({
-  view: v.optional(v.picklist(['day', 'week'] as const), 'week'),
-  date: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
+  view: optionalSearchParam(v.string()),
+  date: ymdSearchParam,
 })
 
+/** The week planner on `/admin` replaced the separate calendar; keep old links working. */
 export const adminCalendarRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/calendar',
   validateSearch: (search: Record<string, unknown>) => v.parse(calendarSearchSchema, search),
-  component: function AdminCalendarRoute() {
-    const navigate = useNavigate()
-    const salon = useSalon()
-    const search = adminCalendarRoute.useSearch()
-    const view = (search.view ?? 'week') as CalendarView
-    const anchor = search.date ?? todayYmdInTimeZone(salon.data?.timezone ?? 'Europe/Vienna')
-    const range = rangeForView(view, anchor)
-    const reservations = useAdminReservations(range.startIso, range.endIso, true)
-
-    return (
-      <AdminCalendarPage
-        view={view}
-        anchorDateYmd={anchor}
-        rangeLabel={`${range.labelStart} – ${range.labelEnd}`}
-        reservations={reservations.data}
-        isLoading={reservations.isLoading}
-        isError={reservations.isError}
-        onViewChange={(next) => {
-          void navigate({ to: '/admin/calendar', search: { view: next, date: anchor } })
-        }}
-        onPrev={() => {
-          void navigate({
-            to: '/admin/calendar',
-            search: { view, date: shiftAnchor(view, anchor, -1) },
-          })
-        }}
-        onNext={() => {
-          void navigate({
-            to: '/admin/calendar',
-            search: { view, date: shiftAnchor(view, anchor, 1) },
-          })
-        }}
-        onToday={() => {
-          void navigate({
-            to: '/admin/calendar',
-            search: {
-              view,
-              date: todayYmdInTimeZone(salon.data?.timezone ?? 'Europe/Vienna'),
-            },
-          })
-        }}
-        onSelectReservation={(reservationId) => {
-          void navigate({
-            to: '/admin/reservations/$reservationId',
-            params: { reservationId },
-          })
-        }}
-        onManualClick={() => {
-          void navigate({ to: '/admin/manual' })
-        }}
-        onReservationsClick={() => {
-          void navigate({ to: '/admin/reservations' })
-        }}
-      />
-    )
+  beforeLoad: ({ search }) => {
+    throw redirect({
+      to: '/admin',
+      search: { week: search.date ? startOfWeekYmd(search.date) : undefined },
+    })
   },
 })
 
@@ -180,11 +216,8 @@ export const adminReservationsRoute = createRoute({
     const navigate = useNavigate()
     const salon = useSalon()
     const today = todayYmdInTimeZone(salon.data?.timezone ?? 'Europe/Vienna')
-    const range = rangeForView('week', today)
-    // Show a wider window for the list: 7 days back, 21 forward via week math
-    const startIso = `${shiftAnchor('week', today, -1)}T00:00:00.000Z`
-    const endIso = range.endIso
-    const reservations = useAdminReservations(startIso, endIso, true)
+    const range = listRange(today)
+    const reservations = useAdminReservations(range.startIso, range.endIso, true)
 
     return (
       <AdminReservationsPage
@@ -198,7 +231,7 @@ export const adminReservationsRoute = createRoute({
           })
         }}
         onCalendarClick={() => {
-          void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
+          void navigate({ to: '/admin', search: { week: undefined } })
         }}
       />
     )
@@ -234,7 +267,7 @@ export const adminReservationDetailRoute = createRoute({
           actions.complete.isPending
         }
         onBackClick={() => {
-          void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
+          void navigate({ to: '/admin', search: { week: undefined } })
         }}
         onConfirm={() => {
           actions.confirm.mutate(reservationId)
@@ -259,7 +292,8 @@ export const adminReservationDetailRoute = createRoute({
 
 const manualSearchSchema = v.object({
   serviceId: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
-  date: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
+  date: ymdSearchParam,
+  time: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/))),
 })
 
 export const adminManualRoute = createRoute({
@@ -287,6 +321,7 @@ export const adminManualRoute = createRoute({
         dates={dates}
         selectedServiceId={selectedServiceId}
         selectedDate={selectedDate}
+        preferredTime={search.time ?? null}
         slots={slots.data}
         slotsLoading={slots.isLoading}
         isSubmitting={actions.createManual.isPending}
@@ -298,12 +333,12 @@ export const adminManualRoute = createRoute({
             : null
         }
         onBackClick={() => {
-          void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
+          void navigate({ to: '/admin', search: { week: undefined } })
         }}
         onServiceChange={(serviceId) => {
           void navigate({
             to: '/admin/manual',
-            search: { serviceId, date: selectedDate ?? undefined },
+            search: { serviceId, date: selectedDate ?? undefined, time: search.time },
           })
         }}
         onDateChange={(dateYmd) => {
@@ -397,12 +432,40 @@ export const adminSettingsRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/settings',
   component: function AdminSettingsRoute() {
+    const navigate = useNavigate()
     const settings = useBookingSettings(true)
+    const salon = useSalon()
+    const saveSettings = useSaveBookingSettings()
+    const saveSalon = useSaveSalonDetails()
+    const errorText = (error: unknown): string | null =>
+      error instanceof Error ? error.message : error ? String(error) : null
+
     return (
       <AdminSettingsPage
         settings={settings.data}
-        isLoading={settings.isLoading}
-        isError={settings.isError}
+        settingsLoading={settings.isLoading}
+        settingsError={settings.isError}
+        settingsSave={{
+          saving: saveSettings.isPending,
+          saved: saveSettings.isSuccess,
+          error: errorText(saveSettings.error),
+        }}
+        onSaveSettings={(next) => {
+          saveSettings.mutate(next)
+        }}
+        salon={salon.data}
+        salonLoading={salon.isLoading}
+        salonSave={{
+          saving: saveSalon.isPending,
+          saved: saveSalon.isSuccess,
+          error: errorText(saveSalon.error),
+        }}
+        onSaveSalon={(details) => {
+          saveSalon.mutate(details)
+        }}
+        onBackClick={() => {
+          void navigate({ to: '/admin' })
+        }}
       />
     )
   },

@@ -26,13 +26,58 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    function isBoundedString(value, maxLength) {
+      return value is string && value.size() >= 1 && value.size() <= maxLength;
+    }
+
+    function isIntInRange(value, min, max) {
+      return value is int && value >= min && value <= max;
+    }
+
+    function isValidSalon(data) {
+      return data.keys().hasOnly(['name', 'address', 'phone', 'email', 'timezone', 'vatId'])
+        && data.keys().hasAll(['name', 'address', 'phone', 'email', 'timezone'])
+        && isBoundedString(data.name, 120)
+        && isBoundedString(data.address, 240)
+        && isBoundedString(data.phone, 40)
+        && isBoundedString(data.email, 254)
+        && isBoundedString(data.timezone, 64)
+        && (!('vatId' in data) || isBoundedString(data.vatId, 40));
+    }
+
+    function isValidBookingSettings(data) {
+      return data.keys().hasOnly([
+          'confirmationMode',
+          'slotIntervalMinutes',
+          'minAdvanceBookingMinutes',
+          'maxAdvanceBookingDays',
+          'pendingExpirationHours'
+        ])
+        && data.keys().hasAll([
+          'confirmationMode',
+          'slotIntervalMinutes',
+          'minAdvanceBookingMinutes',
+          'maxAdvanceBookingDays',
+          'pendingExpirationHours'
+        ])
+        && data.confirmationMode in ['AUTOMATIC', 'MANUAL']
+        && isIntInRange(data.slotIntervalMinutes, 5, 60)
+        && isIntInRange(data.minAdvanceBookingMinutes, 0, 10080)
+        && isIntInRange(data.maxAdvanceBookingDays, 1, 365)
+        && isIntInRange(data.pendingExpirationHours, 1, 168);
+    }
+
     match /salons/{salonId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && isValidSalon(request.resource.data)
+        && (resource == null || request.resource.data.timezone == resource.data.timezone);
+      allow delete: if isAdmin();
 
       match /settings/{docId} {
         allow read: if isAdmin();
-        allow write: if isAdmin();
+        allow create, update: if isAdmin()
+          && (docId != 'booking' || isValidBookingSettings(request.resource.data));
+        allow delete: if isAdmin();
       }
 
       match /services/{serviceId} {
@@ -41,7 +86,7 @@ service cloud.firestore {
       }
 
       match /openingHours/{weekday} {
-        allow read: if isAdmin();
+        allow read: if true;
         allow write: if isAdmin();
       }
 

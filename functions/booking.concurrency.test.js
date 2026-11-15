@@ -35,9 +35,10 @@ test('concurrent createReservationTransactional: exactly one succeeds', async (t
   const config = salonSeedConfig()
   await seedSalonData(db, config)
 
-  // Unique Tuesday slot per run so leftover locks from prior runs do not collide.
+  // Unique Thursday slot per run so leftover locks from prior runs do not collide.
+  // Thursday is open 08:00–18:00 without a lunch break in the seeded hours.
   const slotIndex = Date.now() % 16
-  const startAt = zonedLocalToUtc(2027, 2, 2, 10, slotIndex * 15, 'Europe/Vienna')
+  const startAt = zonedLocalToUtc(2027, 2, 4, 10, slotIndex * 15, 'Europe/Vienna')
 
   const results = await Promise.all(
     Array.from({ length: 5 }, (_, index) =>

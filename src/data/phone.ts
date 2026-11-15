@@ -60,3 +60,8 @@ export const bookingContactSchema = v.object({
 })
 
 export type BookingContact = v.InferOutput<typeof bookingContactSchema>
+
+/** `tel:` link for a displayed phone number such as `+39 0473 449267`. */
+export function telHref(phone: string): string {
+  return `tel:${phone.replace(/[^\d+]/g, '')}`
+}
