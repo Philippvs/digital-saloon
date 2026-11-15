@@ -3,6 +3,8 @@ import { Alert, Box, Button, CircularProgress, Paper, Stack, Typography } from '
 
 import type { AvailableSlotDto, PublicReservation } from '../data/bookingApi'
 import { formatViennaDateTime, formatViennaTime } from '../data/dateFormat'
+import { useLocale } from '../i18n'
+import type { MessageKey } from '../i18n'
 
 export type ManageReservationPageProps = {
   reservation: PublicReservation | undefined
@@ -20,6 +22,10 @@ export type ManageReservationPageProps = {
   onHomeClick: () => void
 }
 
+function statusLabel(status: string, t: (key: MessageKey) => string): string {
+  return t(`status.${status}` as MessageKey)
+}
+
 export const ManageReservationPage: React.FunctionComponent<ManageReservationPageProps> = ({
   reservation,
   isLoading,
@@ -35,29 +41,32 @@ export const ManageReservationPage: React.FunctionComponent<ManageReservationPag
   onReschedule,
   onHomeClick,
 }) => {
+  const { t, intlLocale } = useLocale()
   const canChange = reservation?.status === 'PENDING' || reservation?.status === 'CONFIRMED'
 
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          Termin verwalten
+          {t('manage.title')}
         </Typography>
-        <Typography color="text.secondary">Persönlicher Link — kein Login erforderlich.</Typography>
+        <Typography color="text.secondary">{t('manage.subtitle')}</Typography>
       </Paper>
 
-      {isLoading ? <CircularProgress aria-label="Termin laden" /> : null}
-      {isError ? <Alert severity="error">Termin nicht gefunden oder Link ungültig.</Alert> : null}
+      {isLoading ? <CircularProgress aria-label={t('manage.loading')} /> : null}
+      {isError ? <Alert severity="error">{t('manage.notFound')}</Alert> : null}
 
       {reservation ? (
         <Paper sx={{ p: 3 }}>
           <Stack spacing={1}>
             <Typography sx={{ fontWeight: 600 }}>{reservation.serviceName}</Typography>
-            <Typography>{formatViennaDateTime(reservation.startAt)}</Typography>
+            <Typography>{formatViennaDateTime(reservation.startAt, intlLocale)}</Typography>
             <Typography>
               {reservation.firstName} {reservation.lastName} · {reservation.phone}
             </Typography>
-            <Typography>Status: {reservation.status}</Typography>
+            <Typography>
+              {t('manage.status', { status: statusLabel(reservation.status, t) })}
+            </Typography>
           </Stack>
 
           {actionError ? (
@@ -73,7 +82,7 @@ export const ManageReservationPage: React.FunctionComponent<ManageReservationPag
                 onClick={onToggleReschedule}
                 disabled={cancelPending || reschedulePending}
               >
-                {showReschedule ? 'Abbrechen' : 'Umbuchen'}
+                {showReschedule ? t('manage.cancelReschedule') : t('manage.reschedule')}
               </Button>
               <Button
                 color="error"
@@ -81,12 +90,12 @@ export const ManageReservationPage: React.FunctionComponent<ManageReservationPag
                 onClick={onCancel}
                 disabled={cancelPending || reschedulePending}
               >
-                {cancelPending ? 'Wird storniert…' : 'Stornieren'}
+                {cancelPending ? t('manage.cancelling') : t('manage.cancel')}
               </Button>
             </Stack>
           ) : (
             <Alert severity="info" sx={{ mt: 2 }}>
-              Dieser Termin kann nicht mehr geändert werden.
+              {t('manage.immutable')}
             </Alert>
           )}
         </Paper>
@@ -95,9 +104,9 @@ export const ManageReservationPage: React.FunctionComponent<ManageReservationPag
       {showReschedule && canChange ? (
         <Paper sx={{ p: 3 }}>
           <Typography variant="h2" sx={{ fontSize: '1.2rem', mb: 2 }}>
-            Neue Uhrzeit wählen
+            {t('manage.pickTime')}
           </Typography>
-          {rescheduleLoading ? <CircularProgress aria-label="Slots laden" /> : null}
+          {rescheduleLoading ? <CircularProgress aria-label={t('manage.slotsLoading')} /> : null}
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {rescheduleSlots?.map((slot) => (
               <Button
@@ -106,17 +115,17 @@ export const ManageReservationPage: React.FunctionComponent<ManageReservationPag
                 disabled={reschedulePending}
                 onClick={() => onReschedule(slot.startAt)}
               >
-                {formatViennaTime(slot.startAt)}
+                {formatViennaTime(slot.startAt, intlLocale)}
               </Button>
             ))}
           </Box>
           {rescheduleSlots && rescheduleSlots.length === 0 ? (
-            <Alert severity="info">Keine Alternativen in den nächsten Tagen.</Alert>
+            <Alert severity="info">{t('manage.noAlternatives')}</Alert>
           ) : null}
         </Paper>
       ) : null}
 
-      <Button onClick={onHomeClick}>Zur Startseite</Button>
+      <Button onClick={onHomeClick}>{t('manage.home')}</Button>
     </Stack>
   )
 }

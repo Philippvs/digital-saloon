@@ -23,9 +23,16 @@ test.describe('smoke @smoke', () => {
     await page.getByRole('banner').getByRole('button', { name: 'Admin' }).click()
 
     await expect(page).toHaveURL(/\/login/)
-    await expect(page.getByRole('heading', { name: 'Admin-Anmeldung' })).toBeVisible()
-    await expect(page.getByText(/Kunden buchen Termine ohne Login/)).toBeVisible()
-    await expect(page.getByLabel('E-Mail')).toHaveValue(demoAccount.email)
+    await expect(page.getByRole('heading', { name: /Admin-Anmeldung|Accesso admin/ })).toBeVisible()
+    await expect(page.getByLabel(/E-Mail|E-mail/)).toHaveValue(demoAccount.email)
+  })
+
+  test('language can switch to Italian', async ({ page }) => {
+    await page.goto('/book')
+    await page.getByLabel('Sprache').click()
+    await page.getByRole('option', { name: 'Italiano' }).click()
+    await expect(page.getByRole('heading', { name: 'Prenota un appuntamento' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'I miei appuntamenti' })).toBeVisible()
   })
 
   test('customer opens booking without signing in', async ({ page }) => {

@@ -2,6 +2,7 @@ import type * as React from 'react'
 import { Alert, Button, Paper, Stack, Typography } from '@mui/material'
 
 import { formatViennaDateTime } from '../data/dateFormat'
+import { useLocale } from '../i18n'
 
 export type BookingConfirmedPageProps = {
   status: string
@@ -30,34 +31,30 @@ export const BookingConfirmedPage: React.FunctionComponent<BookingConfirmedPageP
   onMyBookingsClick,
   onHomeClick,
 }) => {
+  const { t, intlLocale } = useLocale()
   const pending = status === 'PENDING'
 
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          {pending ? 'Anfrage eingegangen' : 'Termin bestätigt'}
+          {pending ? t('confirmed.pendingTitle') : t('confirmed.confirmedTitle')}
         </Typography>
         <Typography color="text.secondary">
-          {pending
-            ? 'Der Salon prüft Ihre Anfrage. Der Zeitslot ist vorerst reserviert.'
-            : 'Ihr Termin ist gebucht.'}
+          {pending ? t('confirmed.pendingBody') : t('confirmed.confirmedBody')}
         </Typography>
         {serviceName && startAt ? (
           <Typography sx={{ mt: 2 }}>
-            {serviceName} · {formatViennaDateTime(startAt)}
+            {serviceName} · {formatViennaDateTime(startAt, intlLocale)}
           </Typography>
         ) : null}
       </Paper>
 
-      <Alert severity="warning">
-        Speichern Sie diesen persönlichen Link. Ohne Kundenkonto ist er der einzige Zugang zum
-        Termin. Er wurde auf diesem Gerät unter „Meine Termine“ hinterlegt.
-      </Alert>
+      <Alert severity="warning">{t('confirmed.saveWarning')}</Alert>
 
       <Paper sx={{ p: 3 }}>
         <Typography variant="h2" sx={{ fontSize: '1.15rem', mb: 1 }}>
-          Ihr Verwaltungs-Link
+          {t('confirmed.linkHeading')}
         </Typography>
         <Typography
           variant="body2"
@@ -72,21 +69,21 @@ export const BookingConfirmedPage: React.FunctionComponent<BookingConfirmedPageP
         ) : null}
         <Stack spacing={1}>
           <Button variant="contained" onClick={onManageClick}>
-            Termin verwalten
+            {t('confirmed.manage')}
           </Button>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
             <Button variant="outlined" onClick={onCopyLink}>
-              Link kopieren
+              {t('confirmed.copy')}
             </Button>
             <Button variant="outlined" onClick={onShareLink}>
-              Teilen
+              {t('confirmed.share')}
             </Button>
             <Button variant="outlined" onClick={onMailtoLink}>
-              Per E-Mail senden
+              {t('confirmed.mailto')}
             </Button>
           </Stack>
-          <Button onClick={onMyBookingsClick}>Meine Termine</Button>
-          <Button onClick={onHomeClick}>Zur Startseite</Button>
+          <Button onClick={onMyBookingsClick}>{t('confirmed.myBookings')}</Button>
+          <Button onClick={onHomeClick}>{t('confirmed.home')}</Button>
         </Stack>
       </Paper>
     </Stack>

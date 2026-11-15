@@ -2,8 +2,10 @@ import type * as React from 'react'
 import { Alert, Button, Chip, CircularProgress, Paper, Stack, Typography } from '@mui/material'
 
 import { formatViennaDateTime } from '../../data/dateFormat'
-import { reservationStatusColor, reservationStatusLabel } from '../../data/reservationStatus'
+import { reservationStatusColor } from '../../data/reservationStatus'
 import type { ReservationWithId } from '../../data/reservations'
+import { useLocale } from '../../i18n'
+import type { MessageKey } from '../../i18n'
 
 export type AdminReservationDetailPageProps = {
   reservation: ReservationWithId | undefined
@@ -30,17 +32,18 @@ export const AdminReservationDetailPage: React.FunctionComponent<
   onCancel,
   onComplete,
 }) => {
+  const { t, intlLocale } = useLocale()
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          Termin-Details
+          {t('admin.detailTitle')}
         </Typography>
-        <Button onClick={onBackClick}>Zurück zum Kalender</Button>
+        <Button onClick={onBackClick}>{t('admin.backToCalendar')}</Button>
       </Paper>
 
-      {isLoading ? <CircularProgress aria-label="Termin laden" /> : null}
-      {!isLoading && !reservation ? <Alert severity="error">Termin nicht gefunden.</Alert> : null}
+      {isLoading ? <CircularProgress aria-label={t('admin.detailLoading')} /> : null}
+      {!isLoading && !reservation ? <Alert severity="error">{t('admin.notFound')}</Alert> : null}
 
       {reservation ? (
         <Paper sx={{ p: 3 }}>
@@ -49,20 +52,22 @@ export const AdminReservationDetailPage: React.FunctionComponent<
               size="small"
               sx={{ alignSelf: 'flex-start' }}
               color={reservationStatusColor[reservation.status] ?? 'default'}
-              label={reservationStatusLabel[reservation.status] ?? reservation.status}
+              label={t(`status.${reservation.status}` as MessageKey)}
             />
             <Typography sx={{ fontWeight: 600 }}>{reservation.serviceName}</Typography>
-            <Typography>{formatViennaDateTime(reservation.startAt)}</Typography>
+            <Typography>{formatViennaDateTime(reservation.startAt, intlLocale)}</Typography>
             <Typography>
               {reservation.firstName} {reservation.lastName}
             </Typography>
             <Typography>{reservation.phone}</Typography>
             {reservation.email ? <Typography>{reservation.email}</Typography> : null}
             <Typography variant="body2" color="text.secondary">
-              Quelle: {reservation.source}
+              {t('admin.source', { source: reservation.source })}
             </Typography>
             {reservation.internalNote ? (
-              <Typography variant="body2">Notiz: {reservation.internalNote}</Typography>
+              <Typography variant="body2">
+                {t('admin.note', { note: reservation.internalNote })}
+              </Typography>
             ) : null}
           </Stack>
 
@@ -76,21 +81,21 @@ export const AdminReservationDetailPage: React.FunctionComponent<
             {reservation.status === 'PENDING' ? (
               <>
                 <Button variant="contained" disabled={busy} onClick={onConfirm}>
-                  Bestätigen
+                  {t('admin.confirm')}
                 </Button>
                 <Button color="error" variant="outlined" disabled={busy} onClick={onDecline}>
-                  Ablehnen
+                  {t('admin.decline')}
                 </Button>
               </>
             ) : null}
             {reservation.status === 'CONFIRMED' ? (
               <Button variant="contained" disabled={busy} onClick={onComplete}>
-                Als erledigt markieren
+                {t('admin.complete')}
               </Button>
             ) : null}
             {reservation.status === 'PENDING' || reservation.status === 'CONFIRMED' ? (
               <Button color="error" disabled={busy} onClick={onCancel}>
-                Stornieren
+                {t('admin.cancel')}
               </Button>
             ) : null}
           </Stack>

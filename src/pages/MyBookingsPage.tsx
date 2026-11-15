@@ -3,7 +3,8 @@ import { Alert, Button, CircularProgress, Paper, Stack, Typography } from '@mui/
 
 import type { PublicReservation } from '../data/bookingApi'
 import { formatViennaDateTime } from '../data/dateFormat'
-import { reservationStatusLabel } from '../data/reservationStatus'
+import { useLocale } from '../i18n'
+import type { MessageKey } from '../i18n'
 
 export type MyBookingsPageProps = {
   isEmpty: boolean
@@ -20,33 +21,28 @@ export const MyBookingsPage: React.FunctionComponent<MyBookingsPageProps> = ({
   onHomeClick,
   children,
 }) => {
+  const { t } = useLocale()
+
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          Meine Termine
+          {t('myBookings.title')}
         </Typography>
-        <Typography color="text.secondary">
-          Auf diesem Gerät gespeicherte Verwaltungs-Links. Details werden sicher vom Server geladen.
-        </Typography>
+        <Typography color="text.secondary">{t('myBookings.subtitle')}</Typography>
       </Paper>
 
       {actionHint ? <Alert severity="success">{actionHint}</Alert> : null}
 
-      {isEmpty ? (
-        <Alert severity="info">
-          Noch keine Termine auf diesem Gerät. Nach einer Buchung erscheint der Link hier
-          automatisch.
-        </Alert>
-      ) : null}
+      {isEmpty ? <Alert severity="info">{t('myBookings.empty')}</Alert> : null}
 
       {children}
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
         <Button variant="contained" onClick={onBookClick}>
-          Neuen Termin buchen
+          {t('myBookings.bookNew')}
         </Button>
-        <Button onClick={onHomeClick}>Zur Startseite</Button>
+        <Button onClick={onHomeClick}>{t('myBookings.home')}</Button>
       </Stack>
     </Stack>
   )
@@ -63,6 +59,11 @@ export type SavedBookingCardProps = {
   onMailtoLink: () => void
 }
 
+function statusLabel(status: string, t: (key: MessageKey) => string): string {
+  const key = `status.${status}` as MessageKey
+  return t(key)
+}
+
 export const SavedBookingCard: React.FunctionComponent<SavedBookingCardProps> = ({
   reservation,
   isLoading,
@@ -73,41 +74,43 @@ export const SavedBookingCard: React.FunctionComponent<SavedBookingCardProps> = 
   onShareLink,
   onMailtoLink,
 }) => {
+  const { t, intlLocale } = useLocale()
+
   return (
     <Paper sx={{ p: 3 }}>
-      {isLoading ? <CircularProgress aria-label="Termin laden" size={28} /> : null}
+      {isLoading ? <CircularProgress aria-label={t('myBookings.loading')} size={28} /> : null}
       {isError ? (
         <Alert severity="warning" sx={{ mb: 2 }}>
-          Link ungültig oder Termin nicht mehr verfügbar (abgelaufen, storniert oder gelöscht).
+          {t('myBookings.invalid')}
         </Alert>
       ) : null}
       {reservation ? (
         <Stack spacing={0.5} sx={{ mb: 2 }}>
           <Typography sx={{ fontWeight: 600 }}>{reservation.serviceName}</Typography>
-          <Typography>{formatViennaDateTime(reservation.startAt)}</Typography>
+          <Typography>{formatViennaDateTime(reservation.startAt, intlLocale)}</Typography>
           <Typography variant="body2" color="text.secondary">
-            Status: {reservationStatusLabel[reservation.status] ?? reservation.status}
+            {t('myBookings.status', { status: statusLabel(reservation.status, t) })}
           </Typography>
         </Stack>
       ) : null}
 
       <Stack spacing={1}>
         <Button variant="contained" onClick={onOpenManage}>
-          Termin öffnen
+          {t('myBookings.open')}
         </Button>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
           <Button variant="outlined" onClick={onCopyLink}>
-            Link kopieren
+            {t('myBookings.copy')}
           </Button>
           <Button variant="outlined" onClick={onShareLink}>
-            Teilen
+            {t('myBookings.share')}
           </Button>
           <Button variant="outlined" onClick={onMailtoLink}>
-            Per E-Mail senden
+            {t('myBookings.mailto')}
           </Button>
         </Stack>
         <Button color="inherit" onClick={onRemove}>
-          Von diesem Gerät entfernen
+          {t('myBookings.remove')}
         </Button>
       </Stack>
     </Paper>

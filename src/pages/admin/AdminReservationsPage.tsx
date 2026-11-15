@@ -15,8 +15,10 @@ import {
 } from '@mui/material'
 
 import { formatViennaDateTime } from '../../data/dateFormat'
-import { reservationStatusColor, reservationStatusLabel } from '../../data/reservationStatus'
+import { reservationStatusColor } from '../../data/reservationStatus'
 import type { ReservationWithId } from '../../data/reservations'
+import { useLocale } from '../../i18n'
+import type { MessageKey } from '../../i18n'
 
 export type AdminReservationsPageProps = {
   reservations: ReservationWithId[] | undefined
@@ -33,20 +35,21 @@ export const AdminReservationsPage: React.FunctionComponent<AdminReservationsPag
   onSelectReservation,
   onCalendarClick,
 }) => {
+  const { t, intlLocale } = useLocale()
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          Termine
+          {t('admin.reservations')}
         </Typography>
-        <Button onClick={onCalendarClick}>Zum Kalender</Button>
+        <Button onClick={onCalendarClick}>{t('admin.toCalendar')}</Button>
       </Paper>
 
-      {isLoading ? <CircularProgress aria-label="Termine laden" /> : null}
-      {isError ? <Alert severity="error">Termine konnten nicht geladen werden.</Alert> : null}
+      {isLoading ? <CircularProgress aria-label={t('admin.loading')} /> : null}
+      {isError ? <Alert severity="error">{t('admin.reservationsError')}</Alert> : null}
 
       {reservations && reservations.length === 0 ? (
-        <Alert severity="info">Keine Termine im Zeitraum.</Alert>
+        <Alert severity="info">{t('admin.noReservations')}</Alert>
       ) : null}
 
       {reservations && reservations.length > 0 ? (
@@ -54,17 +57,17 @@ export const AdminReservationsPage: React.FunctionComponent<AdminReservationsPag
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Zeit</TableCell>
-                <TableCell>Kunde</TableCell>
-                <TableCell>Leistung</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>{t('admin.time')}</TableCell>
+                <TableCell>{t('admin.customer')}</TableCell>
+                <TableCell>{t('admin.services')}</TableCell>
+                <TableCell>{t('admin.status')}</TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
               {reservations.map((reservation) => (
                 <TableRow key={reservation.id} hover>
-                  <TableCell>{formatViennaDateTime(reservation.startAt)}</TableCell>
+                  <TableCell>{formatViennaDateTime(reservation.startAt, intlLocale)}</TableCell>
                   <TableCell>
                     {reservation.firstName} {reservation.lastName}
                   </TableCell>
@@ -73,12 +76,12 @@ export const AdminReservationsPage: React.FunctionComponent<AdminReservationsPag
                     <Chip
                       size="small"
                       color={reservationStatusColor[reservation.status] ?? 'default'}
-                      label={reservationStatusLabel[reservation.status] ?? reservation.status}
+                      label={t(`status.${reservation.status}` as MessageKey)}
                     />
                   </TableCell>
                   <TableCell>
                     <Button size="small" onClick={() => onSelectReservation(reservation.id)}>
-                      Öffnen
+                      {t('admin.open')}
                     </Button>
                   </TableCell>
                 </TableRow>

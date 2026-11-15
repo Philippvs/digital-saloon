@@ -1,7 +1,7 @@
 const vienna = 'Europe/Vienna'
 
-export function formatViennaDateTime(iso: string): string {
-  return new Intl.DateTimeFormat('de-AT', {
+export function formatViennaDateTime(iso: string, locale = 'de-AT'): string {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: vienna,
     weekday: 'short',
     day: '2-digit',
@@ -12,17 +12,17 @@ export function formatViennaDateTime(iso: string): string {
   }).format(new Date(iso))
 }
 
-export function formatViennaTime(iso: string): string {
-  return new Intl.DateTimeFormat('de-AT', {
+export function formatViennaTime(iso: string, locale = 'de-AT'): string {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: vienna,
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(iso))
 }
 
-export function formatViennaDate(isoOrYmd: string): string {
+export function formatViennaDate(isoOrYmd: string, locale = 'de-AT'): string {
   const date = isoOrYmd.includes('T') ? new Date(isoOrYmd) : new Date(`${isoOrYmd}T12:00:00.000Z`)
-  return new Intl.DateTimeFormat('de-AT', {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: vienna,
     weekday: 'short',
     day: '2-digit',

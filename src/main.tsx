@@ -9,6 +9,7 @@ import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
 import { AuthProvider } from './auth/AuthProvider'
+import { LocaleProvider } from './i18n'
 import { router } from './router'
 import { theme } from './theme'
 
@@ -31,9 +32,11 @@ createRoot(rootElement).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
+        <LocaleProvider>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </LocaleProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </StrictMode>,

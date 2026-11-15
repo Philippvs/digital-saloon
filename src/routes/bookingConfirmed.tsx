@@ -5,6 +5,7 @@ import * as v from 'valibot'
 import { absoluteManagementUrl } from '../data/savedBookings'
 import { mailtoShareHref, shareOrCopyLink } from '../data/shareLink'
 import { useSavedBookings } from '../hooks/useSavedBookings'
+import { useLocale } from '../i18n'
 import { BookingConfirmedPage } from '../pages/BookingConfirmedPage'
 import { rootRoute } from './root'
 
@@ -24,6 +25,7 @@ export const bookingConfirmedRoute = createRoute({
     const navigate = useNavigate()
     const search = bookingConfirmedRoute.useSearch()
     const saved = useSavedBookings()
+    const { t } = useLocale()
     const [shareHint, setShareHint] = useState<string | null>(null)
 
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
@@ -37,8 +39,8 @@ export const bookingConfirmedRoute = createRoute({
 
     const shareInput = {
       url: managementUrl,
-      title: 'Mein Salon-Termin',
-      text: 'Hier ist mein persönlicher Link zum Verwalten des Termins. Bitte aufbewahren.',
+      title: t('confirmed.shareTitle'),
+      text: t('confirmed.shareText'),
     }
 
     return (
@@ -56,13 +58,13 @@ export const bookingConfirmedRoute = createRoute({
             share: undefined,
             canShare: () => false,
           }).then((result) => {
-            setShareHint(result === 'copied' ? 'Link in die Zwischenablage kopiert.' : null)
+            setShareHint(result === 'copied' ? t('confirmed.copied') : null)
           })
         }}
         onShareLink={() => {
           void shareOrCopyLink(shareInput).then((result) => {
-            if (result === 'shared') setShareHint('Link geteilt.')
-            else if (result === 'copied') setShareHint('Link in die Zwischenablage kopiert.')
+            if (result === 'shared') setShareHint(t('confirmed.shared'))
+            else if (result === 'copied') setShareHint(t('confirmed.copied'))
             else setShareHint(null)
           })
         }}

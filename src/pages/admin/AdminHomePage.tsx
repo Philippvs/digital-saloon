@@ -1,6 +1,8 @@
 import type * as React from 'react'
 import { Alert, Button, Paper, Stack, Typography } from '@mui/material'
 
+import { useLocale } from '../../i18n'
+
 export type AdminHomePageProps = {
   salonName: string
   opsBusy: boolean
@@ -22,35 +24,37 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
   onSettingsClick,
   onProcessPendingClick,
 }) => {
+  const { t } = useLocale()
+
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          Admin
+          {t('admin.title')}
         </Typography>
         <Typography color="text.secondary">{salonName}</Typography>
       </Paper>
       <Stack spacing={1}>
         <Button variant="contained" onClick={onCalendarClick}>
-          Kalender
+          {t('admin.calendar')}
         </Button>
         <Button variant="outlined" onClick={onServicesClick}>
-          Leistungen
+          {t('admin.services')}
         </Button>
         <Button variant="outlined" onClick={onSettingsClick}>
-          Einstellungen
+          {t('admin.settings')}
         </Button>
       </Stack>
 
       <Paper sx={{ p: 3 }}>
         <Typography variant="h2" gutterBottom sx={{ fontSize: '1.25rem' }}>
-          Wartung
+          {t('admin.maintenance')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 2 }}>
-          Abgelaufene ausstehende Anfragen manuell prüfen (auch per Zeitplan).
+          {t('admin.maintenanceHint')}
         </Typography>
         <Button variant="outlined" disabled={opsBusy} onClick={onProcessPendingClick}>
-          Ausstehende Anfragen ablaufen lassen
+          {t('admin.expirePending')}
         </Button>
         {opsMessage ? (
           <Alert severity="success" sx={{ mt: 2 }}>

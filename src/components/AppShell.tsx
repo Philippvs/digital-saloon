@@ -1,5 +1,17 @@
 import type * as React from 'react'
-import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  MenuItem,
+  Select,
+  Toolbar,
+  Typography,
+} from '@mui/material'
+
+import { useLocale } from '../i18n'
+import { localeLabels, locales, type Locale } from '../i18n'
 
 export type AppShellProps = {
   title: string
@@ -22,6 +34,8 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   onSignOutClick,
   children,
 }) => {
+  const { locale, setLocale, t } = useLocale()
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="static" elevation={0} color="primary">
@@ -42,8 +56,28 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
           >
             {title}
           </Typography>
+          <Select
+            size="small"
+            value={locale}
+            aria-label={t('nav.language')}
+            onChange={(event) => {
+              setLocale(event.target.value as Locale)
+            }}
+            sx={{
+              color: 'inherit',
+              '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.35)' },
+              '.MuiSvgIcon-root': { color: 'inherit' },
+              minWidth: 110,
+            }}
+          >
+            {locales.map((code) => (
+              <MenuItem key={code} value={code}>
+                {localeLabels[code]}
+              </MenuItem>
+            ))}
+          </Select>
           <Button color="inherit" size="small" onClick={onMyBookingsClick}>
-            Meine Termine
+            {t('nav.myBookings')}
           </Button>
           {email ? (
             <>
@@ -51,15 +85,15 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                 {email}
               </Typography>
               <Button color="inherit" onClick={onAdminClick}>
-                Admin
+                {t('nav.admin')}
               </Button>
               <Button color="inherit" onClick={onSignOutClick}>
-                Abmelden
+                {t('nav.signOut')}
               </Button>
             </>
           ) : (
             <Button color="inherit" size="small" onClick={onLoginClick}>
-              Admin
+              {t('nav.admin')}
             </Button>
           )}
         </Toolbar>

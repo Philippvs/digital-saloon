@@ -8,6 +8,7 @@ import {
   useManageReservation,
   useRescheduleReservation,
 } from '../hooks/useManageReservation'
+import { useLocale } from '../i18n'
 import { ManageReservationPage } from '../pages/ManageReservationPage'
 import { rootRoute } from './root'
 
@@ -20,6 +21,7 @@ export const manageRoute = createRoute({
     const reservation = useManageReservation(token)
     const cancel = useCancelReservation()
     const reschedule = useRescheduleReservation()
+    const { t } = useLocale()
     const [showReschedule, setShowReschedule] = useState(false)
 
     const dates = upcomingViennaDates(7)
@@ -38,7 +40,7 @@ export const manageRoute = createRoute({
           ? cancel.error.message
           : reschedule.error instanceof Error
             ? reschedule.error.message
-            : 'Aktion fehlgeschlagen'
+            : t('manage.actionFailed')
         : null
 
     return (

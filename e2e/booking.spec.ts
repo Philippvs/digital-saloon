@@ -27,6 +27,6 @@ test.describe('customer booking @smoke', () => {
     await expect(page.getByText('Erika Muster')).toBeVisible()
 
     await page.getByRole('button', { name: 'Stornieren' }).click()
-    await expect(page.getByText('Status: CANCELLED')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('Status: Storniert')).toBeVisible({ timeout: 15_000 })
   })
 })

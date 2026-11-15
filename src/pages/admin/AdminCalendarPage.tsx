@@ -13,7 +13,9 @@ import {
 } from '@mui/material'
 
 import { formatViennaDate, formatViennaTime } from '../../data/dateFormat'
-import { reservationStatusColor, reservationStatusLabel } from '../../data/reservationStatus'
+import { reservationStatusColor } from '../../data/reservationStatus'
+import { useLocale } from '../../i18n'
+import type { MessageKey } from '../../i18n'
 import type { ReservationWithId } from '../../data/reservations'
 
 export type AdminCalendarView = 'day' | 'week'
@@ -49,11 +51,12 @@ export const AdminCalendarPage: React.FunctionComponent<AdminCalendarPageProps> 
   onManualClick,
   onReservationsClick,
 }) => {
+  const { t, intlLocale } = useLocale()
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          Kalender
+          {t('admin.calendar')}
         </Typography>
         <Typography color="text.secondary">{rangeLabel}</Typography>
         <Box
@@ -73,27 +76,27 @@ export const AdminCalendarPage: React.FunctionComponent<AdminCalendarPageProps> 
               if (next === 'day' || next === 'week') onViewChange(next)
             }}
           >
-            <ToggleButton value="day">Tag</ToggleButton>
-            <ToggleButton value="week">Woche</ToggleButton>
+            <ToggleButton value="day">{t('admin.day')}</ToggleButton>
+            <ToggleButton value="week">{t('admin.week')}</ToggleButton>
           </ToggleButtonGroup>
-          <Button onClick={onPrev}>Zurück</Button>
-          <Button onClick={onToday}>Heute</Button>
-          <Button onClick={onNext}>Weiter</Button>
+          <Button onClick={onPrev}>{t('book.monthPrev')}</Button>
+          <Button onClick={onToday}>{t('admin.today')}</Button>
+          <Button onClick={onNext}>{t('book.monthNext')}</Button>
           <Button variant="contained" onClick={onManualClick}>
-            Manueller Termin
+            {t('admin.manualBooking')}
           </Button>
           <Button variant="outlined" onClick={onReservationsClick}>
-            Alle Termine
+            {t('admin.allReservations')}
           </Button>
         </Box>
       </Paper>
 
-      {isLoading ? <CircularProgress aria-label="Kalender laden" /> : null}
-      {isError ? <Alert severity="error">Termine konnten nicht geladen werden.</Alert> : null}
+      {isLoading ? <CircularProgress aria-label={t('admin.calendarLoading')} /> : null}
+      {isError ? <Alert severity="error">{t('admin.reservationsError')}</Alert> : null}
 
       <Stack spacing={1}>
         {reservations?.length === 0 ? (
-          <Alert severity="info">Keine Termine in diesem Zeitraum.</Alert>
+          <Alert severity="info">{t('admin.noReservations')}</Alert>
         ) : null}
         {reservations?.map((reservation) => (
           <Paper
@@ -115,18 +118,18 @@ export const AdminCalendarPage: React.FunctionComponent<AdminCalendarPageProps> 
             >
               <Stack spacing={0.5}>
                 <Typography sx={{ fontWeight: 600 }}>
-                  {formatViennaTime(reservation.startAt)}–{formatViennaTime(reservation.endAt)} ·{' '}
-                  {reservation.serviceName}
+                  {formatViennaTime(reservation.startAt, intlLocale)}–
+                  {formatViennaTime(reservation.endAt, intlLocale)} · {reservation.serviceName}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {reservation.firstName} {reservation.lastName} ·{' '}
-                  {formatViennaDate(reservation.startAt)} · {reservation.source}
+                  {formatViennaDate(reservation.startAt, intlLocale)} · {reservation.source}
                 </Typography>
               </Stack>
               <Chip
                 size="small"
                 color={reservationStatusColor[reservation.status] ?? 'default'}
-                label={reservationStatusLabel[reservation.status] ?? reservation.status}
+                label={t(`status.${reservation.status}` as MessageKey)}
               />
             </Box>
           </Paper>
@@ -134,7 +137,7 @@ export const AdminCalendarPage: React.FunctionComponent<AdminCalendarPageProps> 
       </Stack>
 
       <Typography variant="caption" color="text.secondary">
-        Ankerdatum: {anchorDateYmd}
+        {t('admin.anchorDate', { date: anchorDateYmd })}
       </Typography>
     </Stack>
   )

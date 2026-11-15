@@ -15,6 +15,7 @@ import {
 import type { AvailableSlotDto } from '../../data/bookingApi'
 import { formatViennaDate, formatViennaTime } from '../../data/dateFormat'
 import type { ServiceWithId } from '../../data/services'
+import { useLocale } from '../../i18n'
 
 export type AdminManualBookingPageProps = {
   services: ServiceWithId[] | undefined
@@ -53,6 +54,7 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
   onDateChange,
   onSubmit,
 }) => {
+  const { t, intlLocale } = useLocale()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
@@ -64,13 +66,11 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          Manueller Termin
+          {t('admin.manualTitle')}
         </Typography>
-        <Typography color="text.secondary">
-          Für Telefonbuchungen — wird sofort bestätigt. Advance-Limits gelten nicht.
-        </Typography>
+        <Typography color="text.secondary">{t('admin.manualSubtitle')}</Typography>
         <Button onClick={onBackClick} sx={{ mt: 2 }}>
-          Zurück
+          {t('admin.back')}
         </Button>
       </Paper>
 
@@ -78,7 +78,7 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
         <Stack spacing={2}>
           <TextField
             select
-            label="Leistung"
+            label={t('admin.service')}
             value={selectedServiceId ?? ''}
             onChange={(event) => onServiceChange(event.target.value)}
             fullWidth
@@ -90,7 +90,7 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
             ))}
           </TextField>
 
-          <Typography variant="subtitle2">Tag</Typography>
+          <Typography variant="subtitle2">{t('admin.dayLabel')}</Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {dates.map((dateYmd) => (
               <Button
@@ -102,14 +102,14 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
                   onDateChange(dateYmd)
                 }}
               >
-                {formatViennaDate(dateYmd)}
+                {formatViennaDate(dateYmd, intlLocale)}
               </Button>
             ))}
           </Box>
 
           {selectedDate && selectedServiceId ? (
             <>
-              <Typography variant="subtitle2">Uhrzeit</Typography>
+              <Typography variant="subtitle2">{t('admin.time')}</Typography>
               {slotsLoading ? <CircularProgress size={24} /> : null}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {slots?.map((slot) => (
@@ -119,45 +119,45 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
                     variant={startAt === slot.startAt ? 'contained' : 'outlined'}
                     onClick={() => setStartAt(slot.startAt)}
                   >
-                    {formatViennaTime(slot.startAt)}
+                    {formatViennaTime(slot.startAt, intlLocale)}
                   </Button>
                 ))}
               </Box>
               {slots && slots.length === 0 ? (
-                <Alert severity="info">Keine freien Slots.</Alert>
+                <Alert severity="info">{t('admin.noSlots')}</Alert>
               ) : null}
             </>
           ) : null}
 
           <TextField
-            label="Vorname"
+            label={t('book.firstName')}
             value={firstName}
             onChange={(event) => setFirstName(event.target.value)}
             required
             fullWidth
           />
           <TextField
-            label="Nachname"
+            label={t('book.lastName')}
             value={lastName}
             onChange={(event) => setLastName(event.target.value)}
             required
             fullWidth
           />
           <TextField
-            label="Telefon"
+            label={t('book.phone')}
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             required
             fullWidth
           />
           <TextField
-            label="E-Mail (optional)"
+            label={t('admin.emailOptional')}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             fullWidth
           />
           <TextField
-            label="Interne Notiz (optional)"
+            label={t('admin.noteOptional')}
             value={internalNote}
             onChange={(event) => setInternalNote(event.target.value)}
             fullWidth
@@ -190,7 +190,7 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
               })
             }}
           >
-            {isSubmitting ? 'Wird gespeichert…' : 'Termin anlegen'}
+            {isSubmitting ? t('admin.saving') : t('admin.createReservation')}
           </Button>
         </Stack>
       </Paper>

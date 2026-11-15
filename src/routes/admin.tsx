@@ -17,6 +17,7 @@ import { useBookingSettings } from '../hooks/useBookingSettings'
 import { useOpeningHours } from '../hooks/useOpeningHours'
 import { useSalon } from '../hooks/useSalon'
 import { useUserProfile } from '../hooks/useUserProfile'
+import { useLocale } from '../i18n'
 import { AdminCalendarPage } from '../pages/admin/AdminCalendarPage'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
 import { AdminManualBookingPage } from '../pages/admin/AdminManualBookingPage'
@@ -38,21 +39,18 @@ const AdminLayoutRoute: React.FunctionComponent = () => {
     }
   }, [authLoading, user, navigate])
 
+  const { t } = useLocale()
+
   if (authLoading || (user !== null && profile.isLoading)) {
-    return <AdminPlaceholderPage title="Admin" description="Loading…" />
+    return <AdminPlaceholderPage title={t('admin.title')} description={t('admin.loading')} />
   }
 
   if (!user) {
-    return <AdminPlaceholderPage title="Admin" description="Sign in required." />
+    return <AdminPlaceholderPage title={t('admin.title')} description={t('admin.signInRequired')} />
   }
 
   if (profile.data?.role !== 'admin') {
-    return (
-      <AdminPlaceholderPage
-        title="Forbidden"
-        description="This area is only available to salon administrators."
-      />
-    )
+    return <AdminPlaceholderPage title={t('admin.title')} description={t('admin.forbidden')} />
   }
 
   return <Outlet />
@@ -68,12 +66,16 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const salon = useSalon()
   const navigate = useNavigate()
   const ops = useAdminOps()
+  const { t } = useLocale()
 
   const opsError =
     ops.processPending.error instanceof Error ? ops.processPending.error.message : null
   const opsMessage =
     ops.processPending.isSuccess && ops.processPending.data
-      ? `Ablauf: ${ops.processPending.data.expired} von ${ops.processPending.data.scanned} ausstehenden Anfragen abgelaufen.`
+      ? t('admin.expireResult', {
+          expired: ops.processPending.data.expired,
+          scanned: ops.processPending.data.scanned,
+        })
       : null
 
   return (
@@ -353,12 +355,13 @@ export const adminOpeningHoursRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/opening-hours',
   component: function AdminOpeningHoursRoute() {
+    const { t } = useLocale()
     const hours = useOpeningHours(true)
     const lines = hours.data
       ? Object.entries(hours.data).map(([day, value]) => {
           const label =
             value.intervals.length === 0
-              ? 'Closed'
+              ? t('admin.closed')
               : value.intervals.map((i) => `${i.start}–${i.end}`).join(', ')
           return `${day}: ${label}`
         })
@@ -366,13 +369,13 @@ export const adminOpeningHoursRoute = createRoute({
 
     return (
       <AdminPlaceholderPage
-        title="Opening Hours"
+        title={t('admin.openingHours')}
         description={
           hours.isLoading
-            ? 'Loading…'
+            ? t('admin.openingHoursLoading')
             : hours.isError
-              ? 'Could not load opening hours.'
-              : lines.join(' · ') || 'No opening hours configured.'
+              ? t('admin.openingHoursError')
+              : lines.join(' · ') || t('admin.openingHoursEmpty')
         }
       />
     )
@@ -383,11 +386,9 @@ export const adminHolidaysRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/holidays',
   component: function AdminHolidaysRoute() {
+    const { t } = useLocale()
     return (
-      <AdminPlaceholderPage
-        title="Holidays"
-        description="Holiday editor remains a later polish; seed holidays already affect availability."
-      />
+      <AdminPlaceholderPage title={t('admin.holidays')} description={t('admin.holidaysHint')} />
     )
   },
 })

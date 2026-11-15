@@ -6,6 +6,7 @@ import { absoluteManagementUrl } from '../data/savedBookings'
 import { mailtoShareHref, shareOrCopyLink } from '../data/shareLink'
 import { useManageReservation } from '../hooks/useManageReservation'
 import { useSavedBookings } from '../hooks/useSavedBookings'
+import { useLocale } from '../i18n'
 import { MyBookingsPage, SavedBookingCard } from '../pages/MyBookingsPage'
 import { rootRoute } from './root'
 
@@ -38,13 +39,14 @@ export const myBookingsRoute = createRoute({
   component: function MyBookingsRoute() {
     const navigate = useNavigate()
     const saved = useSavedBookings()
+    const { t } = useLocale()
     const [actionHint, setActionHint] = useState<string | null>(null)
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
 
     const shareFor = (token: string) => ({
       url: absoluteManagementUrl(token, origin || 'http://127.0.0.1:3100'),
-      title: 'Mein Salon-Termin',
-      text: 'Hier ist mein persönlicher Link zum Verwalten des Termins.',
+      title: t('myBookings.shareTitle'),
+      text: t('myBookings.shareText'),
     })
 
     return (
@@ -67,20 +69,22 @@ export const myBookingsRoute = createRoute({
             }}
             onRemove={(token) => {
               saved.remove(token)
-              setActionHint('Termin von diesem Gerät entfernt.')
+              setActionHint(t('myBookings.removed'))
             }}
             onCopyLink={(token) => {
               void shareOrCopyLink(shareFor(token), {
                 share: undefined,
                 canShare: () => false,
               }).then((result) => {
-                setActionHint(result === 'copied' ? 'Link kopiert.' : 'Kopieren nicht möglich.')
+                setActionHint(
+                  result === 'copied' ? t('myBookings.copied') : t('myBookings.copyFailed'),
+                )
               })
             }}
             onShareLink={(token) => {
               void shareOrCopyLink(shareFor(token)).then((result) => {
-                if (result === 'shared') setActionHint('Link geteilt.')
-                else if (result === 'copied') setActionHint('Link kopiert.')
+                if (result === 'shared') setActionHint(t('myBookings.shared'))
+                else if (result === 'copied') setActionHint(t('myBookings.copied'))
                 else setActionHint(null)
               })
             }}

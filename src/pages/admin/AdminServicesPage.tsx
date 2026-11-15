@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 
 import type { ServiceWithId } from '../../data/services'
+import { useLocale } from '../../i18n'
 
 export type AdminServicesPageProps = {
   services: ServiceWithId[] | undefined
@@ -29,40 +30,42 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
   isLoading,
   isError,
 }) => {
+  const { t } = useLocale()
+
   return (
     <Stack spacing={2}>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h1" gutterBottom>
-          Services
+          {t('admin.services')}
         </Typography>
-        <Typography color="text.secondary">
-          Catalog used for online and manual bookings. Prices are stored as integer cents.
-        </Typography>
+        <Typography color="text.secondary">{t('admin.servicesSubtitle')}</Typography>
       </Paper>
 
-      {isLoading ? <CircularProgress aria-label="Loading services" /> : null}
-      {isError ? <Alert severity="error">Could not load services.</Alert> : null}
+      {isLoading ? <CircularProgress aria-label={t('admin.servicesLoading')} /> : null}
+      {isError ? <Alert severity="error">{t('admin.servicesError')}</Alert> : null}
 
-      {services && services.length === 0 ? <Alert severity="info">No services yet.</Alert> : null}
+      {services && services.length === 0 ? (
+        <Alert severity="info">{t('admin.noServices')}</Alert>
+      ) : null}
 
       {services && services.length > 0 ? (
         <Paper sx={{ p: 1 }}>
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Duration</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Active</TableCell>
+                <TableCell>{t('admin.name')}</TableCell>
+                <TableCell>{t('admin.duration')}</TableCell>
+                <TableCell>{t('admin.price')}</TableCell>
+                <TableCell>{t('admin.active')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {services.map((service) => (
                 <TableRow key={service.id}>
                   <TableCell>{service.name}</TableCell>
-                  <TableCell>{service.durationMinutes} min</TableCell>
+                  <TableCell>{t('admin.minutes', { minutes: service.durationMinutes })}</TableCell>
                   <TableCell>{formatPrice(service.priceCents)}</TableCell>
-                  <TableCell>{service.active ? 'Yes' : 'No'}</TableCell>
+                  <TableCell>{service.active ? t('admin.yes') : t('admin.no')}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

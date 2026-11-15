@@ -26,6 +26,7 @@ import {
 import { formatViennaDateTime, formatViennaTime } from '../data/dateFormat'
 import { bookingContactSchema } from '../data/phone'
 import type { ServiceWithId } from '../data/services'
+import { useLocale } from '../i18n'
 
 export type BookingWizardPageProps = {
   services: ServiceWithId[] | undefined
@@ -57,8 +58,6 @@ function formatPrice(cents: number): string {
   return `€${(cents / 100).toFixed(2)}`
 }
 
-const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
-
 export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> = ({
   services,
   servicesLoading,
@@ -79,11 +78,22 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
   monthAnchorYmd,
   onSubmit,
 }) => {
+  const { t, intlLocale } = useLocale()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
   const [fieldError, setFieldError] = useState<string | null>(null)
+
+  const weekdays = [
+    t('book.weekday.mo'),
+    t('book.weekday.tu'),
+    t('book.weekday.we'),
+    t('book.weekday.th'),
+    t('book.weekday.fr'),
+    t('book.weekday.sa'),
+    t('book.weekday.su'),
+  ]
 
   const selectedService = services?.find((item) => item.id === selectedServiceId) ?? null
   const byDate = useMemo(() => slotsByDate(rangeSlots ?? []), [rangeSlots])
@@ -91,7 +101,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
   const { year, monthIndex } = parseYmd(monthAnchorYmd)
   const weeks = monthMatrix(year, monthIndex)
   const todayYmd = viennaTodayYmd()
-  const monthLabel = new Intl.DateTimeFormat('de-AT', {
+  const monthLabel = new Intl.DateTimeFormat(intlLocale, {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
@@ -106,21 +116,19 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
     <Stack spacing={3} sx={{ maxWidth: 560, mx: 'auto', width: '100%' }}>
       <Box>
         <Typography variant="h1" gutterBottom>
-          Termin buchen
+          {t('book.title')}
         </Typography>
-        <Typography color="text.secondary">
-          Ohne Kundenkonto — Schritt für Schritt zum Wunschtermin.
-        </Typography>
+        <Typography color="text.secondary">{t('book.subtitle')}</Typography>
       </Box>
 
       <Paper sx={{ p: { xs: 2, sm: 3 } }} component="section" aria-labelledby="step-service">
         <Typography id="step-service" variant="h2" sx={{ fontSize: '1.15rem', mb: 2 }}>
-          1. Leistung wählen
+          {t('book.step.service')}
         </Typography>
-        {servicesLoading ? <CircularProgress aria-label="Leistungen laden" size={28} /> : null}
-        {servicesError ? (
-          <Alert severity="error">Leistungen konnten nicht geladen werden.</Alert>
+        {servicesLoading ? (
+          <CircularProgress aria-label={t('book.servicesLoading')} size={28} />
         ) : null}
+        {servicesError ? <Alert severity="error">{t('book.servicesError')}</Alert> : null}
         <Stack spacing={1.5}>
           {services?.map((service) => {
             const selected = service.id === selectedServiceId
@@ -145,7 +153,8 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
               >
                 <Typography sx={{ fontWeight: 600 }}>{service.name}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {service.durationMinutes} Min · {formatPrice(service.priceCents)}
+                  {t('book.durationMinutes', { minutes: service.durationMinutes })} ·{' '}
+                  {formatPrice(service.priceCents)}
                 </Typography>
               </Box>
             )
@@ -156,26 +165,28 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
       {showDate ? (
         <Paper sx={{ p: { xs: 2, sm: 3 } }} component="section" aria-labelledby="step-date">
           <Typography id="step-date" variant="h2" sx={{ fontSize: '1.15rem', mb: 2 }}>
-            2. Datum wählen
+            {t('book.step.date')}
           </Typography>
           <Stack
             direction="row"
             sx={{ mb: 2, alignItems: 'center', justifyContent: 'space-between' }}
           >
             <Button size="small" onClick={() => onMonthAnchorChange(addMonths(monthAnchorYmd, -1))}>
-              Zurück
+              {t('book.monthPrev')}
             </Button>
             <Typography sx={{ fontWeight: 600, textTransform: 'capitalize' }}>
               {monthLabel}
             </Typography>
             <Button size="small" onClick={() => onMonthAnchorChange(addMonths(monthAnchorYmd, 1))}>
-              Weiter
+              {t('book.monthNext')}
             </Button>
           </Stack>
-          {rangeLoading ? <CircularProgress aria-label="Verfügbarkeit laden" size={28} /> : null}
+          {rangeLoading ? (
+            <CircularProgress aria-label={t('book.availabilityLoading')} size={28} />
+          ) : null}
           {rangeError ? (
             <Alert severity="error" sx={{ mb: 2 }}>
-              Verfügbarkeit konnte nicht geladen werden.
+              {t('book.availabilityError')}
             </Alert>
           ) : null}
           <Box
@@ -186,7 +197,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
               mb: 0.5,
             }}
           >
-            {WEEKDAYS.map((label) => (
+            {weekdays.map((label) => (
               <Typography
                 key={label}
                 variant="caption"
@@ -233,7 +244,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
           </Stack>
           {!rangeLoading && byDate.size === 0 ? (
             <Alert severity="info" sx={{ mt: 2 }}>
-              In diesem Zeitraum sind keine Termine frei. Bitte anderen Monat prüfen.
+              {t('book.noSlotsMonth')}
             </Alert>
           ) : null}
         </Paper>
@@ -242,16 +253,16 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
       {showTime ? (
         <Paper sx={{ p: { xs: 2, sm: 3 } }} component="section" aria-labelledby="step-time">
           <Typography id="step-time" variant="h2" sx={{ fontSize: '1.15rem', mb: 2 }}>
-            3. Uhrzeit wählen
+            {t('book.step.time')}
           </Typography>
           {daySlots.length === 0 ? (
-            <Alert severity="info">Keine freien Zeiten an diesem Tag.</Alert>
+            <Alert severity="info">{t('book.noSlotsDay')}</Alert>
           ) : (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {daySlots.map((startAt) => (
                 <Chip
                   key={startAt}
-                  label={formatViennaTime(startAt)}
+                  label={formatViennaTime(startAt, intlLocale)}
                   clickable
                   color={selectedStartAt === startAt ? 'primary' : 'default'}
                   variant={selectedStartAt === startAt ? 'filled' : 'outlined'}
@@ -266,11 +277,11 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
       {showDetails ? (
         <Paper sx={{ p: { xs: 2, sm: 3 } }} component="section" aria-labelledby="step-details">
           <Typography id="step-details" variant="h2" sx={{ fontSize: '1.15rem', mb: 2 }}>
-            4. Kontaktdaten
+            {t('book.step.details')}
           </Typography>
           <Stack spacing={2}>
             <TextField
-              label="Vorname"
+              label={t('book.firstName')}
               value={firstName}
               onChange={(event) => setFirstName(event.target.value)}
               required
@@ -278,7 +289,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
               autoComplete="given-name"
             />
             <TextField
-              label="Nachname"
+              label={t('book.lastName')}
               value={lastName}
               onChange={(event) => setLastName(event.target.value)}
               required
@@ -286,13 +297,13 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
               autoComplete="family-name"
             />
             <TextField
-              label="Telefon"
+              label={t('book.phone')}
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
               required
               fullWidth
               autoComplete="tel"
-              helperText="z. B. 0660 1234567 — wird international gespeichert"
+              helperText={t('book.phoneHelp')}
             />
           </Stack>
         </Paper>
@@ -301,18 +312,19 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
       {showConfirm ? (
         <Paper sx={{ p: { xs: 2, sm: 3 } }} component="section" aria-labelledby="step-confirm">
           <Typography id="step-confirm" variant="h2" sx={{ fontSize: '1.15rem', mb: 2 }}>
-            5. Bestätigen
+            {t('book.step.confirm')}
           </Typography>
           <Stack spacing={1} sx={{ mb: 2 }}>
             <Typography sx={{ fontWeight: 600 }}>{selectedService?.name}</Typography>
             {selectedStartAt ? (
               <Typography color="text.secondary">
-                {formatViennaDateTime(selectedStartAt)}
+                {formatViennaDateTime(selectedStartAt, intlLocale)}
               </Typography>
             ) : null}
             {selectedService ? (
               <Typography color="text.secondary">
-                {selectedService.durationMinutes} Min · {formatPrice(selectedService.priceCents)}
+                {t('book.durationMinutes', { minutes: selectedService.durationMinutes })} ·{' '}
+                {formatPrice(selectedService.priceCents)}
               </Typography>
             ) : null}
           </Stack>
@@ -323,7 +335,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                 onChange={(event) => setPrivacyAccepted(event.target.checked)}
               />
             }
-            label="Ich habe die Datenschutzhinweise zur Kenntnis genommen."
+            label={t('book.privacy')}
           />
           {fieldError ? <Alert severity="error">{fieldError}</Alert> : null}
           {submitError ? <Alert severity="error">{submitError}</Alert> : null}
@@ -339,7 +351,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   privacyAccepted: privacyAccepted ? true : false,
                 })
                 if (!result.success) {
-                  const message = result.issues[0]?.message ?? 'Bitte Angaben prüfen.'
+                  const message = result.issues[0]?.message ?? '…'
                   setFieldError(message)
                   return
                 }
@@ -352,10 +364,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                 })
               }}
             >
-              {isSubmitting ? 'Wird gebucht…' : 'Termin verbindlich anfragen'}
+              {isSubmitting ? t('book.submitting') : t('book.submit')}
             </Button>
             <Button disabled={isSubmitting} onClick={onClearTime}>
-              Andere Zeit
+              {t('book.otherTime')}
             </Button>
           </Stack>
         </Paper>
