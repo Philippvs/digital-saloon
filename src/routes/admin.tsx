@@ -1,15 +1,27 @@
 import type * as React from 'react'
 import { useEffect } from 'react'
 import { Outlet, createRoute, useNavigate } from '@tanstack/react-router'
+import * as v from 'valibot'
 
 import { useAuth } from '../auth/AuthProvider'
+import { rangeForView, shiftAnchor, type CalendarView } from '../data/calendarRange'
+import { todayYmdInTimeZone } from '../data/calendarMath'
+import { upcomingViennaDates } from '../data/dateFormat'
+import { optionalSearchParam } from '../data/schemas'
+import { useAdminReservation } from '../hooks/useAdminReservation'
+import { useAdminReservationActions, useAdminReservations } from '../hooks/useAdminReservations'
 import { useAllServices } from '../hooks/useAllServices'
+import { useAvailableSlots } from '../hooks/useAvailableSlots'
 import { useBookingSettings } from '../hooks/useBookingSettings'
 import { useOpeningHours } from '../hooks/useOpeningHours'
 import { useSalon } from '../hooks/useSalon'
 import { useUserProfile } from '../hooks/useUserProfile'
+import { AdminCalendarPage } from '../pages/admin/AdminCalendarPage'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
+import { AdminManualBookingPage } from '../pages/admin/AdminManualBookingPage'
 import { AdminPlaceholderPage } from '../pages/admin/AdminPlaceholderPage'
+import { AdminReservationDetailPage } from '../pages/admin/AdminReservationDetailPage'
+import { AdminReservationsPage } from '../pages/admin/AdminReservationsPage'
 import { AdminServicesPage } from '../pages/admin/AdminServicesPage'
 import { AdminSettingsPage } from '../pages/admin/AdminSettingsPage'
 import { rootRoute } from './root'
@@ -59,7 +71,7 @@ const AdminIndexRoute: React.FunctionComponent = () => {
     <AdminHomePage
       salonName={salon.data?.name ?? 'Salon'}
       onCalendarClick={() => {
-        void navigate({ to: '/admin/calendar' })
+        void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
       }}
       onServicesClick={() => {
         void navigate({ to: '/admin/services' })
@@ -77,12 +89,69 @@ export const adminIndexRoute = createRoute({
   component: AdminIndexRoute,
 })
 
+const calendarSearchSchema = v.object({
+  view: v.optional(v.picklist(['day', 'week'] as const), 'week'),
+  date: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
+})
+
 export const adminCalendarRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/calendar',
+  validateSearch: (search: Record<string, unknown>) => v.parse(calendarSearchSchema, search),
   component: function AdminCalendarRoute() {
+    const navigate = useNavigate()
+    const salon = useSalon()
+    const search = adminCalendarRoute.useSearch()
+    const view = (search.view ?? 'week') as CalendarView
+    const anchor = search.date ?? todayYmdInTimeZone(salon.data?.timezone ?? 'Europe/Vienna')
+    const range = rangeForView(view, anchor)
+    const reservations = useAdminReservations(range.startIso, range.endIso, true)
+
     return (
-      <AdminPlaceholderPage title="Calendar" description="Reservation calendar arrives in M5." />
+      <AdminCalendarPage
+        view={view}
+        anchorDateYmd={anchor}
+        rangeLabel={`${range.labelStart} – ${range.labelEnd}`}
+        reservations={reservations.data}
+        isLoading={reservations.isLoading}
+        isError={reservations.isError}
+        onViewChange={(next) => {
+          void navigate({ to: '/admin/calendar', search: { view: next, date: anchor } })
+        }}
+        onPrev={() => {
+          void navigate({
+            to: '/admin/calendar',
+            search: { view, date: shiftAnchor(view, anchor, -1) },
+          })
+        }}
+        onNext={() => {
+          void navigate({
+            to: '/admin/calendar',
+            search: { view, date: shiftAnchor(view, anchor, 1) },
+          })
+        }}
+        onToday={() => {
+          void navigate({
+            to: '/admin/calendar',
+            search: {
+              view,
+              date: todayYmdInTimeZone(salon.data?.timezone ?? 'Europe/Vienna'),
+            },
+          })
+        }}
+        onSelectReservation={(reservationId) => {
+          void navigate({
+            to: '/admin/reservations/$reservationId',
+            params: { reservationId },
+          })
+        }}
+        onManualClick={() => {
+          void navigate({ to: '/admin/manual' })
+        }}
+        onReservationsClick={() => {
+          void navigate({ to: '/admin/reservations' })
+        }}
+      />
     )
   },
 })
@@ -91,8 +160,161 @@ export const adminReservationsRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/reservations',
   component: function AdminReservationsRoute() {
+    const navigate = useNavigate()
+    const salon = useSalon()
+    const today = todayYmdInTimeZone(salon.data?.timezone ?? 'Europe/Vienna')
+    const range = rangeForView('week', today)
+    // Show a wider window for the list: 7 days back, 21 forward via week math
+    const startIso = `${shiftAnchor('week', today, -1)}T00:00:00.000Z`
+    const endIso = range.endIso
+    const reservations = useAdminReservations(startIso, endIso, true)
+
     return (
-      <AdminPlaceholderPage title="Reservations" description="Reservation list arrives in M5." />
+      <AdminReservationsPage
+        reservations={reservations.data}
+        isLoading={reservations.isLoading}
+        isError={reservations.isError}
+        onSelectReservation={(reservationId) => {
+          void navigate({
+            to: '/admin/reservations/$reservationId',
+            params: { reservationId },
+          })
+        }}
+        onCalendarClick={() => {
+          void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
+        }}
+      />
+    )
+  },
+})
+
+export const adminReservationDetailRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '/reservations/$reservationId',
+  component: function AdminReservationDetailRoute() {
+    const navigate = useNavigate()
+    const { reservationId } = adminReservationDetailRoute.useParams()
+    const reservation = useAdminReservation(reservationId)
+    const actions = useAdminReservationActions()
+
+    const failed =
+      actions.confirm.error ??
+      actions.decline.error ??
+      actions.cancel.error ??
+      actions.complete.error
+    const actionError =
+      failed instanceof Error ? failed.message : failed ? 'Aktion fehlgeschlagen' : null
+
+    return (
+      <AdminReservationDetailPage
+        reservation={reservation.data ?? undefined}
+        isLoading={reservation.isLoading}
+        actionError={actionError}
+        busy={
+          actions.confirm.isPending ||
+          actions.decline.isPending ||
+          actions.cancel.isPending ||
+          actions.complete.isPending
+        }
+        onBackClick={() => {
+          void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
+        }}
+        onConfirm={() => {
+          actions.confirm.mutate(reservationId)
+        }}
+        onDecline={() => {
+          if (window.confirm('Termin wirklich ablehnen? Der Slot wird freigegeben.')) {
+            actions.decline.mutate(reservationId)
+          }
+        }}
+        onCancel={() => {
+          if (window.confirm('Termin wirklich stornieren?')) {
+            actions.cancel.mutate(reservationId)
+          }
+        }}
+        onComplete={() => {
+          actions.complete.mutate(reservationId)
+        }}
+      />
+    )
+  },
+})
+
+const manualSearchSchema = v.object({
+  serviceId: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
+  date: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
+})
+
+export const adminManualRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '/manual',
+  validateSearch: (search: Record<string, unknown>) => v.parse(manualSearchSchema, search),
+  component: function AdminManualRoute() {
+    const navigate = useNavigate()
+    const search = adminManualRoute.useSearch()
+    const services = useAllServices(true)
+    const dates = upcomingViennaDates(14)
+    const selectedServiceId = search.serviceId ?? null
+    const selectedDate = search.date ?? null
+    const slots = useAvailableSlots({
+      serviceId: selectedServiceId,
+      fromDateYmd: selectedDate,
+      toDateYmd: selectedDate,
+      enforceAdvanceRestrictions: false,
+    })
+    const actions = useAdminReservationActions()
+
+    return (
+      <AdminManualBookingPage
+        services={services.data?.filter((service) => service.active)}
+        dates={dates}
+        selectedServiceId={selectedServiceId}
+        selectedDate={selectedDate}
+        slots={slots.data}
+        slotsLoading={slots.isLoading}
+        isSubmitting={actions.createManual.isPending}
+        submitError={
+          actions.createManual.isError
+            ? actions.createManual.error instanceof Error
+              ? actions.createManual.error.message
+              : 'Speichern fehlgeschlagen'
+            : null
+        }
+        onBackClick={() => {
+          void navigate({ to: '/admin/calendar', search: { view: 'week', date: undefined } })
+        }}
+        onServiceChange={(serviceId) => {
+          void navigate({
+            to: '/admin/manual',
+            search: { serviceId, date: selectedDate ?? undefined },
+          })
+        }}
+        onDateChange={(dateYmd) => {
+          void navigate({
+            to: '/admin/manual',
+            search: { serviceId: selectedServiceId ?? undefined, date: dateYmd },
+          })
+        }}
+        onSubmit={(input) => {
+          actions.createManual.mutate(
+            {
+              ...input,
+              idempotencyKey:
+                typeof crypto !== 'undefined' && 'randomUUID' in crypto
+                  ? crypto.randomUUID()
+                  : `manual-${Date.now()}`,
+            },
+            {
+              onSuccess: (result) => {
+                void navigate({
+                  to: '/admin/reservations/$reservationId',
+                  params: { reservationId: result.reservationId },
+                })
+              },
+            },
+          )
+        }}
+      />
     )
   },
 })
@@ -146,7 +368,12 @@ export const adminHolidaysRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/holidays',
   component: function AdminHolidaysRoute() {
-    return <AdminPlaceholderPage title="Holidays" description="Holiday management arrives in M5." />
+    return (
+      <AdminPlaceholderPage
+        title="Holidays"
+        description="Holiday editor remains a later polish; seed holidays already affect availability."
+      />
+    )
   },
 })
 

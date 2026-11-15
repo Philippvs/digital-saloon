@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 
+import { assertAdmin } from '../authz'
 import { functionsRegion, getSalonId } from '../config'
 import { isObject } from '../schemas'
 import { previewAvailableSlots } from './reservationWrite'
@@ -24,11 +25,18 @@ export const getAvailableSlots = onCall({ region: functionsRegion }, async (requ
     throw new HttpsError('invalid-argument', 'toDateYmd is required (YYYY-MM-DD).')
   }
 
+  let enforceAdvanceRestrictions = true
+  if (data.enforceAdvanceRestrictions === false) {
+    await assertAdmin(request)
+    enforceAdvanceRestrictions = false
+  }
+
   const slots = await previewAvailableSlots({
     serviceId,
     fromDateYmd,
     toDateYmd,
     salonId: getSalonId(),
+    enforceAdvanceRestrictions,
   })
 
   return { slots }

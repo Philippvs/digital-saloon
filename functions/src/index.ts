@@ -2,6 +2,12 @@ import { initializeApp } from 'firebase-admin/app'
 import { onCall } from 'firebase-functions/v2/https'
 
 import { assertSignedIn } from './authz'
+import {
+  adminCancelReservation,
+  completeReservation,
+  confirmReservation,
+  declineReservation,
+} from './booking/adminActions'
 import { createManualReservation, createReservation } from './booking/createReservation'
 import {
   cancelReservation,
@@ -20,6 +26,10 @@ export {
   manageReservation,
   cancelReservation,
   rescheduleReservation,
+  confirmReservation,
+  declineReservation,
+  adminCancelReservation,
+  completeReservation,
 }
 
 /**

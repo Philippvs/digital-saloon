@@ -34,9 +34,15 @@ export async function fetchAvailableSlots(input: {
   serviceId: string
   fromDateYmd: string
   toDateYmd: string
+  enforceAdvanceRestrictions?: boolean
 }): Promise<AvailableSlotDto[]> {
   const callable = httpsCallable<
-    { serviceId: string; fromDateYmd: string; toDateYmd: string },
+    {
+      serviceId: string
+      fromDateYmd: string
+      toDateYmd: string
+      enforceAdvanceRestrictions?: boolean
+    },
     { slots: AvailableSlotDto[] }
   >(firebaseFunctions, 'getAvailableSlots')
   const result = await callable(input)

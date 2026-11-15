@@ -212,6 +212,7 @@ export async function previewAvailableSlots(input: {
   db?: Firestore
   salonId?: string
   context?: SalonContext
+  enforceAdvanceRestrictions?: boolean
 }): Promise<{ startAt: string; endAt: string }[]> {
   const db = input.db ?? getFirestore()
   const context = input.context ?? (await loadSalonContext(db, input.salonId))
@@ -240,7 +241,7 @@ export async function previewAvailableSlots(input: {
     now: input.now ?? new Date(),
     fromDateYmd: input.fromDateYmd,
     toDateYmd: input.toDateYmd,
-    enforceAdvanceRestrictions: true,
+    enforceAdvanceRestrictions: input.enforceAdvanceRestrictions !== false,
   })
 
   return slots.map((slot) => ({

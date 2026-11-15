@@ -60,7 +60,8 @@ Vite only (no emulators): `pnpm dev`
 | M2    | Config data access (services, settings)     | Done   |
 | M3    | Availability engine + transactional booking | Done   |
 | M4    | Customer booking + manage-by-token          | Done   |
-| M5–M6 | Admin calendar, notifications, launch       | Next   |
+| M5    | Admin calendar, confirm/decline, manual     | Done   |
+| M6    | Notifications, pending expiry, launch       | Next   |
 
 ## Scripts
 

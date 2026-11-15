@@ -1,6 +1,7 @@
 import { createConnection } from 'node:net'
 
 import { EMULATOR_HOST, EMULATOR_PORTS } from './emulator-ports.mjs'
+import { waitForCallableFunctions } from './lib/emulator-wait.mjs'
 
 function canConnect(port) {
   return new Promise((resolve) => {
@@ -37,5 +38,7 @@ if (missing.length > 0) {
   console.error(`[e2e] Emulators/app not reachable: ${missing.join(', ')}`)
   process.exit(1)
 }
+
+await waitForCallableFunctions(60_000)
 
 console.log('[e2e] Emulators and app are reachable.')

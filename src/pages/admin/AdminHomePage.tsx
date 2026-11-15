@@ -22,15 +22,15 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
         </Typography>
         <Typography color="text.secondary">{salonName}</Typography>
       </Paper>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+      <Stack spacing={1}>
         <Button variant="contained" onClick={onCalendarClick}>
-          Calendar
+          Kalender
         </Button>
         <Button variant="outlined" onClick={onServicesClick}>
-          Services
+          Leistungen
         </Button>
         <Button variant="outlined" onClick={onSettingsClick}>
-          Settings
+          Einstellungen
         </Button>
       </Stack>
     </Stack>

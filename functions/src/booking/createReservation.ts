@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 
+import { assertAdmin } from '../authz'
 import { functionsRegion, getSalonId } from '../config'
 import { isObject } from '../schemas'
 import { createReservationTransactional } from './reservationWrite'
@@ -62,7 +63,6 @@ export const createReservation = onCall({ region: functionsRegion }, async (requ
 })
 
 export const createManualReservation = onCall({ region: functionsRegion }, async (request) => {
-  const { assertAdmin } = await import('../authz')
   await assertAdmin(request)
 
   const data = request.data
