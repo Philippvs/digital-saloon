@@ -10,9 +10,11 @@ import {
   adminServicesRoute,
   adminSettingsRoute,
 } from './routes/admin'
-import { bookRoute } from './routes/book'
+import { bookCheckoutRoute, bookRoute, bookSlotsRoute } from './routes/book'
+import { bookingConfirmedRoute } from './routes/bookingConfirmed'
 import { homeRoute } from './routes/home'
 import { loginRoute } from './routes/login'
+import { manageRoute } from './routes/manage'
 import { rootRoute } from './routes/root'
 import { RouteError } from './routes/routeError'
 
@@ -22,6 +24,10 @@ export const router = createRouter({
   routeTree: rootRoute.addChildren([
     homeRoute,
     bookRoute,
+    bookSlotsRoute,
+    bookCheckoutRoute,
+    bookingConfirmedRoute,
+    manageRoute,
     loginRoute,
     adminRoute.addChildren([
       adminIndexRoute,

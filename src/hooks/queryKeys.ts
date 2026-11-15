@@ -5,6 +5,8 @@ export type QueryVisibility = 'public' | 'private'
 export const queryRootVisibility = {
   salon: 'public',
   services: 'public',
+  availableSlots: 'public',
+  managedReservation: 'public',
   bookingSettings: 'private',
   openingHours: 'private',
   userProfile: 'private',

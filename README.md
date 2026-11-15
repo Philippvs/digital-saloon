@@ -54,12 +54,13 @@ Vite only (no emulators): `pnpm dev`
 
 ## Milestone status
 
-| Slice | Scope                                              | Status                        |
-| ----- | -------------------------------------------------- | ----------------------------- |
-| M1    | Foundation, seed, rules, admin gate                | Done (`feat/salonflow-m1-m3`) |
-| M2    | Config data access (services, settings)            | Done                          |
-| M3    | Availability engine + transactional booking        | Done                          |
-| M4–M6 | Customer booking UI, admin calendar, notifications | Mandatory roadmap (next)      |
+| Slice | Scope                                       | Status |
+| ----- | ------------------------------------------- | ------ |
+| M1    | Foundation, seed, rules, admin gate         | Done   |
+| M2    | Config data access (services, settings)     | Done   |
+| M3    | Availability engine + transactional booking | Done   |
+| M4    | Customer booking + manage-by-token          | Done   |
+| M5–M6 | Admin calendar, notifications, launch       | Next   |
 
 ## Scripts
 

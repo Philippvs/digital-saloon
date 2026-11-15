@@ -25,7 +25,7 @@ export const BookPage: React.FunctionComponent<BookPageProps> = ({
           Termin buchen
         </Typography>
         <Typography color="text.secondary">
-          Schritt 1: Leistung wählen. Datum und Uhrzeit folgen im nächsten Meilenstein (M4).
+          Schritt 1 von 3: Leistung wählen — ohne Kundenkonto.
         </Typography>
         <Button onClick={onBackClick} sx={{ mt: 2 }}>
           Zurück zur Startseite

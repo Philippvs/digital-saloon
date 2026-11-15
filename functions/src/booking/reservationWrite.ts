@@ -1,9 +1,10 @@
-import { createHash, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 
 import { isSlotAvailable, listAvailableSlots } from '../domain/availability'
 import { loadBusyIntervals, loadSalonContext, type SalonContext } from './salonContext'
+import { hashManagementToken } from './tokens'
 
 export type CreateReservationInput = {
   firstName: string
@@ -30,11 +31,7 @@ export type CreateReservationResult =
     }
   | { ok: false; code: 'UNAVAILABLE' | 'SERVICE_INACTIVE' | 'NOT_FOUND'; message: string }
 
-function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex')
-}
-
-function lockIdForStart(startAt: Date): string {
+export function lockIdForStart(startAt: Date): string {
   return startAt.toISOString().replace(/[:.]/g, '-')
 }
 
@@ -100,7 +97,7 @@ export async function createReservationTransactional(
     .doc(lockIdForStart(input.startAt))
 
   const managementToken = randomBytes(32).toString('base64url')
-  const managementTokenHash = hashToken(managementToken)
+  const managementTokenHash = hashManagementToken(managementToken)
   const status =
     input.source === 'MANUAL' || context.settings.confirmationMode === 'AUTOMATIC'
       ? 'CONFIRMED'
