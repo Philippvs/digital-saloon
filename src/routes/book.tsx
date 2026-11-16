@@ -69,6 +69,7 @@ export const bookRoute = createRoute({
               month: `${anchorYmd.slice(0, 8)}01`,
             },
             replace: true,
+            resetScroll: false,
           })
         }}
         onSelectService={(serviceId) => {
@@ -81,6 +82,7 @@ export const bookRoute = createRoute({
               month: monthAnchorYmd,
             },
             replace: true,
+            resetScroll: false,
           })
         }}
         onSelectDate={(dateYmd) => {
@@ -93,6 +95,7 @@ export const bookRoute = createRoute({
               month: monthAnchorYmd,
             },
             replace: true,
+            resetScroll: false,
           })
         }}
         onSelectTime={(startAt) => {
@@ -105,6 +108,7 @@ export const bookRoute = createRoute({
               month: monthAnchorYmd,
             },
             replace: true,
+            resetScroll: false,
           })
         }}
         onClearTime={() => {
@@ -117,6 +121,7 @@ export const bookRoute = createRoute({
               month: monthAnchorYmd,
             },
             replace: true,
+            resetScroll: false,
           })
         }}
         onSubmit={(input) => {

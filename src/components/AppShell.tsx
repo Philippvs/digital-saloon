@@ -1,13 +1,16 @@
 import type * as React from 'react'
 import { Box, Button, Container, IconButton, Link, Stack, Typography } from '@mui/material'
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined'
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 
 import { telHref } from '../data/phone'
 import type { Salon } from '../data/schemas'
 import { useLocale } from '../i18n'
 import { localeLabels, locales } from '../i18n'
 import { brand } from '../theme'
-import { Header, LanguageSwitch, NavLink, StaffBar } from './AppShell.styles'
+import { Header, LanguageSwitch, NavLink } from './AppShell.styles'
 import { HeaderWordmark } from './Wordmark'
 
 export type AppShellProps = {
@@ -20,6 +23,7 @@ export type AppShellProps = {
   onMyBookingsClick: () => void
   onLoginClick: () => void
   onAdminClick: () => void
+  onAdminSettingsClick: () => void
   onSignOutClick: () => void
   children: React.ReactNode
 }
@@ -33,6 +37,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   onMyBookingsClick,
   onLoginClick,
   onAdminClick,
+  onAdminSettingsClick,
   onSignOutClick,
   children,
 }) => {
@@ -40,38 +45,59 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {email ? (
-        <StaffBar>
-          <Container maxWidth="lg" className="staff-inner">
-            <span className="staff-email">{t('nav.signedInAs', { email })}</span>
-            <button type="button" onClick={onAdminClick}>
-              {t('nav.staffCalendar')}
-            </button>
-            <button type="button" onClick={onSignOutClick}>
-              {t('nav.signOut')}
-            </button>
-          </Container>
-        </StaffBar>
-      ) : null}
-
       <Header>
         <Container maxWidth="lg" className="header-inner">
           <HeaderWordmark label={t('nav.home')} onClick={onHomeClick} />
           <nav className="header-nav" aria-label={t('nav.main')}>
-            <NavLink
-              type="button"
-              onClick={onMyBookingsClick}
-              sx={{ display: { xs: 'none', sm: 'inline' } }}
-            >
-              {t('nav.myBookings')}
-            </NavLink>
-            <IconButton
-              aria-label={t('nav.myBookings')}
-              onClick={onMyBookingsClick}
-              sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
-            >
-              <EventNoteOutlinedIcon />
-            </IconButton>
+            {email ? (
+              <>
+                <NavLink
+                  type="button"
+                  onClick={onAdminClick}
+                  sx={{ display: { xs: 'none', sm: 'inline' } }}
+                >
+                  {t('nav.staffCalendar')}
+                </NavLink>
+                <IconButton
+                  aria-label={t('nav.staffCalendar')}
+                  onClick={onAdminClick}
+                  sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
+                >
+                  <CalendarMonthOutlinedIcon />
+                </IconButton>
+                <NavLink
+                  type="button"
+                  onClick={onAdminSettingsClick}
+                  sx={{ display: { xs: 'none', sm: 'inline' } }}
+                >
+                  {t('nav.staffSettings')}
+                </NavLink>
+                <IconButton
+                  aria-label={t('nav.staffSettings')}
+                  onClick={onAdminSettingsClick}
+                  sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
+                >
+                  <SettingsOutlinedIcon />
+                </IconButton>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  type="button"
+                  onClick={onMyBookingsClick}
+                  sx={{ display: { xs: 'none', sm: 'inline' } }}
+                >
+                  {t('nav.myBookings')}
+                </NavLink>
+                <IconButton
+                  aria-label={t('nav.myBookings')}
+                  onClick={onMyBookingsClick}
+                  sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
+                >
+                  <EventNoteOutlinedIcon />
+                </IconButton>
+              </>
+            )}
             <LanguageSwitch role="group" aria-label={t('nav.language')}>
               {locales.map((code) => (
                 <button
@@ -86,14 +112,36 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                 </button>
               ))}
             </LanguageSwitch>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={onBookClick}
-              sx={{ whiteSpace: 'nowrap', px: { xs: 1.5, sm: 2.5 } }}
-            >
-              {t('nav.book')}
-            </Button>
+            {email ? (
+              <>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  title={t('nav.signedInAs', { email })}
+                  onClick={onSignOutClick}
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' }, whiteSpace: 'nowrap', px: 2.5 }}
+                >
+                  {t('nav.signOut')}
+                </Button>
+                <IconButton
+                  aria-label={t('nav.signOut')}
+                  title={t('nav.signedInAs', { email })}
+                  onClick={onSignOutClick}
+                  sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
+                >
+                  <LogoutOutlinedIcon />
+                </IconButton>
+              </>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={onBookClick}
+                sx={{ whiteSpace: 'nowrap', px: { xs: 1.5, sm: 2.5 } }}
+              >
+                {t('nav.book')}
+              </Button>
+            )}
           </nav>
         </Container>
       </Header>

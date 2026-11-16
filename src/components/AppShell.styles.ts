@@ -2,43 +2,6 @@ import { styled } from '@mui/material/styles'
 
 import { brand } from '../theme'
 
-export const StaffBar = styled('div')(({ theme }) => ({
-  backgroundColor: brand.espresso,
-  color: brand.paper,
-  fontSize: '0.8125rem',
-  '& .staff-inner': {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(2),
-    minHeight: 36,
-  },
-  '& .staff-email': {
-    flexGrow: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    opacity: 0.75,
-  },
-  '& button': {
-    padding: theme.spacing(0.5, 0),
-    border: 0,
-    background: 'none',
-    color: 'inherit',
-    font: 'inherit',
-    fontWeight: 600,
-    cursor: 'pointer',
-    textDecoration: 'underline',
-    textDecorationColor: 'transparent',
-    textUnderlineOffset: 4,
-    '&:hover': { textDecorationColor: brand.orange },
-    '&:focus-visible': {
-      outline: `2px solid ${brand.orange}`,
-      outlineOffset: 2,
-    },
-  },
-}))
-
 export const Header = styled('header')(({ theme }) => ({
   position: 'sticky',
   top: 0,

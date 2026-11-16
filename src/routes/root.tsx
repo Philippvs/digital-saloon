@@ -36,11 +36,13 @@ const RootRoute: React.FunctionComponent = () => {
       onAdminClick={() => {
         void navigate({ to: '/admin' })
       }}
+      onAdminSettingsClick={() => {
+        void navigate({ to: '/admin/settings' })
+      }}
       onSignOutClick={() => {
-        signOut.mutate(undefined, {
-          onSuccess: () => {
-            void navigate({ to: '/' })
-          },
+        // Leave admin pages first: their auth guard would otherwise redirect to /login.
+        void navigate({ to: '/' }).then(() => {
+          signOut.mutate()
         })
       }}
     >

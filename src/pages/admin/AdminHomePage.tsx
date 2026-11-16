@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 
 import { WeekPlanner } from '../../components/WeekPlanner'
 import { formatViennaDateTime } from '../../data/dateFormat'
@@ -130,9 +131,19 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
               </div>
             </WeekTotals>
           ) : null}
-          <Button variant="contained" size="large" onClick={onAddReservationClick}>
-            {t('admin.addReservation')}
-          </Button>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Button
+              variant="outlined"
+              size="large"
+              startIcon={<SettingsOutlinedIcon />}
+              onClick={onSettingsClick}
+            >
+              {t('admin.settings')}
+            </Button>
+            <Button variant="contained" size="large" onClick={onAddReservationClick}>
+              {t('admin.addReservation')}
+            </Button>
+          </Stack>
         </Stack>
       </Box>
 
