@@ -55,6 +55,11 @@ test.describe('salon home page @smoke', () => {
     ).toHaveAttribute('aria-pressed', 'true')
 
     await expect(page.getByRole('heading', { name: 'Servizi e prezzi' })).toBeVisible()
+    await expect(
+      page.getByRole('region', { name: 'Servizi e prezzi' }).getByRole('button', {
+        name: /^Taglio uomo/,
+      }),
+    ).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Orari di apertura' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Prenota online' })).toBeVisible()
   })

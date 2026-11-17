@@ -43,8 +43,10 @@ export const bookingSettingsSchema = v.object({
 export type BookingSettings = v.InferOutput<typeof bookingSettingsSchema>
 
 export const serviceSchema = v.object({
-  name: v.pipe(v.string(), v.minLength(1), v.maxLength(120)),
-  description: v.pipe(v.string(), v.maxLength(1000)),
+  nameDe: v.pipe(v.string(), v.minLength(1), v.maxLength(120)),
+  nameIt: v.pipe(v.string(), v.minLength(1), v.maxLength(120)),
+  descriptionDe: v.pipe(v.string(), v.maxLength(1000)),
+  descriptionIt: v.pipe(v.string(), v.maxLength(1000)),
   durationMinutes: v.pipe(v.number(), v.integer(), v.minValue(5), v.maxValue(480)),
   priceCents: v.pipe(v.number(), v.integer(), v.minValue(0)),
   active: v.boolean(),

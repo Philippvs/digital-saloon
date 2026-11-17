@@ -95,7 +95,7 @@ export function zonedToUtc(ymd, hm, timeZone) {
 }
 
 /**
- * @param {{ now: Date, timeZone: string, services: Array<{ id: string, name: string, durationMinutes: number, priceCents: number }> }} input
+ * @param {{ now: Date, timeZone: string, services: Array<{ id: string, nameDe: string, nameIt: string, durationMinutes: number, priceCents: number }> }} input
  * @returns {Array<{ id: string, data: Record<string, unknown> }>}
  */
 export function buildDemoReservations({ now, timeZone, services }) {
@@ -133,7 +133,10 @@ export function buildDemoReservations({ now, timeZone, services }) {
           phone: `+39 33${String(1_000_000 + sequence * 7919).slice(-8)}`,
           email: sequence % 3 === 0 ? `${firstName.toLowerCase()}@example.com` : null,
           serviceId: service.id,
-          serviceName: service.name,
+          serviceName:
+            service.nameDe === service.nameIt
+              ? service.nameDe
+              : `${service.nameDe} / ${service.nameIt}`,
           durationMinutes: service.durationMinutes,
           priceCents: service.priceCents,
           startAt: startAt.toISOString(),

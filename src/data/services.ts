@@ -1,13 +1,26 @@
-import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import {
+  addDoc,
+  collection,
+  deleteField,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 import * as v from 'valibot'
 
 import { firestore } from '../firebase'
 import { getSalonId } from './salonConfig'
 import { servicesCollectionPath } from './salonPaths'
 import { serviceSchema, type Service } from './schemas'
-import type { ServiceDraft } from './serviceForm'
+import { normalizeServiceDocument, type ServiceDraft } from './serviceForm'
 
 export type ServiceWithId = Service & { id: string }
+
+function parseServiceDoc(id: string, data: Record<string, unknown>): ServiceWithId {
+  return { id, ...v.parse(serviceSchema, normalizeServiceDocument(data)) }
+}
 
 export async function fetchActiveServices(): Promise<ServiceWithId[]> {
   const salonId = getSalonId()
@@ -15,20 +28,14 @@ export async function fetchActiveServices(): Promise<ServiceWithId[]> {
     query(collection(firestore, servicesCollectionPath(salonId)), where('active', '==', true)),
   )
 
-  return snap.docs.map((docSnap) => ({
-    id: docSnap.id,
-    ...v.parse(serviceSchema, docSnap.data()),
-  }))
+  return snap.docs.map((docSnap) => parseServiceDoc(docSnap.id, docSnap.data()))
 }
 
 export async function fetchAllServices(): Promise<ServiceWithId[]> {
   const salonId = getSalonId()
   const snap = await getDocs(collection(firestore, servicesCollectionPath(salonId)))
 
-  return snap.docs.map((docSnap) => ({
-    id: docSnap.id,
-    ...v.parse(serviceSchema, docSnap.data()),
-  }))
+  return snap.docs.map((docSnap) => parseServiceDoc(docSnap.id, docSnap.data()))
 }
 
 const serviceDraftSchema = v.omit(serviceSchema, ['createdAt', 'updatedAt'])
@@ -44,11 +51,14 @@ export async function createService(draft: ServiceDraft): Promise<string> {
 /**
  * Updates the editable fields of a service. Reservations keep their own copy of
  * name, duration, and price, so existing appointments are not affected.
+ * Drops legacy single-language fields if they are still present.
  */
 export async function updateService(serviceId: string, draft: ServiceDraft): Promise<void> {
   const fields = v.parse(serviceDraftSchema, draft)
   await updateDoc(doc(firestore, servicesCollectionPath(getSalonId()), serviceId), {
     ...fields,
+    name: deleteField(),
+    description: deleteField(),
     updatedAt: new Date().toISOString(),
   })
 }

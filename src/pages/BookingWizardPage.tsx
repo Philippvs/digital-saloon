@@ -16,6 +16,7 @@ import {
 import * as v from 'valibot'
 
 import type { AvailableSlotDto } from '../data/bookingApi'
+import { localizedServiceName } from '../data/serviceForm'
 import {
   addMonths,
   monthMatrix,
@@ -79,7 +80,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
   monthAnchorYmd,
   onSubmit,
 }) => {
-  const { t, intlLocale } = useLocale()
+  const { t, locale, intlLocale } = useLocale()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
@@ -152,7 +153,9 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   transition: 'border-color 120ms ease, background-color 120ms ease',
                 }}
               >
-                <Typography sx={{ fontWeight: 600 }}>{service.name}</Typography>
+                <Typography sx={{ fontWeight: 600 }}>
+                  {localizedServiceName(service, locale)}
+                </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {t('book.durationMinutes', { minutes: service.durationMinutes })} ·{' '}
                   {formatPrice(service.priceCents)}
@@ -316,7 +319,9 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
             {t('book.step.confirm')}
           </Typography>
           <Stack spacing={1} sx={{ mb: 2 }}>
-            <Typography sx={{ fontWeight: 600 }}>{selectedService?.name}</Typography>
+            <Typography sx={{ fontWeight: 600 }}>
+              {selectedService ? localizedServiceName(selectedService, locale) : null}
+            </Typography>
             {selectedStartAt ? (
               <Typography color="text.secondary">
                 {formatViennaDateTime(selectedStartAt, intlLocale)}

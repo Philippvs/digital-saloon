@@ -78,8 +78,10 @@ async function currentHaircut(): Promise<Record<string, FieldValue>> {
   const service = await getService('haircut')
   if (!service) throw new Error('Seeded haircut service missing')
   return {
-    name: String(service.name),
-    description: String(service.description ?? ''),
+    nameDe: String(service.nameDe),
+    nameIt: String(service.nameIt),
+    descriptionDe: String(service.descriptionDe ?? ''),
+    descriptionIt: String(service.descriptionIt ?? ''),
     durationMinutes: Number(service.durationMinutes),
     priceCents: Number(service.priceCents),
     active: Boolean(service.active),
@@ -116,13 +118,15 @@ test.describe('Firestore-Regeln für Leistungen', () => {
   test('Admin darf gültige Leistungen speichern', async ({ request }) => {
     const next = {
       ...(await currentHaircut()),
-      name: 'Herrenschnitt aktualisiert',
+      nameDe: 'Herrenschnitt aktualisiert',
+      nameIt: 'Taglio uomo aggiornato',
       priceCents: 2900,
       updatedAt: '2026-11-17T00:00:00.000Z',
     }
     expect(await writeStatus(request, adminToken, haircutPath, next)).toBe(200)
     expect(await getService('haircut')).toMatchObject({
-      name: 'Herrenschnitt aktualisiert',
+      nameDe: 'Herrenschnitt aktualisiert',
+      nameIt: 'Taglio uomo aggiornato',
       priceCents: 2900,
     })
   })
@@ -142,8 +146,9 @@ test.describe('Firestore-Regeln für Leistungen', () => {
   const invalidCases: Array<
     [string, (base: Record<string, FieldValue>) => Record<string, FieldValue>]
   > = [
-    ['leerer Name', (base) => ({ ...base, name: '' })],
-    ['Name zu lang', (base) => ({ ...base, name: 'x'.repeat(121) })],
+    ['leerer deutscher Name', (base) => ({ ...base, nameDe: '' })],
+    ['leerer italienischer Name', (base) => ({ ...base, nameIt: '' })],
+    ['Name zu lang', (base) => ({ ...base, nameDe: 'x'.repeat(121) })],
     ['Dauer zu kurz', (base) => ({ ...base, durationMinutes: 4 })],
     ['Dauer zu lang', (base) => ({ ...base, durationMinutes: 481 })],
     ['negativer Preis', (base) => ({ ...base, priceCents: -1 })],

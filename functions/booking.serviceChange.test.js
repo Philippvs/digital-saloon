@@ -43,8 +43,10 @@ test('editing a service leaves booked reservations and their reschedule slots un
 
   try {
     await serviceRef.set({
-      name: 'Testschnitt',
-      description: '',
+      nameDe: 'Testschnitt',
+      nameIt: 'Taglio test',
+      descriptionDe: '',
+      descriptionIt: '',
       durationMinutes: 30,
       priceCents: 2600,
       active: true,
@@ -75,7 +77,8 @@ test('editing a service leaves booked reservations and their reschedule slots un
     reservationRef = salonRef.collection('reservations').doc(created.reservationId)
 
     await serviceRef.update({
-      name: 'Testschnitt lang',
+      nameDe: 'Testschnitt lang',
+      nameIt: 'Taglio test lungo',
       durationMinutes: 120,
       priceCents: 9900,
       active: false,
@@ -83,7 +86,7 @@ test('editing a service leaves booked reservations and their reschedule slots un
     })
 
     const reservation = (await reservationRef.get()).data()
-    assert.equal(reservation.serviceName, 'Testschnitt')
+    assert.equal(reservation.serviceName, 'Testschnitt / Taglio test')
     assert.equal(reservation.durationMinutes, 30)
     assert.equal(reservation.priceCents, 2600)
     assert.equal(new Date(reservation.endAt).getTime() - startAt.getTime(), 30 * 60_000)

@@ -1,3 +1,4 @@
+import type { Locale } from '../i18n'
 import type { FieldIssue, ValidationResult } from './settingsForm'
 import type { Service } from './schemas'
 
@@ -12,14 +13,23 @@ export const serviceLimits = {
 /** Fields an admin can change. `createdAt` and the id never change after creation. */
 export type ServiceDraft = Pick<
   Service,
-  'name' | 'description' | 'durationMinutes' | 'priceCents' | 'active'
+  | 'nameDe'
+  | 'nameIt'
+  | 'descriptionDe'
+  | 'descriptionIt'
+  | 'durationMinutes'
+  | 'priceCents'
+  | 'active'
 >
 
-export type ServiceFormField = 'name' | 'description' | 'duration' | 'price'
+export type ServiceFormField =
+  'nameDe' | 'nameIt' | 'descriptionDe' | 'descriptionIt' | 'duration' | 'price'
 
 export type ServiceFormInput = {
-  name: string
-  description: string
+  nameDe: string
+  nameIt: string
+  descriptionDe: string
+  descriptionIt: string
   duration: string
   /** Euro amount as typed, e.g. `26`, `26,50`, or `26.5`. */
   price: string
@@ -27,19 +37,95 @@ export type ServiceFormInput = {
 }
 
 export const emptyServiceFormInput: ServiceFormInput = {
-  name: '',
-  description: '',
+  nameDe: '',
+  nameIt: '',
+  descriptionDe: '',
+  descriptionIt: '',
   duration: '30',
   price: '',
   active: true,
+}
+
+/**
+ * Maps a Firestore service document to the current bilingual shape.
+ * Old docs used a single `name` / `description`, often as `Deutsch / Italiano`.
+ */
+export function normalizeServiceDocument(raw: Record<string, unknown>): Service {
+  const nameDe =
+    typeof raw.nameDe === 'string'
+      ? raw.nameDe
+      : typeof raw.name === 'string'
+        ? splitBilingual(raw.name).de
+        : ''
+  const nameIt =
+    typeof raw.nameIt === 'string'
+      ? raw.nameIt
+      : typeof raw.name === 'string'
+        ? splitBilingual(raw.name).it
+        : nameDe
+  const descriptionDe =
+    typeof raw.descriptionDe === 'string'
+      ? raw.descriptionDe
+      : typeof raw.description === 'string'
+        ? splitBilingual(raw.description).de
+        : ''
+  const descriptionIt =
+    typeof raw.descriptionIt === 'string'
+      ? raw.descriptionIt
+      : typeof raw.description === 'string'
+        ? splitBilingual(raw.description).it
+        : descriptionDe
+
+  return {
+    nameDe,
+    nameIt,
+    descriptionDe,
+    descriptionIt,
+    durationMinutes: Number(raw.durationMinutes),
+    priceCents: Number(raw.priceCents),
+    active: Boolean(raw.active),
+    createdAt: String(raw.createdAt ?? ''),
+    updatedAt: String(raw.updatedAt ?? ''),
+  }
+}
+
+/** Split `Deutsch / Italiano` once; if there is no separator, both sides share the text. */
+export function splitBilingual(value: string): { de: string; it: string } {
+  const trimmed = value.trim()
+  const separator = ' / '
+  const index = trimmed.indexOf(separator)
+  if (index === -1) return { de: trimmed, it: trimmed }
+  const de = trimmed.slice(0, index).trim()
+  const it = trimmed.slice(index + separator.length).trim()
+  return { de: de || trimmed, it: it || de || trimmed }
+}
+
+export function localizedServiceName(service: ServiceDraft, locale: Locale): string {
+  return locale === 'it' ? service.nameIt : service.nameDe
+}
+
+export function localizedServiceDescription(service: ServiceDraft, locale: Locale): string {
+  const text = locale === 'it' ? service.descriptionIt : service.descriptionDe
+  return text.trim()
+}
+
+/** Compact bilingual label for reservations and the admin list (both languages at once). */
+export function bilingualServiceName(service: ServiceDraft): string {
+  const de = service.nameDe.trim()
+  const it = service.nameIt.trim()
+  if (!it || it === de) return de
+  if (!de) return it
+  return `${de} / ${it}`
 }
 
 export function serviceFormInputOf(service: ServiceDraft): ServiceFormInput {
   const euros = Math.floor(service.priceCents / 100)
   const cents = service.priceCents % 100
   return {
-    name: service.name,
-    description: service.description,
+    nameDe: service.nameDe,
+    nameIt: service.nameIt,
+    descriptionDe: service.descriptionDe,
+    descriptionIt: service.descriptionIt,
     duration: String(service.durationMinutes),
     price: cents === 0 ? String(euros) : `${euros},${String(cents).padStart(2, '0')}`,
     active: service.active,
@@ -58,15 +144,24 @@ export function validateServiceForm(
   input: ServiceFormInput,
 ): ValidationResult<ServiceDraft, ServiceFormField> {
   const issues: Partial<Record<ServiceFormField, FieldIssue>> = {}
-  const name = input.name.trim()
-  const description = input.description.trim()
+  const nameDe = input.nameDe.trim()
+  const nameIt = input.nameIt.trim()
+  const descriptionDe = input.descriptionDe.trim()
+  const descriptionIt = input.descriptionIt.trim()
 
-  if (name.length === 0) issues.name = { kind: 'required' }
-  else if (name.length > serviceLimits.nameMaxLength) {
-    issues.name = { kind: 'tooLong', max: serviceLimits.nameMaxLength }
+  if (nameDe.length === 0) issues.nameDe = { kind: 'required' }
+  else if (nameDe.length > serviceLimits.nameMaxLength) {
+    issues.nameDe = { kind: 'tooLong', max: serviceLimits.nameMaxLength }
   }
-  if (description.length > serviceLimits.descriptionMaxLength) {
-    issues.description = { kind: 'tooLong', max: serviceLimits.descriptionMaxLength }
+  if (nameIt.length === 0) issues.nameIt = { kind: 'required' }
+  else if (nameIt.length > serviceLimits.nameMaxLength) {
+    issues.nameIt = { kind: 'tooLong', max: serviceLimits.nameMaxLength }
+  }
+  if (descriptionDe.length > serviceLimits.descriptionMaxLength) {
+    issues.descriptionDe = { kind: 'tooLong', max: serviceLimits.descriptionMaxLength }
+  }
+  if (descriptionIt.length > serviceLimits.descriptionMaxLength) {
+    issues.descriptionIt = { kind: 'tooLong', max: serviceLimits.descriptionMaxLength }
   }
 
   const durationRaw = input.duration.trim()
@@ -92,7 +187,15 @@ export function validateServiceForm(
   }
   return {
     ok: true,
-    value: { name, description, durationMinutes, priceCents, active: input.active },
+    value: {
+      nameDe,
+      nameIt,
+      descriptionDe,
+      descriptionIt,
+      durationMinutes,
+      priceCents,
+      active: input.active,
+    },
   }
 }
 
@@ -102,6 +205,6 @@ export function sortServicesForAdmin<T extends ServiceDraft>(services: readonly 
     (a, b) =>
       Number(b.active) - Number(a.active) ||
       a.priceCents - b.priceCents ||
-      a.name.localeCompare(b.name),
+      a.nameDe.localeCompare(b.nameDe),
   )
 }

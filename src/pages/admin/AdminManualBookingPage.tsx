@@ -14,6 +14,7 @@ import {
 
 import type { AvailableSlotDto } from '../../data/bookingApi'
 import { formatViennaDate, formatViennaTime } from '../../data/dateFormat'
+import { localizedServiceName } from '../../data/serviceForm'
 import type { ServiceWithId } from '../../data/services'
 import { useLocale } from '../../i18n'
 
@@ -57,7 +58,7 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
   onDateChange,
   onSubmit,
 }) => {
-  const { t, intlLocale } = useLocale()
+  const { t, locale, intlLocale } = useLocale()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
@@ -92,7 +93,7 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
           >
             {(services ?? []).map((service) => (
               <MenuItem key={service.id} value={service.id}>
-                {service.name}
+                {localizedServiceName(service, locale)}
               </MenuItem>
             ))}
           </TextField>

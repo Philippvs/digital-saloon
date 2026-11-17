@@ -192,6 +192,10 @@ export type Messages = {
   'admin.cancelEdit': string
   'admin.priceError': string
   'admin.name': string
+  'admin.fieldNameDe': string
+  'admin.fieldNameIt': string
+  'admin.fieldDescriptionDe': string
+  'admin.fieldDescriptionIt': string
   'admin.duration': string
   'admin.price': string
   'admin.active': string
@@ -506,7 +510,8 @@ export const de: Messages = {
   'admin.servicesKeepHint':
     'Änderungen gelten für neue Buchungen. Bereits gebuchte Termine behalten Leistung, Dauer und Preis.',
   'admin.fieldDescription': 'Beschreibung (optional)',
-  'admin.fieldDescriptionHint': 'Steht in der Preisliste auf der Website.',
+  'admin.fieldDescriptionHint':
+    'Steht in der Preisliste auf der Website, in der jeweiligen Sprache.',
   'admin.fieldDurationHint': 'So lange ist der Kalender für diese Leistung belegt.',
   'admin.fieldActive': 'Online buchbar',
   'admin.fieldActiveHint':
@@ -515,6 +520,10 @@ export const de: Messages = {
   'admin.cancelEdit': 'Abbrechen',
   'admin.priceError': 'Bitte einen Betrag wie 26 oder 26,50 eingeben.',
   'admin.name': 'Name',
+  'admin.fieldNameDe': 'Name (Deutsch)',
+  'admin.fieldNameIt': 'Name (Italienisch)',
+  'admin.fieldDescriptionDe': 'Beschreibung (Deutsch, optional)',
+  'admin.fieldDescriptionIt': 'Beschreibung (Italienisch, optional)',
   'admin.duration': 'Dauer',
   'admin.price': 'Preis',
   'admin.active': 'Aktiv',
@@ -830,7 +839,7 @@ export const it: Messages = {
   'admin.servicesKeepHint':
     'Le modifiche valgono per le nuove prenotazioni. Gli appuntamenti già prenotati mantengono servizio, durata e prezzo.',
   'admin.fieldDescription': 'Descrizione (facoltativa)',
-  'admin.fieldDescriptionHint': 'Appare nel listino prezzi sul sito.',
+  'admin.fieldDescriptionHint': 'Appare nel listino prezzi sul sito, nella lingua corrispondente.',
   'admin.fieldDurationHint': 'Per questo tempo il calendario risulta occupato.',
   'admin.fieldActive': 'Prenotabile online',
   'admin.fieldActiveHint':
@@ -839,6 +848,10 @@ export const it: Messages = {
   'admin.cancelEdit': 'Annulla',
   'admin.priceError': 'Inserite un importo come 26 o 26,50.',
   'admin.name': 'Nome',
+  'admin.fieldNameDe': 'Nome (tedesco)',
+  'admin.fieldNameIt': 'Nome (italiano)',
+  'admin.fieldDescriptionDe': 'Descrizione (tedesco, facoltativa)',
+  'admin.fieldDescriptionIt': 'Descrizione (italiano, facoltativa)',
   'admin.duration': 'Durata',
   'admin.price': 'Prezzo',
   'admin.active': 'Attivo',

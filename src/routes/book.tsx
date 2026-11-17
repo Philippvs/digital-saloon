@@ -6,6 +6,8 @@ import { optionalSearchParam } from '../data/schemas'
 import { useActiveServices } from '../hooks/useActiveServices'
 import { useAvailableSlots } from '../hooks/useAvailableSlots'
 import { useCreateReservation } from '../hooks/useCreateReservation'
+import { localizedServiceName } from '../data/serviceForm'
+import { useLocale } from '../i18n'
 import { BookingWizardPage } from '../pages/BookingWizardPage'
 import { rootRoute } from './root'
 
@@ -23,6 +25,7 @@ export const bookRoute = createRoute({
   component: function BookWizardRoute() {
     const navigate = useNavigate()
     const search = bookRoute.useSearch()
+    const { locale } = useLocale()
     const services = useActiveServices()
     const create = useCreateReservation()
 
@@ -152,7 +155,9 @@ export const bookRoute = createRoute({
                     reservationId: result.reservationId,
                     token: result.managementToken,
                     status: result.status,
-                    serviceName: selectedService?.name ?? '',
+                    serviceName: selectedService
+                      ? localizedServiceName(selectedService, locale)
+                      : '',
                     startAt: search.startAt!,
                   },
                 })

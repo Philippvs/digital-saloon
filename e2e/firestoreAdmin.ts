@@ -153,10 +153,10 @@ export async function getService(
 }
 
 export async function findServiceByName(
-  name: string,
+  nameDe: string,
   salonId = 'pilot',
 ): Promise<(Record<string, unknown> & { id: string }) | null> {
-  const snap = await servicesCollection(salonId).where('name', '==', name).limit(1).get()
+  const snap = await servicesCollection(salonId).where('nameDe', '==', nameDe).limit(1).get()
   const doc = snap.docs[0]
   return doc ? { id: doc.id, ...doc.data() } : null
 }

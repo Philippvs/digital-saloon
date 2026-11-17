@@ -87,36 +87,46 @@ export async function seedSalonData(firestore, config = salonSeedConfig()) {
   const services = [
     {
       id: 'haircut',
-      name: 'Herrenschnitt / Taglio uomo',
-      description: 'Waschen, Schneiden, Finish',
+      nameDe: 'Herrenschnitt',
+      nameIt: 'Taglio uomo',
+      descriptionDe: 'Waschen, Schneiden, Finish',
+      descriptionIt: 'Lavaggio, taglio, finish',
       durationMinutes: 30,
       priceCents: 2600,
     },
     {
       id: 'haircut-wash',
-      name: 'Damenschnitt / Taglio donna',
-      description: 'Waschen, Schneiden, Föhnen',
+      nameDe: 'Damenschnitt',
+      nameIt: 'Taglio donna',
+      descriptionDe: 'Waschen, Schneiden, Föhnen',
+      descriptionIt: 'Lavaggio, taglio, piega',
       durationMinutes: 60,
       priceCents: 4800,
     },
     {
       id: 'blow-dry',
-      name: 'Waschen & Föhnen / Piega',
-      description: 'Waschen, Pflege, Styling',
+      nameDe: 'Waschen & Föhnen',
+      nameIt: 'Piega',
+      descriptionDe: 'Waschen, Pflege, Styling',
+      descriptionIt: 'Lavaggio, cura, styling',
       durationMinutes: 30,
       priceCents: 2800,
     },
     {
       id: 'coloring',
-      name: 'Farbe / Colore',
-      description: 'Ansatz- oder Komplettfarbe mit Pflege und Föhnen',
+      nameDe: 'Farbe',
+      nameIt: 'Colore',
+      descriptionDe: 'Ansatz- oder Komplettfarbe mit Pflege und Föhnen',
+      descriptionIt: 'Colore radici o completo con cura e piega',
       durationMinutes: 120,
       priceCents: 8500,
     },
     {
       id: 'highlights',
-      name: 'Strähnen / Mèches',
-      description: 'Folien- oder Freihandsträhnen mit Föhnen',
+      nameDe: 'Strähnen',
+      nameIt: 'Mèches',
+      descriptionDe: 'Folien- oder Freihandsträhnen mit Föhnen',
+      descriptionIt: 'Mèches a fogli o a mano libera con piega',
       durationMinutes: 150,
       priceCents: 9800,
     },
@@ -130,15 +140,12 @@ export async function seedSalonData(firestore, config = salonSeedConfig()) {
     await salonRef
       .collection('services')
       .doc(id)
-      .set(
-        {
-          ...fields,
-          active: true,
-          createdAt: now,
-          updatedAt: now,
-        },
-        { merge: true },
-      )
+      .set({
+        ...fields,
+        active: true,
+        createdAt: now,
+        updatedAt: now,
+      })
   }
   // Drop leftover services from tests so the public price list stays exact.
   const existingServices = await salonRef.collection('services').get()

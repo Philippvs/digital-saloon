@@ -35,6 +35,15 @@ export function lockIdForStart(startAt: Date): string {
   return startAt.toISOString().replace(/[:.]/g, '-')
 }
 
+/** Snapshot label for a booking: bilingual when DE/IT differ, with legacy `name` fallback. */
+function bilingualLabel(service: Record<string, unknown>): string {
+  const nameDe = String(service.nameDe ?? '').trim()
+  const nameIt = String(service.nameIt ?? '').trim()
+  if (nameDe && nameIt && nameDe !== nameIt) return `${nameDe} / ${nameIt}`
+  if (nameDe || nameIt) return nameDe || nameIt
+  return String(service.name ?? '').trim()
+}
+
 /**
  * Transactional create shared by online and manual booking.
  * Revalidates availability inside the transaction and takes a slot lock
@@ -174,7 +183,7 @@ export async function createReservationTransactional(
         phone: input.phone,
         email: input.email,
         serviceId: input.serviceId,
-        serviceName: String(service.name),
+        serviceName: bilingualLabel(service),
         durationMinutes,
         priceCents: Number(service.priceCents),
         startAt: input.startAt.toISOString(),

@@ -3,6 +3,7 @@ import { Box, Button, CircularProgress, Container, Link, Typography } from '@mui
 
 import { parseYmd, viennaTodayYmd } from '../data/bookingCalendar'
 import type { OpeningHoursByWeekday } from '../data/openingHours'
+import { localizedServiceDescription, localizedServiceName } from '../data/serviceForm'
 import { telHref } from '../data/phone'
 import type { Salon, Weekday } from '../data/schemas'
 import type { ServiceWithId } from '../data/services'
@@ -50,7 +51,7 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
   onBookClick,
   onServiceClick,
 }) => {
-  const { t, intlLocale } = useLocale()
+  const { t, locale, intlLocale } = useLocale()
 
   const priceFormat = (cents: number): string =>
     new Intl.NumberFormat(intlLocale, {
@@ -140,7 +141,7 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
                         className="price-name"
                         sx={{ fontWeight: 600, fontSize: '1.125rem' }}
                       >
-                        {service.name}
+                        {localizedServiceName(service, locale)}
                       </Typography>
                       <Typography
                         component="span"
@@ -161,14 +162,14 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
                       >
                         {priceFormat(service.priceCents)}
                       </Typography>
-                      {service.description ? (
+                      {localizedServiceDescription(service, locale) ? (
                         <Typography
                           component="span"
                           variant="body2"
                           color="text.secondary"
                           sx={{ gridColumn: '1 / -1', mt: 0.5 }}
                         >
-                          {service.description}
+                          {localizedServiceDescription(service, locale)}
                         </Typography>
                       ) : null}
                     </PriceRow>

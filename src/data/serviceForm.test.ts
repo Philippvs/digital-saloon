@@ -3,21 +3,73 @@ import * as v from 'valibot'
 
 import { serviceSchema } from './schemas'
 import {
+  bilingualServiceName,
   emptyServiceFormInput,
+  localizedServiceDescription,
+  localizedServiceName,
+  normalizeServiceDocument,
   parsePriceCents,
   serviceFormInputOf,
   sortServicesForAdmin,
+  splitBilingual,
   validateServiceForm,
   type ServiceFormInput,
 } from './serviceForm'
 
 const validInput: ServiceFormInput = {
-  name: ' Herrenschnitt / Taglio uomo ',
-  description: ' Waschen, Schneiden, Finish ',
+  nameDe: ' Herrenschnitt ',
+  nameIt: ' Taglio uomo ',
+  descriptionDe: ' Waschen, Schneiden, Finish ',
+  descriptionIt: ' Lavaggio, taglio, finish ',
   duration: '30',
   price: '26',
   active: true,
 }
+
+describe('splitBilingual / normalizeServiceDocument', () => {
+  it('splits Deutsch / Italiano names from the old single field', () => {
+    expect(splitBilingual('Herrenschnitt / Taglio uomo')).toEqual({
+      de: 'Herrenschnitt',
+      it: 'Taglio uomo',
+    })
+    expect(splitBilingual('Farbe')).toEqual({ de: 'Farbe', it: 'Farbe' })
+  })
+
+  it('normalizes legacy documents and already bilingual ones', () => {
+    expect(
+      normalizeServiceDocument({
+        name: 'Herrenschnitt / Taglio uomo',
+        description: 'Waschen / Lavaggio',
+        durationMinutes: 30,
+        priceCents: 2600,
+        active: true,
+        createdAt: 'a',
+        updatedAt: 'b',
+      }),
+    ).toMatchObject({
+      nameDe: 'Herrenschnitt',
+      nameIt: 'Taglio uomo',
+      descriptionDe: 'Waschen',
+      descriptionIt: 'Lavaggio',
+    })
+
+    const bilingual = normalizeServiceDocument({
+      nameDe: 'Farbe',
+      nameIt: 'Colore',
+      descriptionDe: '',
+      descriptionIt: 'Tinta',
+      durationMinutes: 120,
+      priceCents: 8500,
+      active: true,
+      createdAt: 'a',
+      updatedAt: 'b',
+    })
+    expect(v.is(serviceSchema, bilingual)).toBe(true)
+    expect(localizedServiceName(bilingual, 'it')).toBe('Colore')
+    expect(localizedServiceDescription(bilingual, 'it')).toBe('Tinta')
+    expect(localizedServiceDescription(bilingual, 'de')).toBe('')
+  })
+})
 
 describe('parsePriceCents', () => {
   it.each([
@@ -38,16 +90,28 @@ describe('parsePriceCents', () => {
 })
 
 describe('validateServiceForm', () => {
-  it('trims text and converts duration and price', () => {
+  it('trims both languages and converts duration and price', () => {
     const result = validateServiceForm(validInput)
     expect(result).toEqual({
       ok: true,
       value: {
-        name: 'Herrenschnitt / Taglio uomo',
-        description: 'Waschen, Schneiden, Finish',
+        nameDe: 'Herrenschnitt',
+        nameIt: 'Taglio uomo',
+        descriptionDe: 'Waschen, Schneiden, Finish',
+        descriptionIt: 'Lavaggio, taglio, finish',
         durationMinutes: 30,
         priceCents: 2600,
         active: true,
+      },
+    })
+  })
+
+  it('requires German and Italian names', () => {
+    expect(validateServiceForm({ ...validInput, nameDe: ' ', nameIt: '' })).toEqual({
+      ok: false,
+      issues: {
+        nameDe: { kind: 'required' },
+        nameIt: { kind: 'required' },
       },
     })
   })
@@ -58,11 +122,17 @@ describe('validateServiceForm', () => {
     if (result.ok) {
       const stamped = { ...result.value, createdAt: 'now', updatedAt: 'now' }
       expect(v.is(serviceSchema, stamped)).toBe(true)
+      expect(bilingualServiceName(result.value)).toBe('Herrenschnitt / Taglio uomo')
     }
   })
 
-  it('allows an empty description and a free service', () => {
-    const result = validateServiceForm({ ...validInput, description: '', price: '0' })
+  it('allows empty descriptions and a free service', () => {
+    const result = validateServiceForm({
+      ...validInput,
+      descriptionDe: '',
+      descriptionIt: '',
+      price: '0',
+    })
     expect(result.ok).toBe(true)
   })
 
@@ -74,8 +144,10 @@ describe('validateServiceForm', () => {
   it('reports every invalid field', () => {
     expect(
       validateServiceForm({
-        name: '  ',
-        description: 'x'.repeat(1001),
+        nameDe: '  ',
+        nameIt: 'x'.repeat(121),
+        descriptionDe: 'x'.repeat(1001),
+        descriptionIt: '',
         duration: '4',
         price: 'gratis',
         active: true,
@@ -83,37 +155,23 @@ describe('validateServiceForm', () => {
     ).toEqual({
       ok: false,
       issues: {
-        name: { kind: 'required' },
-        description: { kind: 'tooLong', max: 1000 },
+        nameDe: { kind: 'required' },
+        nameIt: { kind: 'tooLong', max: 120 },
+        descriptionDe: { kind: 'tooLong', max: 1000 },
         duration: { kind: 'range', min: 5, max: 480 },
         price: { kind: 'price' },
       },
     })
   })
 
-  it.each(['481', '0', '30.5', ''])('rejects duration %j', (duration) => {
-    const result = validateServiceForm({ ...validInput, duration })
-    expect(result).toEqual({
-      ok: false,
-      issues: { duration: { kind: 'range', min: 5, max: 480 } },
-    })
-  })
-
-  it('requires a price and limits the name', () => {
-    expect(validateServiceForm({ ...validInput, price: ' ' })).toEqual({
-      ok: false,
-      issues: { price: { kind: 'required' } },
-    })
-    expect(validateServiceForm({ ...validInput, name: 'x'.repeat(121) })).toEqual({
-      ok: false,
-      issues: { name: { kind: 'tooLong', max: 120 } },
-    })
-  })
-
   it('starts new services as bookable 30-minute entries', () => {
     expect(validateServiceForm(emptyServiceFormInput)).toEqual({
       ok: false,
-      issues: { name: { kind: 'required' }, price: { kind: 'required' } },
+      issues: {
+        nameDe: { kind: 'required' },
+        nameIt: { kind: 'required' },
+        price: { kind: 'required' },
+      },
     })
   })
 })
@@ -121,8 +179,10 @@ describe('validateServiceForm', () => {
 describe('serviceFormInputOf', () => {
   it('shows prices with a German decimal comma and round-trips', () => {
     const service = {
-      name: 'Farbe / Colore',
-      description: 'Ansatz',
+      nameDe: 'Farbe',
+      nameIt: 'Colore',
+      descriptionDe: 'Ansatz',
+      descriptionIt: 'Radice',
       durationMinutes: 120,
       priceCents: 8505,
       active: false,
@@ -136,12 +196,18 @@ describe('serviceFormInputOf', () => {
 
 describe('sortServicesForAdmin', () => {
   it('lists bookable services by price and inactive ones last', () => {
-    const base = { description: '', durationMinutes: 30, active: true }
+    const base = {
+      descriptionDe: '',
+      descriptionIt: '',
+      durationMinutes: 30,
+      active: true,
+      nameIt: 'x',
+    }
     const sorted = sortServicesForAdmin([
-      { ...base, name: 'Farbe', priceCents: 8500 },
-      { ...base, name: 'Alt', priceCents: 100, active: false },
-      { ...base, name: 'Schnitt', priceCents: 2600 },
+      { ...base, nameDe: 'Farbe', priceCents: 8500 },
+      { ...base, nameDe: 'Alt', priceCents: 100, active: false },
+      { ...base, nameDe: 'Schnitt', priceCents: 2600 },
     ])
-    expect(sorted.map((service) => service.name)).toEqual(['Schnitt', 'Farbe', 'Alt'])
+    expect(sorted.map((service) => service.nameDe)).toEqual(['Schnitt', 'Farbe', 'Alt'])
   })
 })

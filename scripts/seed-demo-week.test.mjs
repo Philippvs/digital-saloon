@@ -3,11 +3,29 @@ import { describe, expect, it } from 'vitest'
 import { buildDemoReservations, localYmd, mondayOf, zonedToUtc } from './seed-demo-week.mjs'
 
 const services = [
-  { id: 'haircut', name: 'Herrenschnitt', durationMinutes: 30, priceCents: 2600 },
-  { id: 'haircut-wash', name: 'Damenschnitt', durationMinutes: 60, priceCents: 4800 },
-  { id: 'blow-dry', name: 'Föhnen', durationMinutes: 30, priceCents: 2800 },
-  { id: 'coloring', name: 'Farbe', durationMinutes: 120, priceCents: 8500 },
-  { id: 'highlights', name: 'Strähnen', durationMinutes: 150, priceCents: 9800 },
+  {
+    id: 'haircut',
+    nameDe: 'Herrenschnitt',
+    nameIt: 'Taglio uomo',
+    durationMinutes: 30,
+    priceCents: 2600,
+  },
+  {
+    id: 'haircut-wash',
+    nameDe: 'Damenschnitt',
+    nameIt: 'Taglio donna',
+    durationMinutes: 60,
+    priceCents: 4800,
+  },
+  { id: 'blow-dry', nameDe: 'Föhnen', nameIt: 'Piega', durationMinutes: 30, priceCents: 2800 },
+  { id: 'coloring', nameDe: 'Farbe', nameIt: 'Colore', durationMinutes: 120, priceCents: 8500 },
+  {
+    id: 'highlights',
+    nameDe: 'Strähnen',
+    nameIt: 'Mèches',
+    durationMinutes: 150,
+    priceCents: 9800,
+  },
 ]
 
 const openingHours = {

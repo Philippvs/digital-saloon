@@ -47,13 +47,17 @@ service cloud.firestore {
 
     function isValidService(data) {
       return data.keys().hasOnly([
-          'name', 'description', 'durationMinutes', 'priceCents', 'active', 'createdAt', 'updatedAt'
+          'nameDe', 'nameIt', 'descriptionDe', 'descriptionIt',
+          'durationMinutes', 'priceCents', 'active', 'createdAt', 'updatedAt'
         ])
         && data.keys().hasAll([
-          'name', 'description', 'durationMinutes', 'priceCents', 'active', 'createdAt', 'updatedAt'
+          'nameDe', 'nameIt', 'descriptionDe', 'descriptionIt',
+          'durationMinutes', 'priceCents', 'active', 'createdAt', 'updatedAt'
         ])
-        && isBoundedString(data.name, 120)
-        && data.description is string && data.description.size() <= 1000
+        && isBoundedString(data.nameDe, 120)
+        && isBoundedString(data.nameIt, 120)
+        && data.descriptionDe is string && data.descriptionDe.size() <= 1000
+        && data.descriptionIt is string && data.descriptionIt.size() <= 1000
         && isIntInRange(data.durationMinutes, 5, 480)
         && isIntInRange(data.priceCents, 0, 999999)
         && data.active is bool

@@ -45,21 +45,27 @@ test.describe('admin services @smoke', () => {
     await expect(list.getByText(/€\s*26/).first()).toBeVisible()
   })
 
-  test('creates a new service that appears on the website', async ({ page }) => {
-    const name = `E2E Schnitt ${Date.now().toString().slice(-6)}`
+  test('creates a new service that appears on the website in both languages', async ({ page }) => {
+    const suffix = Date.now().toString().slice(-6)
+    const nameDe = `E2E Schnitt ${suffix}`
+    const nameIt = `E2E Taglio ${suffix}`
     await page.getByRole('button', { name: 'Neue Leistung' }).click()
     const form = editor(page, 'Neue Leistung')
-    await form.getByLabel('Name').fill(name)
-    await form.getByLabel('Beschreibung (optional)').fill('Nur für den Test')
+    await form.getByLabel('Name (Deutsch)').fill(nameDe)
+    await form.getByLabel('Name (Italienisch)').fill(nameIt)
+    await form.getByLabel('Beschreibung (Deutsch, optional)').fill('Nur für den Test')
+    await form.getByLabel('Beschreibung (Italienisch, optional)').fill('Solo per il test')
     await form.getByLabel('Dauer').fill('45')
     await form.getByLabel('Preis').fill('33,50')
     await form.getByRole('button', { name: 'Speichern' }).click()
 
     await expect(page.getByRole('status')).toHaveText('Gespeichert.')
-    const created = await findServiceByName(name)
+    const created = await findServiceByName(nameDe)
     expect(created).toMatchObject({
-      name,
-      description: 'Nur für den Test',
+      nameDe,
+      nameIt,
+      descriptionDe: 'Nur für den Test',
+      descriptionIt: 'Solo per il test',
       durationMinutes: 45,
       priceCents: 3350,
       active: true,
@@ -67,10 +73,20 @@ test.describe('admin services @smoke', () => {
 
     await page.goto('/')
     await expect(
-      page.getByRole('region', { name: 'Leistungen und Preise' }).getByText(name),
+      page.getByRole('region', { name: 'Leistungen und Preise' }).getByText(nameDe),
+    ).toBeVisible()
+    await page
+      .getByRole('banner')
+      .getByRole('group', { name: 'Sprache' })
+      .getByRole('button', {
+        name: 'Italiano',
+      })
+      .click()
+    await expect(
+      page.getByRole('region', { name: 'Servizi e prezzi' }).getByText(nameIt),
     ).toBeVisible()
     await expect(
-      page.getByRole('region', { name: 'Leistungen und Preise' }).getByText(/€\s*33,50/),
+      page.getByRole('region', { name: 'Servizi e prezzi' }).getByText(/33,50/),
     ).toBeVisible()
   })
 
@@ -83,7 +99,8 @@ test.describe('admin services @smoke', () => {
 
     await page.getByRole('button', { name: 'Herrenschnitt / Taglio uomo bearbeiten' }).click()
     const form = editor(page, 'Leistung bearbeiten')
-    await form.getByLabel('Name').fill('Herrenschnitt / Taglio uomo (neu)')
+    await form.getByLabel('Name (Deutsch)').fill('Herrenschnitt neu')
+    await form.getByLabel('Name (Italienisch)').fill('Taglio uomo nuovo')
     await form.getByLabel('Dauer').fill('40')
     await form.getByLabel('Preis').fill('29')
     await form.getByRole('button', { name: 'Speichern' }).click()
@@ -91,7 +108,8 @@ test.describe('admin services @smoke', () => {
 
     await expect.poll(async () => (await getService('haircut'))?.priceCents).toBe(2900)
     expect(await getService('haircut')).toMatchObject({
-      name: 'Herrenschnitt / Taglio uomo (neu)',
+      nameDe: 'Herrenschnitt neu',
+      nameIt: 'Taglio uomo nuovo',
       durationMinutes: 40,
       priceCents: 2900,
       active: true,
@@ -108,7 +126,7 @@ test.describe('admin services @smoke', () => {
 
     await page.goto(`/admin/reservations/${booked.id}`)
     await expect(page.getByText('Herrenschnitt / Taglio uomo')).toBeVisible()
-    await expect(page.getByText('Herrenschnitt / Taglio uomo (neu)')).toHaveCount(0)
+    await expect(page.getByText('Herrenschnitt neu')).toHaveCount(0)
   })
 
   test('deactivating a service hides it from booking but keeps old appointments', async ({

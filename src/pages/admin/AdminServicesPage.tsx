@@ -17,6 +17,7 @@ import AddIcon from '@mui/icons-material/Add'
 
 import { fieldIssueMessages } from '../../components/fieldIssueMessages'
 import {
+  bilingualServiceName,
   emptyServiceFormInput,
   serviceFormInputOf,
   sortServicesForAdmin,
@@ -95,21 +96,40 @@ const ServiceEditorForm: React.FunctionComponent<ServiceEditorFormProps> = ({
         {title}
       </Typography>
       <TextField
-        label={t('admin.name')}
-        value={values.name}
-        onChange={(event) => update('name', event.target.value)}
-        error={Boolean(errors.name)}
-        helperText={errors.name}
+        label={t('admin.fieldNameDe')}
+        value={values.nameDe}
+        onChange={(event) => update('nameDe', event.target.value)}
+        error={Boolean(errors.nameDe)}
+        helperText={errors.nameDe}
         required
         fullWidth
         autoFocus
       />
       <TextField
-        label={t('admin.fieldDescription')}
-        value={values.description}
-        onChange={(event) => update('description', event.target.value)}
-        error={Boolean(errors.description)}
-        helperText={errors.description ?? t('admin.fieldDescriptionHint')}
+        label={t('admin.fieldNameIt')}
+        value={values.nameIt}
+        onChange={(event) => update('nameIt', event.target.value)}
+        error={Boolean(errors.nameIt)}
+        helperText={errors.nameIt}
+        required
+        fullWidth
+      />
+      <TextField
+        label={t('admin.fieldDescriptionDe')}
+        value={values.descriptionDe}
+        onChange={(event) => update('descriptionDe', event.target.value)}
+        error={Boolean(errors.descriptionDe)}
+        helperText={errors.descriptionDe ?? t('admin.fieldDescriptionHint')}
+        multiline
+        minRows={2}
+        fullWidth
+      />
+      <TextField
+        label={t('admin.fieldDescriptionIt')}
+        value={values.descriptionIt}
+        onChange={(event) => update('descriptionIt', event.target.value)}
+        error={Boolean(errors.descriptionIt)}
+        helperText={errors.descriptionIt}
         multiline
         minRows={2}
         fullWidth
@@ -180,7 +200,7 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
   saving,
   onSave,
 }) => {
-  const { t, intlLocale } = useLocale()
+  const { t, locale, intlLocale } = useLocale()
   const [editor, setEditor] = useState<EditorTarget | null>(null)
   const [savedServiceId, setSavedServiceId] = useState<string | null>(null)
   const sorted = services ? sortServicesForAdmin(services) : undefined
@@ -253,12 +273,14 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
               <li key={service.id}>
                 <ServiceRow className={service.active ? undefined : 'is-inactive'}>
                   <div className="service-text">
-                    <span className="service-name">{service.name}</span>
+                    <span className="service-name">{bilingualServiceName(service)}</span>
                     {service.active ? null : (
                       <span className="service-inactive">{t('admin.inactiveTag')}</span>
                     )}
-                    {service.description ? (
-                      <div className="service-description">{service.description}</div>
+                    {(locale === 'it' ? service.descriptionIt : service.descriptionDe) ? (
+                      <div className="service-description">
+                        {locale === 'it' ? service.descriptionIt : service.descriptionDe}
+                      </div>
                     ) : null}
                   </div>
                   <span className="service-duration">
@@ -267,7 +289,9 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
                   <span className="service-price">{formatPrice(service.priceCents)}</span>
                   <Button
                     size="small"
-                    aria-label={t('admin.editServiceLabel', { name: service.name })}
+                    aria-label={t('admin.editServiceLabel', {
+                      name: bilingualServiceName(service),
+                    })}
                     disabled={editing}
                     onClick={() => {
                       setSavedServiceId(null)

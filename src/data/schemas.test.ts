@@ -105,8 +105,10 @@ describe('schemas', () => {
 
   it('accepts a valid service with price in cents', () => {
     const service = v.parse(serviceSchema, {
-      name: 'Haircut',
-      description: 'Classic cut',
+      nameDe: 'Haircut',
+      nameIt: 'Taglio',
+      descriptionDe: 'Classic cut',
+      descriptionIt: 'Taglio classico',
       durationMinutes: 30,
       priceCents: 2500,
       active: true,
