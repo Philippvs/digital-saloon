@@ -9,7 +9,7 @@ import {
   snapshotServices,
   type ServiceSnapshot,
 } from './firestoreAdmin'
-import { signInAsDemo } from './helpers'
+import { signInAsDemo, signOutAsDemo } from './helpers'
 
 let servicesSnapshot: ServiceSnapshot
 
@@ -71,6 +71,7 @@ test.describe('admin services @smoke', () => {
       active: true,
     })
 
+    await signOutAsDemo(page)
     await page.goto('/')
     await expect(
       page.getByRole('region', { name: 'Leistungen und Preise' }).getByText(nameDe),
@@ -144,6 +145,7 @@ test.describe('admin services @smoke', () => {
 
     await expect.poll(async () => (await getService('blow-dry'))?.active).toBe(false)
 
+    await signOutAsDemo(page)
     await page.goto('/')
     await expect(
       page.getByRole('region', { name: 'Leistungen und Preise' }).getByText('Waschen, föhnen'),

@@ -28,6 +28,28 @@ export type Messages = {
   'home.stylesHint': string
   'home.directions': string
   'footer.vatId': string
+  'footer.privacy': string
+  'privacy.title': string
+  'privacy.updated': string
+  'privacy.intro': string
+  'privacy.controllerTitle': string
+  'privacy.controllerContact': string
+  'privacy.bookingTitle': string
+  'privacy.bookingBody': string
+  'privacy.emailTitle': string
+  'privacy.emailBody': string
+  'privacy.hostingTitle': string
+  'privacy.hostingBody': string
+  'privacy.storageTitle': string
+  'privacy.storageBody': string
+  'privacy.fontsTitle': string
+  'privacy.fontsBody': string
+  'privacy.retentionTitle': string
+  'privacy.retentionBody': string
+  'privacy.rightsTitle': string
+  'privacy.rightsBody': string
+  'privacy.authorityTitle': string
+  'privacy.authorityBody': string
 
   'book.title': string
   'book.subtitle': string
@@ -368,6 +390,37 @@ export const de: Messages = {
   'home.stylesHint': 'Ausgewählte Schnitte, Balayage-Techniken und Colorationen aus unserem Salon.',
   'home.directions': 'Route in Google Maps öffnen',
   'footer.vatId': 'MwSt.-Nr.',
+  'footer.privacy': 'Datenschutz',
+  'privacy.title': 'Datenschutzerklärung',
+  'privacy.updated': 'Stand: November 2026',
+  'privacy.intro':
+    'Wir freuen uns über Ihr Interesse an unserem Salon. Hier erfahren Sie, welche personenbezogenen Daten wir verarbeiten, wenn Sie diese Website nutzen oder online einen Termin buchen, und welche Rechte Sie nach der Datenschutz-Grundverordnung (DSGVO) haben.',
+  'privacy.controllerTitle': 'Verantwortlicher',
+  'privacy.controllerContact': 'Telefon: {phone} · E-Mail: {email}',
+  'privacy.bookingTitle': 'Online-Terminbuchung',
+  'privacy.bookingBody':
+    'Wenn Sie online einen Termin anfragen, verarbeiten wir Vorname, Nachname, Telefonnummer, E-Mail-Adresse, die gewählten Leistungen, den Wunschtermin und Ihre optionalen Anmerkungen. Wir nutzen diese Daten ausschließlich, um Ihren Termin zu planen, zu bestätigen und Sie bei Änderungen zu kontaktieren. Ein Kundenkonto ist nicht nötig.\n\nRechtsgrundlage ist die Durchführung vorvertraglicher Maßnahmen bzw. die Erfüllung des Vertrags (Art. 6 Abs. 1 lit. b DSGVO).',
+  'privacy.emailTitle': 'E-Mail-Benachrichtigungen',
+  'privacy.emailBody':
+    'Nach einer Buchung senden wir Ihnen eine Bestätigung mit einem persönlichen Link, über den Sie Ihren Termin ansehen oder absagen können. Für den Versand nutzen wir einen E-Mail-Dienstleister, der Ihre E-Mail-Adresse und den Inhalt der Nachricht nur in unserem Auftrag verarbeitet (Art. 28 DSGVO).',
+  'privacy.hostingTitle': 'Hosting und Datenbank',
+  'privacy.hostingBody':
+    'Diese Website und die Buchungsdaten werden bei Google Firebase (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) betrieben. Beim Aufruf der Seite werden technisch notwendige Daten wie IP-Adresse, Zeitpunkt und Browsertyp verarbeitet, um die Website sicher und stabil auszuliefern (Art. 6 Abs. 1 lit. f DSGVO).\n\nEine Übermittlung an Google LLC in den USA kann nicht ausgeschlossen werden. Sie ist durch das EU-US Data Privacy Framework sowie durch EU-Standardvertragsklauseln abgesichert.',
+  'privacy.storageTitle': 'Speicherung in Ihrem Browser',
+  'privacy.storageBody':
+    'Wir setzen keine Tracking- oder Werbe-Cookies und keine Analyse-Tools ein. Im lokalen Speicher Ihres Browsers merken wir uns nur Ihre Sprachwahl und die Links zu Ihren gebuchten Terminen, damit Sie diese unter „Meine Termine“ wiederfinden. Diese Daten verlassen Ihr Gerät nicht und lassen sich jederzeit über die Browsereinstellungen löschen.',
+  'privacy.fontsTitle': 'Schriftarten',
+  'privacy.fontsBody':
+    'Für eine einheitliche Darstellung lädt diese Website Schriftarten von Google Fonts (Google Ireland Limited). Dabei wird Ihre IP-Adresse an Google übermittelt. Rechtsgrundlage ist unser berechtigtes Interesse an einer ansprechenden Darstellung (Art. 6 Abs. 1 lit. f DSGVO).',
+  'privacy.retentionTitle': 'Speicherdauer',
+  'privacy.retentionBody':
+    'Wir speichern Ihre Buchungsdaten nur so lange, wie es für die Terminabwicklung nötig ist, und löschen sie danach, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.',
+  'privacy.rightsTitle': 'Ihre Rechte',
+  'privacy.rightsBody':
+    'Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer Daten, auf Datenübertragbarkeit sowie das Recht, einer Verarbeitung auf Grundlage berechtigter Interessen zu widersprechen (Art. 15–21 DSGVO). Schreiben Sie uns dazu einfach eine E-Mail.',
+  'privacy.authorityTitle': 'Beschwerderecht',
+  'privacy.authorityBody':
+    'Sie können sich bei einer Datenschutz-Aufsichtsbehörde beschweren, in Italien beim Garante per la protezione dei dati personali (www.garanteprivacy.it).',
 
   'book.title': 'Termin buchen',
   'book.subtitle': 'Ohne Kundenkonto — Schritt für Schritt zum Wunschtermin.',
@@ -490,7 +543,7 @@ export const de: Messages = {
   'login.password': 'Passwort',
   'login.submit': 'Als Admin anmelden',
   'login.submitting': 'Wird angemeldet…',
-  'login.hint': 'Lokal nach Seed: admin@salonflow.local / password123',
+  'login.hint': 'Lokal nach Seed: {email} / {password}',
   'login.staffOnly':
     'Nur für Salon-Mitarbeiter. Kunden buchen Termine ohne Login — zurück zur Startseite.',
   'login.customerNote': 'Kunden buchen Termine ohne Login über die Startseite.',
@@ -719,6 +772,37 @@ export const it: Messages = {
   'home.stylesHint': 'Tagli selezionati, tecniche balayage e colorazioni dal nostro salone.',
   'home.directions': 'Apri il percorso in Google Maps',
   'footer.vatId': 'P. IVA',
+  'footer.privacy': 'Privacy',
+  'privacy.title': 'Informativa sulla privacy',
+  'privacy.updated': 'Aggiornata a novembre 2026',
+  'privacy.intro':
+    'Grazie per l’interesse nel nostro salone. Qui trova quali dati personali trattiamo quando utilizza questo sito o prenota un appuntamento online, e quali diritti le spettano ai sensi del Regolamento generale sulla protezione dei dati (GDPR).',
+  'privacy.controllerTitle': 'Titolare del trattamento',
+  'privacy.controllerContact': 'Telefono: {phone} · E-mail: {email}',
+  'privacy.bookingTitle': 'Prenotazione online',
+  'privacy.bookingBody':
+    'Quando richiede un appuntamento online trattiamo nome, cognome, numero di telefono, indirizzo e-mail, i servizi scelti, la data desiderata ed eventuali note. Utilizziamo questi dati esclusivamente per pianificare e confermare l’appuntamento e per contattarla in caso di modifiche. Non serve alcun account cliente.\n\nLa base giuridica è l’esecuzione di misure precontrattuali o del contratto (art. 6, par. 1, lett. b GDPR).',
+  'privacy.emailTitle': 'Notifiche via e-mail',
+  'privacy.emailBody':
+    'Dopo la prenotazione le inviamo una conferma con un link personale per visualizzare o annullare l’appuntamento. Per l’invio ci avvaliamo di un fornitore di servizi e-mail che tratta il suo indirizzo e il contenuto del messaggio solo per nostro conto (art. 28 GDPR).',
+  'privacy.hostingTitle': 'Hosting e database',
+  'privacy.hostingBody':
+    'Questo sito e i dati delle prenotazioni sono gestiti tramite Google Firebase (Google Ireland Limited, Gordon House, Barrow Street, Dublino 4, Irlanda). All’apertura del sito vengono trattati dati tecnicamente necessari come indirizzo IP, data e ora e tipo di browser, per fornire il sito in modo sicuro e stabile (art. 6, par. 1, lett. f GDPR).\n\nNon si può escludere un trasferimento a Google LLC negli Stati Uniti. Esso è tutelato dal EU-US Data Privacy Framework e dalle clausole contrattuali standard dell’UE.',
+  'privacy.storageTitle': 'Memorizzazione nel browser',
+  'privacy.storageBody':
+    'Non utilizziamo cookie di tracciamento o pubblicitari né strumenti di analisi. Nella memoria locale del browser salviamo solo la lingua scelta e i link ai suoi appuntamenti, così da ritrovarli in «I miei appuntamenti». Questi dati restano sul suo dispositivo e possono essere eliminati in qualsiasi momento dalle impostazioni del browser.',
+  'privacy.fontsTitle': 'Caratteri tipografici',
+  'privacy.fontsBody':
+    'Per una visualizzazione uniforme questo sito carica i caratteri da Google Fonts (Google Ireland Limited). In tal modo il suo indirizzo IP viene trasmesso a Google. La base giuridica è il nostro legittimo interesse a una presentazione curata (art. 6, par. 1, lett. f GDPR).',
+  'privacy.retentionTitle': 'Durata della conservazione',
+  'privacy.retentionBody':
+    'Conserviamo i dati della prenotazione solo per il tempo necessario a gestire l’appuntamento e li cancelliamo in seguito, salvo obblighi di conservazione previsti dalla legge.',
+  'privacy.rightsTitle': 'I suoi diritti',
+  'privacy.rightsBody':
+    'Ha diritto di accesso, rettifica, cancellazione e limitazione del trattamento dei suoi dati, alla portabilità dei dati e di opporsi a un trattamento basato sul legittimo interesse (artt. 15–21 GDPR). Basta scriverci un’e-mail.',
+  'privacy.authorityTitle': 'Diritto di reclamo',
+  'privacy.authorityBody':
+    'Può proporre reclamo a un’autorità di controllo, in Italia al Garante per la protezione dei dati personali (www.garanteprivacy.it).',
 
   'book.title': 'Prenota un appuntamento',
   'book.subtitle': 'Senza account — passo dopo passo fino all’orario desiderato.',
@@ -841,7 +925,7 @@ export const it: Messages = {
   'login.password': 'Password',
   'login.submit': 'Accedi come admin',
   'login.submitting': 'Accesso in corso…',
-  'login.hint': 'Locale dopo seed: admin@salonflow.local / password123',
+  'login.hint': 'Locale dopo seed: {email} / {password}',
   'login.staffOnly':
     'Solo per lo staff del salone. I clienti prenotano senza login — torna alla home.',
   'login.customerNote': 'I clienti prenotano senza login dalla home.',

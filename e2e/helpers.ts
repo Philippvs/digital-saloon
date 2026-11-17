@@ -17,3 +17,10 @@ export async function signInAsDemo(page: Page): Promise<void> {
   await expect(page.getByRole('banner').getByRole('button', { name: 'Kalender' })).toBeVisible()
   await expect(page.getByRole('banner').getByRole('button', { name: 'Abmelden' })).toBeVisible()
 }
+
+/** Admins are redirected away from customer pages, so sign out before checking them. */
+export async function signOutAsDemo(page: Page): Promise<void> {
+  await page.getByRole('banner').getByRole('button', { name: 'Abmelden' }).click()
+  await expect(page.getByRole('banner').getByRole('button', { name: 'Abmelden' })).toHaveCount(0)
+  await expect(page).toHaveURL(/\/$/)
+}

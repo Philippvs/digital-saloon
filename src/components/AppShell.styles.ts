@@ -1,3 +1,4 @@
+import { IconButton } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
 import { brand } from '../theme'
@@ -48,6 +49,7 @@ export const NavLink = styled('button')(({ theme }) => ({
   textUnderlineOffset: 6,
   transition: 'text-decoration-color 120ms ease',
   '&:hover': { textDecorationColor: brand.orange },
+  '&[aria-current="page"]': { textDecorationColor: brand.orange },
   '&:focus-visible': {
     outline: `2px solid ${brand.orange}`,
     outlineOffset: 2,
@@ -90,3 +92,25 @@ export const LanguageSwitch = styled('div')(({ theme }) => ({
     '& button': { minWidth: 28, paddingInline: 4 },
   },
 }))
+
+/** Phone-width header icon; the current page gets the same orange underline as `NavLink`. */
+export const NavIconButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.primary.main,
+  borderRadius: 0,
+  borderBottom: '2px solid transparent',
+  '&[aria-current="page"]': { borderBottomColor: brand.orange },
+}))
+
+export const FooterLink = styled('button')({
+  padding: 0,
+  border: 0,
+  background: 'none',
+  color: 'inherit',
+  font: 'inherit',
+  fontSize: '0.875rem',
+  opacity: 0.7,
+  cursor: 'pointer',
+  textDecoration: 'underline',
+  textUnderlineOffset: 4,
+  '&:hover, &:focus-visible': { opacity: 1 },
+})

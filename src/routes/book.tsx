@@ -10,6 +10,7 @@ import { useAvailableSlots } from '../hooks/useAvailableSlots'
 import { useCreateReservation } from '../hooks/useCreateReservation'
 import { useLocale } from '../i18n'
 import { BookingWizardPage } from '../pages/BookingWizardPage'
+import { customerOnly } from './customerOnly'
 import { rootRoute } from './root'
 
 const bookSearchSchema = v.object({
@@ -41,7 +42,7 @@ export const bookRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/book',
   validateSearch: (search: Record<string, unknown>) => v.parse(bookSearchSchema, search),
-  component: function BookWizardRoute() {
+  component: customerOnly(function BookWizardRoute() {
     const navigate = useNavigate()
     const search = bookRoute.useSearch()
     const { locale } = useLocale()
@@ -264,5 +265,5 @@ export const bookRoute = createRoute({
         }}
       />
     )
-  },
+  }),
 })

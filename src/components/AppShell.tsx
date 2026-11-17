@@ -12,7 +12,6 @@ import {
   Typography,
 } from '@mui/material'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
-import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuIcon from '@mui/icons-material/Menu'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
@@ -23,19 +22,23 @@ import type { Salon } from '../data/schemas'
 import { useLocale } from '../i18n'
 import { localeLabels, locales } from '../i18n'
 import { brand } from '../theme'
-import { Header, LanguageSwitch, NavLink } from './AppShell.styles'
+import { FooterLink, Header, LanguageSwitch, NavIconButton, NavLink } from './AppShell.styles'
 import { HeaderWordmark } from './Wordmark'
+
+/** Staff header entry matching the current page; `null` outside the admin area. */
+export type AdminNavItem = 'calendar' | 'settings'
 
 export type AppShellProps = {
   salon: Salon | null
   email: string | null
+  activeAdminNav: AdminNavItem | null
   /** `full` lets the page own its width (home page bands); `wide` suits dashboards. */
   contentWidth: 'contained' | 'wide' | 'full'
   onHomeClick: () => void
   onBalayageClick: () => void
   onBookClick: () => void
-  onMyBookingsClick: () => void
   onLoginClick: () => void
+  onPrivacyClick: () => void
   onAdminClick: () => void
   onAdminSettingsClick: () => void
   onSignOutClick: () => void
@@ -45,12 +48,13 @@ export type AppShellProps = {
 export const AppShell: React.FunctionComponent<AppShellProps> = ({
   salon,
   email,
+  activeAdminNav,
   contentWidth,
   onHomeClick,
   onBalayageClick,
   onBookClick,
-  onMyBookingsClick,
   onLoginClick,
+  onPrivacyClick,
   onAdminClick,
   onAdminSettingsClick,
   onSignOutClick,
@@ -79,58 +83,38 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
               <>
                 <NavLink
                   type="button"
+                  aria-current={activeAdminNav === 'calendar' ? 'page' : undefined}
                   onClick={onAdminClick}
                   sx={{ display: { xs: 'none', sm: 'inline' } }}
                 >
                   {t('nav.staffCalendar')}
                 </NavLink>
-                <IconButton
+                <NavIconButton
                   aria-label={t('nav.staffCalendar')}
+                  aria-current={activeAdminNav === 'calendar' ? 'page' : undefined}
                   onClick={onAdminClick}
-                  sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
+                  sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
                 >
                   <CalendarMonthOutlinedIcon />
-                </IconButton>
+                </NavIconButton>
                 <NavLink
                   type="button"
+                  aria-current={activeAdminNav === 'settings' ? 'page' : undefined}
                   onClick={onAdminSettingsClick}
                   sx={{ display: { xs: 'none', sm: 'inline' } }}
                 >
                   {t('nav.staffSettings')}
                 </NavLink>
-                <IconButton
+                <NavIconButton
                   aria-label={t('nav.staffSettings')}
+                  aria-current={activeAdminNav === 'settings' ? 'page' : undefined}
                   onClick={onAdminSettingsClick}
-                  sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
+                  sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
                 >
                   <SettingsOutlinedIcon />
-                </IconButton>
+                </NavIconButton>
               </>
-            ) : (
-              <>
-                <NavLink
-                  type="button"
-                  onClick={onMyBookingsClick}
-                  sx={{ display: { xs: 'none', sm: 'inline' } }}
-                >
-                  {t('nav.myBookings')}
-                </NavLink>
-                <IconButton
-                  aria-label={t('nav.myBookings')}
-                  onClick={onMyBookingsClick}
-                  sx={{
-                    display: {
-                      xs: activeBrand.key === 'salon1500' ? 'none' : 'inline-flex',
-                      sm: 'none',
-                    },
-                    color: 'primary.main',
-                    p: 0.75,
-                  }}
-                >
-                  <EventNoteOutlinedIcon />
-                </IconButton>
-              </>
-            )}
+            ) : null}
             <LanguageSwitch role="group" aria-label={t('nav.language')}>
               {locales.map((code) => (
                 <button
@@ -205,14 +189,6 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                       >
                         Balayage
                       </MenuItem>
-                      <MenuItem
-                        onClick={() => {
-                          setMobileMenuAnchor(null)
-                          onMyBookingsClick()
-                        }}
-                      >
-                        {t('nav.myBookings')}
-                      </MenuItem>
                     </Menu>
                   </>
                 ) : null}
@@ -271,30 +247,20 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                 ) : null}
               </>
             ) : null}
-            {email ? null : (
-              <Box
-                component="button"
-                type="button"
-                onClick={onLoginClick}
-                sx={{
-                  ml: { sm: 'auto !important' },
-                  alignSelf: { xs: 'flex-start', sm: 'baseline' },
-                  p: 0,
-                  border: 0,
-                  background: 'none',
-                  color: 'inherit',
-                  font: 'inherit',
-                  fontSize: '0.875rem',
-                  opacity: 0.7,
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  textUnderlineOffset: 4,
-                  '&:hover, &:focus-visible': { opacity: 1 },
-                }}
-              >
-                {t('nav.staffLogin')}
-              </Box>
-            )}
+            <Stack
+              direction="row"
+              spacing={3}
+              sx={{ ml: { sm: 'auto !important' }, alignItems: 'baseline' }}
+            >
+              <FooterLink type="button" onClick={onPrivacyClick}>
+                {t('footer.privacy')}
+              </FooterLink>
+              {email ? null : (
+                <FooterLink type="button" onClick={onLoginClick}>
+                  {t('nav.staffLogin')}
+                </FooterLink>
+              )}
+            </Stack>
           </Stack>
         </Container>
       </Box>
