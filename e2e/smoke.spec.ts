@@ -59,7 +59,10 @@ test.describe('smoke @smoke', () => {
       }),
     ).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByRole('heading', { name: 'Prenota un appuntamento' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'I miei appuntamenti' })).toBeVisible()
+    await expect(page.getByRole('banner').getByRole('button', { name: 'Prenota' })).toBeVisible()
+    await expect(
+      page.getByRole('contentinfo').getByRole('button', { name: 'Privacy' }),
+    ).toBeVisible()
   })
 
   test('customer opens booking without signing in', async ({ page }) => {

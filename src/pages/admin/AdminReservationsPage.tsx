@@ -11,9 +11,11 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Box,
   Button,
 } from '@mui/material'
 
+import { AdminViewSwitch } from '../../components/AdminViewSwitch'
 import { formatViennaDateTime } from '../../data/dateFormat'
 import { reservationStatusColor } from '../../data/reservationStatus'
 import type { ReservationWithId } from '../../data/reservations'
@@ -38,12 +40,18 @@ export const AdminReservationsPage: React.FunctionComponent<AdminReservationsPag
   const { t, intlLocale } = useLocale()
   return (
     <Stack spacing={3}>
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h1" gutterBottom>
-          {t('admin.reservations')}
-        </Typography>
-        <Button onClick={onCalendarClick}>{t('admin.toCalendar')}</Button>
-      </Paper>
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h1">{t('admin.reservations')}</Typography>
+        <AdminViewSwitch value="list" onWeekClick={onCalendarClick} onListClick={() => {}} />
+      </Box>
 
       {isLoading ? <CircularProgress aria-label={t('admin.loading')} /> : null}
       {isError ? <Alert severity="error">{t('admin.reservationsError')}</Alert> : null}

@@ -1,12 +1,13 @@
 import { createRoute, useNavigate } from '@tanstack/react-router'
 
 import { BalayagePage } from '../pages/BalayagePage'
+import { customerOnly } from './customerOnly'
 import { rootRoute } from './root'
 
 export const balayageRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/balayage',
-  component: function BalayageRoute() {
+  component: customerOnly(function BalayageRoute() {
     const navigate = useNavigate()
 
     return (
@@ -19,5 +20,5 @@ export const balayageRoute = createRoute({
         }}
       />
     )
-  },
+  }),
 })

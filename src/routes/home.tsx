@@ -4,12 +4,13 @@ import { useActiveServices } from '../hooks/useActiveServices'
 import { useOpeningHours } from '../hooks/useOpeningHours'
 import { useSalon } from '../hooks/useSalon'
 import { HomePage } from '../pages/HomePage'
+import { customerOnly } from './customerOnly'
 import { rootRoute } from './root'
 
 export const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: function HomeRoute() {
+  component: customerOnly(function HomeRoute() {
     const navigate = useNavigate()
     const salon = useSalon()
     const services = useActiveServices()
@@ -32,5 +33,5 @@ export const homeRoute = createRoute({
         }}
       />
     )
-  },
+  }),
 })

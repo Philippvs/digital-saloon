@@ -78,7 +78,6 @@ test.describe('salon home page @smoke', () => {
     const headerBox = await header.boundingBox()
     expect(headerBox?.height).toBeLessThanOrEqual(64)
     await expect(header.getByRole('button', { name: 'Termin buchen' })).toBeInViewport()
-    await header.getByRole('button', { name: 'Meine Termine' }).click()
-    await expect(page.getByRole('heading', { name: 'Meine Termine' })).toBeVisible()
+    await expect(header.getByRole('button', { name: 'Meine Termine' })).toHaveCount(0)
   })
 })

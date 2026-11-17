@@ -5,16 +5,27 @@ import { Alert, Button, Paper, Stack, TextField, Typography } from '@mui/materia
 import { useSignIn } from '../hooks/useSignIn'
 import { useLocale } from '../i18n'
 
+export type LoginCredentials = {
+  email: string
+  password: string
+}
+
 export type LoginPageProps = {
+  /** Seeded emulator account shown as a hint and prefilled; `null` in production. */
+  devCredentials: LoginCredentials | null
   onSuccess: () => void
   onHomeClick: () => void
 }
 
-export const LoginPage: React.FunctionComponent<LoginPageProps> = ({ onSuccess, onHomeClick }) => {
+export const LoginPage: React.FunctionComponent<LoginPageProps> = ({
+  devCredentials,
+  onSuccess,
+  onHomeClick,
+}) => {
   const signIn = useSignIn()
   const { t } = useLocale()
-  const [email, setEmail] = useState('admin@salonflow.local')
-  const [password, setPassword] = useState('password123')
+  const [email, setEmail] = useState(devCredentials?.email ?? '')
+  const [password, setPassword] = useState(devCredentials?.password ?? '')
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
@@ -35,7 +46,7 @@ export const LoginPage: React.FunctionComponent<LoginPageProps> = ({ onSuccess, 
           {t('login.title')}
         </Typography>
         <Typography color="text.secondary">{t('login.staffOnly')}</Typography>
-        <Alert severity="info">{t('login.hint')}</Alert>
+        {devCredentials ? <Alert severity="info">{t('login.hint', devCredentials)}</Alert> : null}
         <TextField
           label={t('login.email')}
           type="email"
