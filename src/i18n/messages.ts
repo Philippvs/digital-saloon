@@ -69,7 +69,10 @@ export type Messages = {
   'book.lastName': string
   'book.phone': string
   'book.phoneHelp': string
-  'book.privacy': string
+  'book.privacyBefore': string
+  'book.privacyLink': string
+  'book.privacyAfter': string
+  'book.opensInNewTab': string
   'book.submit': string
   'book.submitting': string
   'book.otherTime': string
@@ -441,7 +444,10 @@ export const de: Messages = {
   'book.lastName': 'Nachname',
   'book.phone': 'Telefon',
   'book.phoneHelp': 'z. B. 0660 1234567 — wird international gespeichert',
-  'book.privacy': 'Ich habe die Datenschutzhinweise zur Kenntnis genommen.',
+  'book.privacyBefore': 'Ich habe die ',
+  'book.privacyLink': 'Datenschutzhinweise',
+  'book.privacyAfter': ' zur Kenntnis genommen.',
+  'book.opensInNewTab': ' (öffnet in neuem Tab)',
   'book.submit': 'Termin verbindlich anfragen',
   'book.submitting': 'Wird gebucht…',
   'book.otherTime': 'Andere Zeit',
@@ -826,7 +832,10 @@ export const it: Messages = {
   'book.lastName': 'Cognome',
   'book.phone': 'Telefono',
   'book.phoneHelp': 'es. 0660 1234567 — salvato in formato internazionale',
-  'book.privacy': 'Ho preso visione dell’informativa sulla privacy.',
+  'book.privacyBefore': 'Ho preso visione dell’',
+  'book.privacyLink': 'informativa sulla privacy',
+  'book.privacyAfter': '.',
+  'book.opensInNewTab': ' (si apre in una nuova scheda)',
   'book.submit': 'Richiedi appuntamento',
   'book.submitting': 'Prenotazione in corso…',
   'book.otherTime': 'Altro orario',
