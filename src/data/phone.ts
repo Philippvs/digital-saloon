@@ -52,11 +52,25 @@ export const phoneE164Schema = v.pipe(
   v.transform((value) => normalizePhoneToE164(value)!),
 )
 
+export const emailSchema = v.pipe(
+  v.string(),
+  v.trim(),
+  v.minLength(1, 'E-Mail-Adresse ist erforderlich.'),
+  v.maxLength(254, 'E-Mail-Adresse ist zu lang.'),
+  v.email('Bitte eine gültige E-Mail-Adresse eingeben.'),
+)
+
+export const notesSchema = v.optional(
+  v.pipe(v.string(), v.trim(), v.maxLength(1000, 'Notizen dürfen maximal 1000 Zeichen lang sein.')),
+)
+
 export const bookingContactSchema = v.object({
-  firstName: v.pipe(v.string(), v.minLength(1), v.maxLength(80)),
-  lastName: v.pipe(v.string(), v.minLength(1), v.maxLength(80)),
+  firstName: v.pipe(v.string(), v.minLength(1, 'Vorname ist erforderlich.'), v.maxLength(80)),
+  lastName: v.pipe(v.string(), v.minLength(1, 'Nachname ist erforderlich.'), v.maxLength(80)),
   phone: phoneE164Schema,
-  privacyAccepted: v.literal(true),
+  email: emailSchema,
+  notes: notesSchema,
+  privacyAccepted: v.literal(true, 'Bitte akzeptieren Sie die Datenschutzhinweise.'),
 })
 
 export type BookingContact = v.InferOutput<typeof bookingContactSchema>

@@ -8,19 +8,29 @@ const WEEKDAY_BY_UTC_DAY: Record<number, import('./types').Weekday> = {
   6: 'saturday',
 }
 
+const formatterCache = new Map<string, Intl.DateTimeFormat>()
+
+function getFormatter(timeZone: string): Intl.DateTimeFormat {
+  let formatter = formatterCache.get(timeZone)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+      weekday: 'short',
+    })
+    formatterCache.set(timeZone, formatter)
+  }
+  return formatter
+}
+
 function partsInTimeZone(date: Date, timeZone: string): Record<string, string> {
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-    weekday: 'short',
-  })
-  const parts = formatter.formatToParts(date)
+  const parts = getFormatter(timeZone).formatToParts(date)
   const map: Record<string, string> = {}
   for (const part of parts) {
     if (part.type !== 'literal') map[part.type] = part.value
@@ -54,7 +64,8 @@ export function zonedLocalToUtc(
   minute: number,
   timeZone: string,
 ): Date {
-  let utc = Date.UTC(year, month - 1, day, hour, minute, 0)
+  const desired = Date.UTC(year, month - 1, day, hour, minute, 0)
+  let utc = desired
   for (let i = 0; i < 3; i += 1) {
     const asDate = new Date(utc)
     const parts = partsInTimeZone(asDate, timeZone)
@@ -63,9 +74,10 @@ export function zonedLocalToUtc(
     const asDay = Number(parts.day)
     const asHour = Number(parts.hour)
     const asMinute = Number(parts.minute)
-    const desired = Date.UTC(year, month - 1, day, hour, minute, 0)
     const actual = Date.UTC(asYear, asMonth - 1, asDay, asHour, asMinute, 0)
-    utc += desired - actual
+    const diff = desired - actual
+    if (diff === 0) break
+    utc += diff
   }
   return new Date(utc)
 }

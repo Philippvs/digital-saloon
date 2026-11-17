@@ -4,20 +4,28 @@ import { fetchAvailableSlots } from '../data/bookingApi'
 import { queryKeyOf } from './queryKeys'
 
 export function useAvailableSlots(input: {
-  serviceId: string | null
+  serviceId?: string | null
+  serviceIds?: string[]
   fromDateYmd: string | null
   toDateYmd: string | null
   enforceAdvanceRestrictions?: boolean
   /** Set when moving an existing booking, so its stored duration is used. */
   managementToken?: string
 }) {
-  const enabled = input.serviceId !== null && input.fromDateYmd !== null && input.toDateYmd !== null
+  const serviceIds =
+    input.serviceIds && input.serviceIds.length > 0
+      ? input.serviceIds
+      : input.serviceId
+        ? [input.serviceId]
+        : []
+  const enabled = serviceIds.length > 0 && input.fromDateYmd !== null && input.toDateYmd !== null
   const enforceAdvanceRestrictions = input.enforceAdvanceRestrictions !== false
+  const servicesKey = serviceIds.join(',')
 
   return useQuery({
     queryKey: queryKeyOf(
       'availableSlots',
-      input.serviceId,
+      servicesKey,
       input.fromDateYmd,
       input.toDateYmd,
       enforceAdvanceRestrictions,
@@ -25,7 +33,8 @@ export function useAvailableSlots(input: {
     ),
     queryFn: () =>
       fetchAvailableSlots({
-        serviceId: input.serviceId!,
+        serviceId: serviceIds[0],
+        serviceIds,
         fromDateYmd: input.fromDateYmd!,
         toDateYmd: input.toDateYmd!,
         enforceAdvanceRestrictions,

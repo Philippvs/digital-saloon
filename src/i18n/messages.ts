@@ -57,6 +57,23 @@ export type Messages = {
   'book.weekday.fr': string
   'book.weekday.sa': string
   'book.weekday.su': string
+  'book.step1Title': string
+  'book.step2Title': string
+  'book.continueToDate': string
+  'book.backToServices': string
+  'book.selectedServicesCount': string
+  'book.totalDuration': string
+  'book.totalPrice': string
+  'book.categoryOther': string
+  'book.weekPrev': string
+  'book.weekNext': string
+  'book.expandCalendar': string
+  'book.collapseCalendar': string
+  'book.noSlotsWeek': string
+  'book.email': string
+  'book.notes': string
+  'book.notesPlaceholder': string
+  'price.onRequest': string
 
   'confirmed.pendingTitle': string
   'confirmed.confirmedTitle': string
@@ -161,6 +178,7 @@ export type Messages = {
   'admin.notFound': string
   'admin.source': string
   'admin.note': string
+  'admin.customerNotes': string
   'admin.confirm': string
   'admin.decline': string
   'admin.complete': string
@@ -375,6 +393,23 @@ export const de: Messages = {
   'book.weekday.fr': 'Fr',
   'book.weekday.sa': 'Sa',
   'book.weekday.su': 'So',
+  'book.step1Title': 'Schritt 1 von 2: Leistungen wählen',
+  'book.step2Title': 'Schritt 2 von 2: Termin & Kontaktdaten',
+  'book.continueToDate': 'Weiter zur Terminauswahl',
+  'book.backToServices': 'Zurück zu den Leistungen',
+  'book.selectedServicesCount': '{count} gewählt',
+  'book.totalDuration': 'Gesamtdauer: {minutes} Min',
+  'book.totalPrice': 'Gesamtpreis: {price}',
+  'book.categoryOther': 'Weitere Leistungen',
+  'book.weekPrev': 'Vorherige Woche',
+  'book.weekNext': 'Nächste Woche',
+  'book.expandCalendar': 'Monatsansicht aufklappen',
+  'book.collapseCalendar': 'Wochenansicht einklappen',
+  'book.noSlotsWeek': 'In dieser Woche sind keine Termine frei. Bitte nächste Woche prüfen.',
+  'book.email': 'E-Mail-Adresse',
+  'book.notes': 'Notizen / Wünsche (optional)',
+  'book.notesPlaceholder': 'Hinweise oder Wünsche an den Friseur…',
+  'price.onRequest': 'Preis nach Beratung',
 
   'confirmed.pendingTitle': 'Anfrage eingegangen',
   'confirmed.confirmedTitle': 'Termin bestätigt',
@@ -485,6 +520,7 @@ export const de: Messages = {
   'admin.notFound': 'Termin nicht gefunden.',
   'admin.source': 'Quelle: {source}',
   'admin.note': 'Notiz: {note}',
+  'admin.customerNotes': 'Kundenhinweis: {notes}',
   'admin.confirm': 'Bestätigen',
   'admin.decline': 'Ablehnen',
   'admin.complete': 'Als erledigt markieren',
@@ -703,6 +739,23 @@ export const it: Messages = {
   'book.weekday.fr': 'Ve',
   'book.weekday.sa': 'Sa',
   'book.weekday.su': 'Do',
+  'book.step1Title': 'Passo 1 di 2: Scegli i servizi',
+  'book.step2Title': 'Passo 2 di 2: Data, orario e contatti',
+  'book.continueToDate': 'Continua alla scelta della data',
+  'book.backToServices': 'Torna ai servizi',
+  'book.selectedServicesCount': '{count} selezionati',
+  'book.totalDuration': 'Durata totale: {minutes} min',
+  'book.totalPrice': 'Prezzo totale: {price}',
+  'book.categoryOther': 'Altri servizi',
+  'book.weekPrev': 'Settimana precedente',
+  'book.weekNext': 'Settimana successiva',
+  'book.expandCalendar': 'Espandi vista mensile',
+  'book.collapseCalendar': 'Comprimi vista settimanale',
+  'book.noSlotsWeek': 'Nessun appuntamento libero in questa settimana. Prova la prossima.',
+  'book.email': 'Indirizzo e-mail',
+  'book.notes': 'Note / desideri (opzionale)',
+  'book.notesPlaceholder': 'Indicazioni o desideri per il parrucchiere…',
+  'price.onRequest': 'Prezzo su richiesta',
 
   'confirmed.pendingTitle': 'Richiesta ricevuta',
   'confirmed.confirmedTitle': 'Appuntamento confermato',
@@ -814,6 +867,7 @@ export const it: Messages = {
   'admin.notFound': 'Appuntamento non trovato.',
   'admin.source': 'Origine: {source}',
   'admin.note': 'Nota: {note}',
+  'admin.customerNotes': 'Note cliente: {notes}',
   'admin.confirm': 'Conferma',
   'admin.decline': 'Rifiuta',
   'admin.complete': 'Segna come completato',

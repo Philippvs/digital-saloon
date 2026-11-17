@@ -11,7 +11,9 @@ export type CreateReservationInput = {
   lastName: string
   phone: string
   email: string | null
+  notes?: string | null
   serviceId: string
+  serviceIds?: string[]
   startAt: Date
   source: 'ONLINE' | 'MANUAL'
   internalNote: string | null
@@ -28,6 +30,12 @@ export type CreateReservationResult =
       status: 'PENDING' | 'CONFIRMED'
       managementToken: string | null
       reused: boolean
+      serviceName?: string
+      durationMinutes?: number
+      timeZone?: string
+      salonName?: string
+      salonAddress?: string
+      salonPhone?: string
     }
   | { ok: false; code: 'UNAVAILABLE' | 'SERVICE_INACTIVE' | 'NOT_FOUND'; message: string }
 
@@ -44,6 +52,67 @@ function bilingualLabel(service: Record<string, unknown>): string {
   return String(service.name ?? '').trim()
 }
 
+type ResolvedBookingServices =
+  | {
+      ok: true
+      serviceIds: string[]
+      serviceName: string
+      durationMinutes: number
+      priceCents: number
+    }
+  | { ok: false; code: 'NOT_FOUND' | 'SERVICE_INACTIVE'; message: string }
+
+export const MAX_BOOKING_SERVICES = 15
+
+async function loadActiveServicesForBooking(
+  db: Firestore,
+  salonId: string,
+  rawIds: string[],
+): Promise<ResolvedBookingServices> {
+  const uniqueIds = Array.from(new Set(rawIds.map((id) => id.trim()).filter(Boolean)))
+  if (uniqueIds.length === 0) {
+    return { ok: false, code: 'NOT_FOUND', message: 'Service not found.' }
+  }
+  if (uniqueIds.length > MAX_BOOKING_SERVICES) {
+    return {
+      ok: false,
+      code: 'NOT_FOUND',
+      message: `At most ${MAX_BOOKING_SERVICES} services can be booked at once.`,
+    }
+  }
+
+  const snaps = await Promise.all(
+    uniqueIds.map((id) =>
+      db.collection('salons').doc(salonId).collection('services').doc(id).get(),
+    ),
+  )
+
+  let durationMinutes = 0
+  let priceCents = 0
+  const labels: string[] = []
+
+  for (const snap of snaps) {
+    if (!snap.exists) {
+      return { ok: false, code: 'NOT_FOUND', message: 'Service not found.' }
+    }
+    const data = snap.data()!
+    if (!data.active) {
+      return { ok: false, code: 'SERVICE_INACTIVE', message: 'Service is not active.' }
+    }
+    durationMinutes += Number(data.durationMinutes)
+    priceCents += Number(data.priceCents)
+    labels.push(bilingualLabel(data))
+  }
+
+  return {
+    ok: true,
+    serviceIds: uniqueIds,
+    serviceName: labels.join(' + '),
+    durationMinutes,
+    priceCents,
+  }
+}
+
 /**
  * Transactional create shared by online and manual booking.
  * Revalidates availability inside the transaction and takes a slot lock
@@ -56,22 +125,19 @@ export async function createReservationTransactional(
 ): Promise<CreateReservationResult> {
   const context = await loadSalonContext(db, salonId)
   const now = input.now ?? new Date()
-  const serviceSnap = await db
-    .collection('salons')
-    .doc(context.salonId)
-    .collection('services')
-    .doc(input.serviceId)
-    .get()
+  const requestedServiceIds =
+    input.serviceIds && input.serviceIds.length > 0 ? input.serviceIds : [input.serviceId]
+  const resolvedServices = await loadActiveServicesForBooking(
+    db,
+    context.salonId,
+    requestedServiceIds,
+  )
 
-  if (!serviceSnap.exists) {
-    return { ok: false, code: 'NOT_FOUND', message: 'Service not found.' }
-  }
-  const service = serviceSnap.data()!
-  if (!service.active) {
-    return { ok: false, code: 'SERVICE_INACTIVE', message: 'Service is not active.' }
+  if (!resolvedServices.ok) {
+    return resolvedServices
   }
 
-  const durationMinutes = Number(service.durationMinutes)
+  const { durationMinutes, priceCents, serviceName, serviceIds } = resolvedServices
   const endAt = new Date(input.startAt.getTime() + durationMinutes * 60_000)
 
   if (input.idempotencyKey) {
@@ -182,10 +248,12 @@ export async function createReservationTransactional(
         lastName: input.lastName,
         phone: input.phone,
         email: input.email,
-        serviceId: input.serviceId,
-        serviceName: bilingualLabel(service),
+        notes: input.notes ?? null,
+        serviceId: serviceIds[0],
+        serviceIds,
+        serviceName,
         durationMinutes,
-        priceCents: Number(service.priceCents),
+        priceCents,
         startAt: input.startAt.toISOString(),
         endAt: endAt.toISOString(),
         status,
@@ -210,11 +278,18 @@ export async function createReservationTransactional(
     status,
     managementToken,
     reused: false,
+    serviceName,
+    durationMinutes,
+    timeZone: context.timeZone,
+    salonName: context.salonName,
+    salonAddress: context.salonAddress,
+    salonPhone: context.salonPhone,
   }
 }
 
 export async function previewAvailableSlots(input: {
-  serviceId: string
+  serviceId?: string
+  serviceIds?: string[]
   fromDateYmd: string
   toDateYmd: string
   now?: Date
@@ -234,16 +309,17 @@ export async function previewAvailableSlots(input: {
   if (input.reschedule) {
     durationMinutes = input.reschedule.durationMinutes
   } else {
-    const serviceSnap = await db
-      .collection('salons')
-      .doc(context.salonId)
-      .collection('services')
-      .doc(input.serviceId)
-      .get()
-    if (!serviceSnap.exists || !serviceSnap.data()?.active) {
+    const requestedIds =
+      input.serviceIds && input.serviceIds.length > 0
+        ? input.serviceIds
+        : input.serviceId
+          ? [input.serviceId]
+          : []
+    const resolved = await loadActiveServicesForBooking(db, context.salonId, requestedIds)
+    if (!resolved.ok) {
       return []
     }
-    durationMinutes = Number(serviceSnap.data()!.durationMinutes)
+    durationMinutes = resolved.durationMinutes
   }
   const rangeStart = new Date(`${input.fromDateYmd}T00:00:00.000Z`)
   const rangeEnd = new Date(`${input.toDateYmd}T23:59:59.999Z`)

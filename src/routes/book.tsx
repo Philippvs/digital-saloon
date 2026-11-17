@@ -1,22 +1,41 @@
+import { useMemo } from 'react'
 import { createRoute, useNavigate } from '@tanstack/react-router'
 import * as v from 'valibot'
 
-import { addMonths, viennaTodayYmd } from '../data/bookingCalendar'
+import { addMonths, viennaTodayYmd, weekStartMondayYmd } from '../data/bookingCalendar'
 import { optionalSearchParam } from '../data/schemas'
+import { localizedServiceName } from '../data/serviceForm'
 import { useActiveServices } from '../hooks/useActiveServices'
 import { useAvailableSlots } from '../hooks/useAvailableSlots'
 import { useCreateReservation } from '../hooks/useCreateReservation'
-import { localizedServiceName } from '../data/serviceForm'
 import { useLocale } from '../i18n'
 import { BookingWizardPage } from '../pages/BookingWizardPage'
 import { rootRoute } from './root'
 
 const bookSearchSchema = v.object({
   serviceId: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
+  serviceIds: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
+  step: optionalSearchParam(v.picklist(['1', '2'] as const)),
   date: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
   startAt: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
+  week: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
   month: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/))),
 })
+
+function parseSelectedServiceIds(search: { serviceId?: string; serviceIds?: string }): string[] {
+  if (search.serviceIds) {
+    return Array.from(
+      new Set(
+        search.serviceIds
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean),
+      ),
+    )
+  }
+  if (search.serviceId) return [search.serviceId]
+  return []
+}
 
 export const bookRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -30,24 +49,40 @@ export const bookRoute = createRoute({
     const create = useCreateReservation()
 
     const today = viennaTodayYmd()
+    const selectedServiceIds = parseSelectedServiceIds(search)
+    const step: 1 | 2 =
+      search.step === '2' || (!search.step && selectedServiceIds.length > 0) ? 2 : 1
+    const weekAnchorYmd = search.week ?? weekStartMondayYmd(today)
     const monthAnchorYmd = search.month ?? `${today.slice(0, 8)}01`
     const rangeFrom = today
     const rangeTo = addMonths(today, 2)
 
     const rangeSlots = useAvailableSlots({
-      serviceId: search.serviceId ?? null,
-      fromDateYmd: search.serviceId ? rangeFrom : null,
-      toDateYmd: search.serviceId ? rangeTo : null,
+      serviceIds: step === 2 ? selectedServiceIds : [],
+      fromDateYmd: step === 2 && selectedServiceIds.length > 0 ? rangeFrom : null,
+      toDateYmd: step === 2 && selectedServiceIds.length > 0 ? rangeTo : null,
     })
 
-    const selectedService = services.data?.find((item) => item.id === search.serviceId)
+    const selectedServices =
+      services.data?.filter((item) => selectedServiceIds.includes(item.id)) ?? []
+
+    const attemptKey = `${selectedServiceIds.join(',')}|${search.startAt ?? ''}`
+    const idempotencyKey = useMemo(() => {
+      void attemptKey
+      return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `idemp-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    }, [attemptKey])
+
+    const serializeServiceIds = (ids: string[]) => (ids.length > 0 ? ids.join(',') : undefined)
 
     return (
       <BookingWizardPage
         services={services.data}
         servicesLoading={services.isLoading}
         servicesError={services.isError}
-        selectedServiceId={search.serviceId ?? null}
+        step={step}
+        selectedServiceIds={selectedServiceIds}
         selectedDate={search.date ?? null}
         selectedStartAt={search.startAt ?? null}
         rangeSlots={rangeSlots.data}
@@ -61,28 +96,83 @@ export const bookRoute = createRoute({
               : 'Buchung fehlgeschlagen'
             : null
         }
+        weekAnchorYmd={weekAnchorYmd}
         monthAnchorYmd={monthAnchorYmd}
-        onMonthAnchorChange={(anchorYmd) => {
+        onToggleService={(serviceId) => {
+          const exists = selectedServiceIds.includes(serviceId)
+          const nextIds = exists
+            ? selectedServiceIds.filter((id) => id !== serviceId)
+            : [...selectedServiceIds, serviceId]
           void navigate({
             to: '/book',
             search: {
-              serviceId: search.serviceId,
+              serviceIds: serializeServiceIds(nextIds),
+              step: '1',
+              date: undefined,
+              startAt: undefined,
+              week: weekAnchorYmd,
+              month: monthAnchorYmd,
+            },
+            replace: true,
+            resetScroll: false,
+          })
+        }}
+        onContinueToDate={() => {
+          if (selectedServiceIds.length === 0) return
+          void navigate({
+            to: '/book',
+            search: {
+              serviceIds: serializeServiceIds(selectedServiceIds),
+              step: '2',
+              date: search.date,
+              startAt: undefined,
+              week: weekAnchorYmd,
+              month: monthAnchorYmd,
+            },
+            replace: true,
+            resetScroll: true,
+          })
+        }}
+        onBackToServices={() => {
+          void navigate({
+            to: '/book',
+            search: {
+              serviceIds: serializeServiceIds(selectedServiceIds),
+              step: '1',
+              date: search.date,
+              startAt: undefined,
+              week: weekAnchorYmd,
+              month: monthAnchorYmd,
+            },
+            replace: true,
+            resetScroll: true,
+          })
+        }}
+        onWeekAnchorChange={(anchorYmd) => {
+          void navigate({
+            to: '/book',
+            search: {
+              serviceIds: serializeServiceIds(selectedServiceIds),
+              step: '2',
               date: search.date,
               startAt: search.startAt,
+              week: weekStartMondayYmd(anchorYmd),
               month: `${anchorYmd.slice(0, 8)}01`,
             },
             replace: true,
             resetScroll: false,
           })
         }}
-        onSelectService={(serviceId) => {
+        onMonthAnchorChange={(anchorYmd) => {
           void navigate({
             to: '/book',
             search: {
-              serviceId,
-              date: undefined,
-              startAt: undefined,
-              month: monthAnchorYmd,
+              serviceIds: serializeServiceIds(selectedServiceIds),
+              step: '2',
+              date: search.date,
+              startAt: search.startAt,
+              week: weekAnchorYmd,
+              month: `${anchorYmd.slice(0, 8)}01`,
             },
             replace: true,
             resetScroll: false,
@@ -92,10 +182,12 @@ export const bookRoute = createRoute({
           void navigate({
             to: '/book',
             search: {
-              serviceId: search.serviceId,
+              serviceIds: serializeServiceIds(selectedServiceIds),
+              step: '2',
               date: dateYmd,
               startAt: undefined,
-              month: monthAnchorYmd,
+              week: weekStartMondayYmd(dateYmd),
+              month: `${dateYmd.slice(0, 8)}01`,
             },
             replace: true,
             resetScroll: false,
@@ -105,9 +197,11 @@ export const bookRoute = createRoute({
           void navigate({
             to: '/book',
             search: {
-              serviceId: search.serviceId,
+              serviceIds: serializeServiceIds(selectedServiceIds),
+              step: '2',
               date: search.date,
               startAt,
+              week: weekAnchorYmd,
               month: monthAnchorYmd,
             },
             replace: true,
@@ -118,9 +212,11 @@ export const bookRoute = createRoute({
           void navigate({
             to: '/book',
             search: {
-              serviceId: search.serviceId,
+              serviceIds: serializeServiceIds(selectedServiceIds),
+              step: '2',
               date: search.date,
               startAt: undefined,
+              week: weekAnchorYmd,
               month: monthAnchorYmd,
             },
             replace: true,
@@ -128,20 +224,19 @@ export const bookRoute = createRoute({
           })
         }}
         onSubmit={(input) => {
-          if (!search.serviceId || !search.startAt) return
+          if (selectedServiceIds.length === 0 || !search.startAt) return
           create.mutate(
             {
-              serviceId: search.serviceId,
+              serviceId: selectedServiceIds[0]!,
+              serviceIds: selectedServiceIds,
               startAt: search.startAt,
               firstName: input.firstName,
               lastName: input.lastName,
               phone: input.phone,
-              email: null,
+              email: input.email,
+              notes: input.notes,
               privacyAccepted: true,
-              idempotencyKey:
-                typeof crypto !== 'undefined' && 'randomUUID' in crypto
-                  ? crypto.randomUUID()
-                  : `idemp-${Date.now()}`,
+              idempotencyKey,
             },
             {
               onSuccess: (result) => {
@@ -149,15 +244,16 @@ export const bookRoute = createRoute({
                   void navigate({ to: '/book' })
                   return
                 }
+                const combinedName = selectedServices
+                  .map((service) => localizedServiceName(service, locale))
+                  .join(' + ')
                 void navigate({
                   to: '/booking/confirmed',
                   search: {
                     reservationId: result.reservationId,
                     token: result.managementToken,
                     status: result.status,
-                    serviceName: selectedService
-                      ? localizedServiceName(selectedService, locale)
-                      : '',
+                    serviceName: combinedName,
                     startAt: search.startAt!,
                   },
                 })

@@ -31,7 +31,8 @@ export type PublicReservation = {
 }
 
 export async function fetchAvailableSlots(input: {
-  serviceId: string
+  serviceId?: string
+  serviceIds?: string[]
   fromDateYmd: string
   toDateYmd: string
   enforceAdvanceRestrictions?: boolean
@@ -40,7 +41,8 @@ export async function fetchAvailableSlots(input: {
 }): Promise<AvailableSlotDto[]> {
   const callable = httpsCallable<
     {
-      serviceId: string
+      serviceId?: string
+      serviceIds?: string[]
       fromDateYmd: string
       toDateYmd: string
       enforceAdvanceRestrictions?: boolean
@@ -49,7 +51,8 @@ export async function fetchAvailableSlots(input: {
     { slots: AvailableSlotDto[] }
   >(firebaseFunctions, 'getAvailableSlots')
   const result = await callable({
-    serviceId: input.serviceId,
+    ...(input.serviceId ? { serviceId: input.serviceId } : {}),
+    ...(input.serviceIds && input.serviceIds.length > 0 ? { serviceIds: input.serviceIds } : {}),
     fromDateYmd: input.fromDateYmd,
     toDateYmd: input.toDateYmd,
     ...(input.enforceAdvanceRestrictions === false ? { enforceAdvanceRestrictions: false } : {}),
@@ -60,11 +63,13 @@ export async function fetchAvailableSlots(input: {
 
 export async function submitOnlineReservation(input: {
   serviceId: string
+  serviceIds: string[]
   startAt: string
   firstName: string
   lastName: string
   phone: string
-  email: string | null
+  email: string
+  notes: string | null
   privacyAccepted: true
   idempotencyKey: string
 }): Promise<CreateReservationResult> {

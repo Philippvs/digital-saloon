@@ -23,10 +23,15 @@ function buildFunctions() {
   }
 
   console.log('[e2e] Building functions…')
-  execFileSync('npm', ['--prefix', join(root, 'functions'), 'run', 'build'], {
-    cwd: root,
-    stdio: 'inherit',
-  })
+  execFileSync(
+    process.platform === 'win32' ? 'npm.cmd' : 'npm',
+    ['--prefix', join(root, 'functions'), 'run', 'build'],
+    {
+      cwd: root,
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+    },
+  )
 }
 
 async function main() {

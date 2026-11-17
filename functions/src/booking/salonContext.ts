@@ -25,6 +25,9 @@ const BLOCKING_STATUSES = new Set(['PENDING', 'CONFIRMED'])
 
 export type SalonContext = {
   salonId: string
+  salonName: string
+  salonAddress: string
+  salonPhone: string
   timeZone: string
   weekly: OpeningHoursByWeekday
   holidays: Holiday[]
@@ -44,7 +47,11 @@ export async function loadSalonContext(
   if (!salonSnap.exists) {
     throw new Error(`Salon ${salonId} not found`)
   }
-  const timeZone = String(salonSnap.data()?.timezone ?? 'Europe/Vienna')
+  const salonData = salonSnap.data() ?? {}
+  const timeZone = String(salonData.timezone ?? 'Europe/Vienna')
+  const salonName = String(salonData.name ?? 'SalonFlow')
+  const salonAddress = String(salonData.address ?? '')
+  const salonPhone = String(salonData.phone ?? '')
 
   const [settingsSnap, hoursSnap, holidaysSnap, exceptionsSnap] = await Promise.all([
     salonRef.collection('settings').doc('booking').get(),
@@ -66,6 +73,9 @@ export async function loadSalonContext(
 
   return {
     salonId,
+    salonName,
+    salonAddress,
+    salonPhone,
     timeZone,
     weekly,
     holidays: holidaysSnap.docs.map((doc) => ({

@@ -10,6 +10,7 @@ test.describe('my bookings @smoke', () => {
     await page.getByLabel('Vorname').fill('Lokal')
     await page.getByLabel('Nachname').fill('Buchung')
     await page.getByLabel('Telefon').fill('+43 660 7777777')
+    await page.getByLabel('E-Mail-Adresse').fill('lokal@example.com')
     await page.getByLabel(/Datenschutzhinweise/).check()
     await page.getByRole('button', { name: 'Termin verbindlich anfragen' }).click()
 

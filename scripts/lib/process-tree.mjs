@@ -53,7 +53,7 @@ export function createProcessSupervisor({
     const child = spawn(command, args, {
       cwd,
       stdio,
-      shell: false,
+      shell: process.platform === 'win32' && command.toLowerCase().endsWith('.cmd'),
       detached: process.platform !== 'win32',
       env: {
         ...process.env,

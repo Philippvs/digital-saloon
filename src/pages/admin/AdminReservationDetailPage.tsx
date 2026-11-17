@@ -61,6 +61,11 @@ export const AdminReservationDetailPage: React.FunctionComponent<
             </Typography>
             <Typography>{reservation.phone}</Typography>
             {reservation.email ? <Typography>{reservation.email}</Typography> : null}
+            {reservation.notes ? (
+              <Typography variant="body2">
+                {t('admin.customerNotes', { notes: reservation.notes })}
+              </Typography>
+            ) : null}
             <Typography variant="body2" color="text.secondary">
               {t('admin.source', { source: reservation.source })}
             </Typography>

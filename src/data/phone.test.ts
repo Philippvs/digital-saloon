@@ -23,14 +23,40 @@ describe('normalizePhoneToE164', () => {
 })
 
 describe('bookingContactSchema', () => {
-  it('accepts valid contact and normalizes phone', () => {
+  it('accepts valid contact with email and optional notes and normalizes phone', () => {
     const parsed = v.parse(bookingContactSchema, {
       firstName: 'Anna',
       lastName: 'Muster',
       phone: '06601234567',
+      email: '  anna@example.com  ',
+      notes: '  Bitte warmes Wasser  ',
       privacyAccepted: true,
     })
     expect(parsed.phone).toBe('+436601234567')
+    expect(parsed.email).toBe('anna@example.com')
+    expect(parsed.notes).toBe('Bitte warmes Wasser')
+  })
+
+  it('rejects missing or invalid email', () => {
+    expect(() =>
+      v.parse(bookingContactSchema, {
+        firstName: 'Anna',
+        lastName: 'Muster',
+        phone: '+436601234567',
+        email: '',
+        privacyAccepted: true,
+      }),
+    ).toThrow()
+
+    expect(() =>
+      v.parse(bookingContactSchema, {
+        firstName: 'Anna',
+        lastName: 'Muster',
+        phone: '+436601234567',
+        email: 'not-an-email',
+        privacyAccepted: true,
+      }),
+    ).toThrow()
   })
 
   it('rejects missing privacy', () => {
@@ -39,6 +65,7 @@ describe('bookingContactSchema', () => {
         firstName: 'Anna',
         lastName: 'Muster',
         phone: '+436601234567',
+        email: 'anna@example.com',
         privacyAccepted: false,
       }),
     ).toThrow()

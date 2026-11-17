@@ -1,9 +1,13 @@
 import { expect, type Page } from '@playwright/test'
 
-/** Drive the single-page booking wizard through service → date → time. */
+/** Drive the 2-step booking wizard through service → date → time. */
 export async function selectServiceDateAndTime(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Termin buchen' })).toBeVisible()
-  await page.locator('[aria-labelledby="step-service"] button').first().click()
+  const serviceSection = page.locator('[aria-labelledby="step-service"]')
+  if (await serviceSection.isVisible()) {
+    await serviceSection.locator('button').first().click()
+    await page.getByRole('button', { name: 'Weiter zur Terminauswahl' }).click()
+  }
 
   await expect(page.getByRole('heading', { name: /Datum wählen/ })).toBeVisible({
     timeout: 15_000,

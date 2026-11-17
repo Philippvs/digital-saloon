@@ -2,20 +2,27 @@ import { styled } from '@mui/material/styles'
 
 import { brand } from '../theme'
 
-export const PriceList = styled('ul')({
+export const PriceList = styled('ul')(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  columnGap: theme.spacing(3),
   listStyle: 'none',
   margin: 0,
   padding: 0,
   borderTop: `1px solid ${brand.espresso}`,
-})
+  [theme.breakpoints.down('md')]: {
+    gridTemplateColumns: '1fr',
+  },
+}))
 
 export const PriceRow = styled('button')(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: '1fr auto auto',
-  columnGap: theme.spacing(3),
+  columnGap: theme.spacing(2),
   alignItems: 'baseline',
   width: '100%',
-  padding: theme.spacing(2.25, 1),
+  height: '100%',
+  padding: theme.spacing(1.5, 1),
   border: 0,
   borderBottom: `1px solid ${theme.palette.divider}`,
   background: 'none',
