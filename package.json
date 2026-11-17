@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "vite --port 3100 --host 127.0.0.1",
     "dev:local": "node scripts/start-dev.mjs",
+    "dev:salon1500": "node scripts/start-dev.mjs --brand=salon1500",
+    "deploy:salon": "node scripts/deploy-salon.mjs",
     "start": "node scripts/start-dev.mjs",
     "start:local": "node scripts/start-dev.mjs",
     "free:ports": "node scripts/free-ports.mjs",

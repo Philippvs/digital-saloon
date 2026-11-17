@@ -2,6 +2,7 @@ import type * as React from 'react'
 import { Box, Button, CircularProgress, Container, Link, Typography } from '@mui/material'
 
 import { parseYmd, viennaTodayYmd } from '../data/bookingCalendar'
+import { getActiveBrand } from '../data/brands'
 import type { OpeningHoursByWeekday } from '../data/openingHours'
 import { arePricesVisible } from '../data/salonConfig'
 import {
@@ -16,6 +17,7 @@ import { HeroWordmark } from '../components/Wordmark'
 import { useLocale } from '../i18n'
 import { brand } from '../theme'
 import { HoursList, PriceList, PriceRow } from './HomePage.styles'
+import { Salon1500HomePage } from './Salon1500HomePage'
 
 export type HomePageProps = {
   salon: Salon | null
@@ -57,7 +59,23 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
   onServiceClick,
 }) => {
   const { t, locale, intlLocale } = useLocale()
+  const activeBrand = getActiveBrand()
   const pricesVisible = arePricesVisible()
+
+  if (activeBrand.key === 'salon1500') {
+    return (
+      <Salon1500HomePage
+        brandProfile={activeBrand}
+        salon={salon}
+        services={services}
+        servicesLoading={servicesLoading}
+        servicesError={servicesError}
+        openingHours={openingHours}
+        onBookClick={onBookClick}
+        onServiceClick={onServiceClick}
+      />
+    )
+  }
 
   const weekdayFormat = new Intl.DateTimeFormat(intlLocale, { weekday: 'long', timeZone: 'UTC' })
   const today = parseYmd(viennaTodayYmd())
@@ -85,10 +103,10 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
           </Box>
           <Box sx={{ maxWidth: '44ch', pb: { md: 1.5 } }}>
             <Typography sx={{ fontSize: '1.375rem', fontWeight: 600, mb: 1.5 }}>
-              {t('home.place')}
+              {activeBrand.place[locale]}
             </Typography>
             <Typography sx={{ fontSize: '1.0625rem', lineHeight: 1.65, mb: 4 }}>
-              {t('home.intro')}
+              {activeBrand.heroIntro[locale]}
             </Typography>
             <Button variant="contained" size="large" onClick={onBookClick}>
               {t('home.book')}
@@ -183,6 +201,83 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
         </Box>
       </Container>
 
+      {activeBrand.gallery.length > 0 ? (
+        <Container
+          maxWidth="lg"
+          component="section"
+          aria-labelledby="home-styles"
+          sx={{ pb: { xs: 8, md: 12 } }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { sm: 'baseline' },
+              justifyContent: 'space-between',
+              gap: 1.5,
+              mb: 3,
+              pb: 1.5,
+              borderBottom: 1,
+              borderColor: 'divider',
+            }}
+          >
+            <Typography id="home-styles" variant="h2">
+              {t('home.stylesTitle')}
+            </Typography>
+            <Typography color="text.secondary" variant="body2">
+              {t('home.stylesHint')}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'repeat(2, minmax(0, 1fr))',
+                sm: 'repeat(3, minmax(0, 1fr))',
+                md: 'repeat(5, minmax(0, 1fr))',
+              },
+              gap: 1.5,
+            }}
+          >
+            {activeBrand.gallery.map((item) => {
+              const alt = locale === 'it' ? item.altIt : item.altDe
+              return (
+                <Box
+                  key={item.src}
+                  component="figure"
+                  sx={{
+                    m: 0,
+                    overflow: 'hidden',
+                    borderRadius: 1,
+                    border: `1px solid ${brand.orange}`,
+                    bgcolor: brand.stone,
+                    aspectRatio: '3 / 4',
+                    position: 'relative',
+                    '&:hover img': {
+                      transform: 'scale(1.04)',
+                    },
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={item.src}
+                    alt={alt}
+                    loading="lazy"
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                      transition: 'transform 260ms ease',
+                    }}
+                  />
+                </Box>
+              )
+            })}
+          </Box>
+        </Container>
+      ) : null}
+
       <Box component="section" sx={{ bgcolor: brand.stone, py: { xs: 7, md: 10 } }}>
         <Container
           maxWidth="lg"
@@ -258,6 +353,33 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
                   </Link>
                 </Typography>
               </>
+            ) : null}
+
+            {activeBrand.stylists.length > 0 ? (
+              <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
+                <Typography variant="h2" sx={{ mb: 2 }}>
+                  {t('home.stylistsTitle')}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                    gap: 2.5,
+                  }}
+                >
+                  {activeBrand.stylists.map((stylist) => (
+                    <Box key={stylist.name}>
+                      <Typography sx={{ fontWeight: 700 }}>{stylist.name}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        {locale === 'it' ? stylist.roleIt : stylist.roleDe}
+                      </Typography>
+                      <Link href={telHref(stylist.phone)} variant="body2">
+                        {stylist.phone}
+                      </Link>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
             ) : null}
           </Box>
         </Container>

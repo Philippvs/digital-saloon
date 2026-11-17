@@ -12,6 +12,7 @@ import {
   adminServicesRoute,
   adminSettingsRoute,
 } from './routes/admin'
+import { balayageRoute } from './routes/balayage'
 import { bookRoute } from './routes/book'
 import { bookingConfirmedRoute } from './routes/bookingConfirmed'
 import { homeRoute } from './routes/home'
@@ -26,6 +27,7 @@ export const router = createRouter({
   defaultErrorComponent: RouteError,
   routeTree: rootRoute.addChildren([
     homeRoute,
+    balayageRoute,
     bookRoute,
     bookingConfirmedRoute,
     myBookingsRoute,

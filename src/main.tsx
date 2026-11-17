@@ -8,7 +8,20 @@ import '@fontsource-variable/archivo'
 import { AuthProvider } from './auth/AuthProvider'
 import { LocaleProvider } from './i18n'
 import { router } from './router'
-import { theme } from './theme'
+import { brand, theme } from './theme'
+
+const isSalon1500 =
+  typeof import.meta.env.VITE_BRAND === 'string' &&
+  import.meta.env.VITE_BRAND.trim().toLowerCase() === 'salon1500'
+document.title = `${isSalon1500 ? 'Salon 1500' : 'KIMM Hair'} – Online-Terminbuchung`
+const iconLink = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+if (iconLink && isSalon1500) {
+  iconLink.href = '/favicon-salon1500.svg'
+}
+const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+if (themeMeta) {
+  themeMeta.content = brand.orange
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

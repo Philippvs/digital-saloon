@@ -235,6 +235,7 @@ export const bookRoute = createRoute({
               phone: input.phone,
               email: input.email,
               notes: input.notes,
+              locale,
               privacyAccepted: true,
               idempotencyKey,
             },

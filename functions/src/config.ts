@@ -14,3 +14,10 @@ export function getDefaultTimezone(): string {
 }
 
 export const functionsRegion = 'europe-west8' as const
+
+export function getBrandKey(): 'kimm' | 'salon1500' {
+  const fromEnv = process.env.BRAND?.trim().toLowerCase()
+  if (fromEnv === 'salon1500') return 'salon1500'
+  if (getSalonId() === 'salon1500') return 'salon1500'
+  return 'kimm'
+}

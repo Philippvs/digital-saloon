@@ -1,16 +1,35 @@
 import { createTheme } from '@mui/material/styles'
 
-/** KIMM Hair brand colors, taken from the salon's logo. */
-export const brand = {
-  orange: '#E2701F',
-  orangeDeep: '#B9540E',
-  espresso: '#4A3631',
-  espressoMuted: '#7A6862',
-  stone: '#F2EEEB',
-  paper: '#FFFFFF',
-} as const
+const isSalon1500 =
+  typeof import.meta.env.VITE_BRAND === 'string' &&
+  import.meta.env.VITE_BRAND.trim().toLowerCase() === 'salon1500'
 
-const fontFamily = '"Archivo Variable", "Helvetica Neue", Arial, sans-serif'
+/** Active salon brand colors (KIMM Hair or Salon 1500 via VITE_BRAND). */
+export const brand = isSalon1500
+  ? ({
+      orange: '#DFBFA4',
+      orangeDeep: '#9A7656',
+      espresso: '#000000',
+      espressoMuted: '#54595F',
+      stone: '#FAF6F2',
+      paper: '#FFFFFF',
+    } as const)
+  : ({
+      orange: '#E2701F',
+      orangeDeep: '#B9540E',
+      espresso: '#4A3631',
+      espressoMuted: '#7A6862',
+      stone: '#F2EEEB',
+      paper: '#FFFFFF',
+    } as const)
+
+const dividerColor = isSalon1500 ? 'rgba(0, 0, 0, 0.14)' : 'rgba(74, 54, 49, 0.16)'
+const fontFamily = isSalon1500
+  ? '"Roboto Condensed", "Helvetica Neue", Arial, sans-serif'
+  : '"Archivo Variable", "Helvetica Neue", Arial, sans-serif'
+const headingFontFamily = isSalon1500
+  ? '"Cormorant SC", Georgia, serif'
+  : '"Archivo Variable", "Helvetica Neue", Arial, sans-serif'
 
 export const theme = createTheme({
   palette: {
@@ -28,7 +47,7 @@ export const theme = createTheme({
       primary: brand.espresso,
       secondary: brand.espressoMuted,
     },
-    divider: 'rgba(74, 54, 49, 0.16)',
+    divider: dividerColor,
     background: {
       default: brand.paper,
       paper: brand.paper,
@@ -37,12 +56,14 @@ export const theme = createTheme({
   typography: {
     fontFamily,
     h1: {
+      fontFamily: headingFontFamily,
       fontSize: '2.25rem',
       fontWeight: 700,
       letterSpacing: '-0.02em',
       lineHeight: 1.1,
     },
     h2: {
+      fontFamily: headingFontFamily,
       fontSize: '1.5rem',
       fontWeight: 600,
       letterSpacing: '-0.01em',

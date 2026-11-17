@@ -115,6 +115,7 @@ export const createReservation = onCall({ region: functionsRegion }, async (requ
   }
 
   if (!result.reused && result.managementToken && result.serviceName && result.durationMinutes) {
+    const locale = data.locale === 'it' ? 'it' : 'de'
     const EMAIL_WAIT_TIMEOUT_MS = 2500
     await Promise.race([
       sendBookingConfirmationEmail({
@@ -128,6 +129,7 @@ export const createReservation = onCall({ region: functionsRegion }, async (requ
         status: result.status,
         managementToken: result.managementToken,
         notes,
+        locale,
         timeZone: result.timeZone,
         salonName: result.salonName,
         salonAddress: result.salonAddress,

@@ -14,9 +14,11 @@ export const Header = styled('header')(({ theme }) => ({
     alignItems: 'center',
     gap: theme.spacing(3),
     minHeight: 72,
+    minWidth: 0,
     [theme.breakpoints.down('sm')]: {
-      gap: theme.spacing(1),
-      minHeight: 60,
+      gap: theme.spacing(0.75),
+      minHeight: 56,
+      paddingInline: theme.spacing(1.5),
     },
   },
   '& .header-nav': {
@@ -24,8 +26,9 @@ export const Header = styled('header')(({ theme }) => ({
     alignItems: 'center',
     gap: theme.spacing(3),
     marginLeft: 'auto',
+    minWidth: 0,
     [theme.breakpoints.down('sm')]: {
-      gap: theme.spacing(0.5),
+      gap: theme.spacing(0.25),
     },
   },
 }))

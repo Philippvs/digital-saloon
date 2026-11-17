@@ -39,7 +39,6 @@ const WEEK_TEMPLATE = [
   [4, '08:00', 'haircut'],
   [4, '09:00', 'haircut-wash'],
   [4, '10:30', 'highlights'],
-  [4, '15:00', 'coloring'],
   [5, '08:00', 'blow-dry'],
   [5, '09:00', 'haircut-wash'],
   [5, '10:30', 'haircut'],

@@ -19,10 +19,17 @@ const RootRoute: React.FunctionComponent = () => {
       salon={salon.data ?? null}
       email={user?.email ?? null}
       contentWidth={
-        pathname === '/' ? 'full' : pathname.startsWith('/admin') ? 'wide' : 'contained'
+        pathname === '/' || pathname === '/balayage'
+          ? 'full'
+          : pathname.startsWith('/admin')
+            ? 'wide'
+            : 'contained'
       }
       onHomeClick={() => {
         void navigate({ to: '/' })
+      }}
+      onBalayageClick={() => {
+        void navigate({ to: '/balayage' })
       }}
       onBookClick={() => {
         void navigate({ to: '/book' })
