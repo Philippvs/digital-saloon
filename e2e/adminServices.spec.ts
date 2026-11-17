@@ -161,7 +161,7 @@ test.describe('admin services @smoke', () => {
 
   test('rejects invalid duration and price before saving', async ({ page }) => {
     const before = await getService('coloring')
-    await page.getByRole('button', { name: 'Farbe / Colore bearbeiten' }).click()
+    await page.getByRole('button', { name: 'Ansatzfarbe / Colore ricrescita bearbeiten' }).click()
     const form = editor(page, 'Leistung bearbeiten')
     await form.getByLabel('Dauer').fill('3')
     await form.getByLabel('Preis').fill('gratis')

@@ -88,6 +88,7 @@ test.describe('admin settings @smoke', () => {
     await page.getByLabel('Vorname').fill('Manuell')
     await page.getByLabel('Nachname').fill(lastName)
     await page.getByLabel('Telefon').fill('+39 333 7654321')
+    await page.getByLabel('E-Mail-Adresse').fill('manuell@example.com')
     await page.getByLabel(/Datenschutzhinweise/).check()
     await page.getByRole('button', { name: 'Termin verbindlich anfragen' }).click()
     await expect(page.getByRole('heading', { name: /Anfrage eingegangen/ })).toBeVisible()
