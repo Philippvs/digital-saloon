@@ -30,6 +30,52 @@ cp .env.example .env
 
 Optional salon overrides (see `.env.example`): `VITE_SALON_ID`, `SEED_SALON_NAME`, `SEED_SALON_TIMEZONE` (default `Europe/Vienna`), `SEED_ADMIN_EMAIL`.
 
+## Environment files
+
+All real `.env*` files are gitignored; only the `*.example` files are committed. Local dev needs **no** env files — `pnpm dev:local` runs everything against the emulators (`demo-react-firebase-template`).
+
+| File                       | Loaded by                                       | Purpose                                                  |
+| -------------------------- | ----------------------------------------------- | -------------------------------------------------------- |
+| `.env`                     | Vite, always (dev + build)                      | Local overrides only (`VITE_SALON_ID`, `SEED_*`, …)      |
+| `.env.production`          | Vite, `pnpm build` only                         | Firebase Web SDK config for the live project             |
+| `functions/.env.kimm-hair` | Firebase CLI, deploys to `kimm-hair` only       | Production Functions config (Resend email)               |
+| `functions/.env`           | Firebase CLI, every project **incl. emulators** | Avoid for secrets — the emulators would pick them up too |
+
+Do **not** put the `VITE_FIREBASE_*` values in `.env`: it is also loaded by `pnpm dev:local`, which would point the app at the live project while the emulators run as the demo project.
+
+### `.env.production` (web app → live Firebase project)
+
+```bash
+firebase apps:sdkconfig WEB --project kimm-hair   # copy values from the output
+```
+
+```dotenv
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=kimm-hair.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=kimm-hair
+VITE_FIREBASE_STORAGE_BUCKET=kimm-hair.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+# VITE_SHOW_PRICES=true
+```
+
+### `functions/.env.kimm-hair` (booking emails via Resend)
+
+The file name must match the project ID (`functions/.env.<projectId>`), so it is only used when deploying to that project.
+
+```dotenv
+RESEND_API_KEY=re_...                     # Resend → API Keys ("Sending access" is enough)
+RESEND_FROM_EMAIL=termine@your-domain.it  # must be on a domain verified in Resend
+PUBLIC_APP_URL=https://kimm-hair.web.app  # base URL for manage/cancel links in emails
+```
+
+- The sender domain must be verified in Resend (DNS records at your domain registrar). `*.web.app` / `*.firebaseapp.com` cannot be verified.
+- Without `RESEND_FROM_EMAIL`, mail is sent from `onboarding@resend.dev`, which Resend only delivers to your own account address.
+- Email failures never block a booking — check `firebase functions:log` if emails don't arrive.
+- Locally, `scripts/start-dev.mjs` sets `MAIL_CATCHER_URL`, which overrides Resend; open the Mail-Catcher instead of sending real mail.
+
+After changing the file, redeploy: `firebase deploy --only functions --project kimm-hair`.
+
 ## Daily development
 
 ```bash
@@ -117,13 +163,13 @@ Project skills live under `.agents/skills/`:
 
 ## Firebase project checklist / deploy
 
-Live production deploy is intentionally deferred for this MVP slice. When you are ready:
+Live project: `kimm-hair` → https://kimm-hair.web.app. Setting up a project from scratch:
 
-1. Create a Firebase project; enable Auth (Email/Password), Firestore, Storage, Functions (`europe-west8`).
-2. Copy `.env.example` → `.env` / Functions env: `SALON_ID`.
-3. Update `.firebaserc` and Vite `VITE_FIREBASE_*` values.
+1. Create a Firebase project on the Blaze plan; enable Auth (Email/Password), Firestore, Storage, Functions (`europe-west8`).
+2. Set `.firebaserc` (`firebase use --add <projectId>`) and create the env files — see [Environment files](#environment-files).
+3. (Optional) Functions `SALON_ID` in `functions/.env.<projectId>` (default `pilot`).
 4. Deploy rules + indexes: `firebase deploy --only firestore:rules,firestore:indexes,storage`
-5. Deploy functions: `firebase deploy --only functions` (schedulers need Blaze).
+5. Deploy functions: `firebase deploy --only functions --force` (`--force` sets up the Artifact Registry cleanup policy on first deploy).
 6. Build and deploy hosting: `pnpm build && firebase deploy --only hosting`
 7. Seed admin user / salon config for the real project (do not reuse emulator-only passwords).
 
