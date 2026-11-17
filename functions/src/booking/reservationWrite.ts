@@ -62,6 +62,8 @@ type ResolvedBookingServices =
     }
   | { ok: false; code: 'NOT_FOUND' | 'SERVICE_INACTIVE'; message: string }
 
+export const MAX_BOOKING_SERVICES = 15
+
 async function loadActiveServicesForBooking(
   db: Firestore,
   salonId: string,
@@ -70,6 +72,13 @@ async function loadActiveServicesForBooking(
   const uniqueIds = Array.from(new Set(rawIds.map((id) => id.trim()).filter(Boolean)))
   if (uniqueIds.length === 0) {
     return { ok: false, code: 'NOT_FOUND', message: 'Service not found.' }
+  }
+  if (uniqueIds.length > MAX_BOOKING_SERVICES) {
+    return {
+      ok: false,
+      code: 'NOT_FOUND',
+      message: `At most ${MAX_BOOKING_SERVICES} services can be booked at once.`,
+    }
   }
 
   const snaps = await Promise.all(

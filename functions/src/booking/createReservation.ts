@@ -40,7 +40,10 @@ function resolveServiceIds(data: Record<string, unknown>): {
   serviceId: string
   serviceIds: string[]
 } {
-  if (Array.isArray(data.serviceIds)) {
+  if (data.serviceIds !== undefined) {
+    if (!Array.isArray(data.serviceIds)) {
+      throw new HttpsError('invalid-argument', 'serviceIds must be an array of service ids.')
+    }
     const ids = Array.from(
       new Set(
         data.serviceIds
@@ -49,9 +52,13 @@ function resolveServiceIds(data: Record<string, unknown>): {
           .filter(Boolean),
       ),
     )
-    if (ids.length > 0) {
-      return { serviceId: ids[0], serviceIds: ids }
+    if (ids.length === 0) {
+      throw new HttpsError('invalid-argument', 'serviceIds must not be empty.')
     }
+    if (ids.length > 15) {
+      throw new HttpsError('invalid-argument', 'At most 15 services can be booked at once.')
+    }
+    return { serviceId: ids[0], serviceIds: ids }
   }
   const serviceId = requireString(data.serviceId, 'serviceId')
   return { serviceId, serviceIds: [serviceId] }
@@ -108,22 +115,26 @@ export const createReservation = onCall({ region: functionsRegion }, async (requ
   }
 
   if (!result.reused && result.managementToken && result.serviceName && result.durationMinutes) {
-    await sendBookingConfirmationEmail({
-      reservationId: result.reservationId,
-      to: email,
-      firstName,
-      lastName,
-      serviceName: result.serviceName,
-      durationMinutes: result.durationMinutes,
-      startAt,
-      status: result.status,
-      managementToken: result.managementToken,
-      notes,
-      timeZone: result.timeZone,
-      salonName: result.salonName,
-      salonAddress: result.salonAddress,
-      salonPhone: result.salonPhone,
-    })
+    const EMAIL_WAIT_TIMEOUT_MS = 2500
+    await Promise.race([
+      sendBookingConfirmationEmail({
+        reservationId: result.reservationId,
+        to: email,
+        firstName,
+        lastName,
+        serviceName: result.serviceName,
+        durationMinutes: result.durationMinutes,
+        startAt,
+        status: result.status,
+        managementToken: result.managementToken,
+        notes,
+        timeZone: result.timeZone,
+        salonName: result.salonName,
+        salonAddress: result.salonAddress,
+        salonPhone: result.salonPhone,
+      }),
+      new Promise<void>((resolve) => setTimeout(resolve, EMAIL_WAIT_TIMEOUT_MS)),
+    ])
   }
 
   return {

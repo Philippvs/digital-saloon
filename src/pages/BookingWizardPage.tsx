@@ -154,8 +154,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
 
   useEffect(() => {
     if (step !== 2 || rangeLoading || rangeSlots === undefined) return
-    const currentHasSlots = selectedDate !== null && (byDate.get(selectedDate)?.length ?? 0) > 0
-    if (currentHasSlots) return
+    if (selectedDate !== null) return
 
     const earliestInWeek = findEarliestAvailableDate(currentWeekDays, byDate, todayYmd)
     const earliestOverall =
@@ -165,7 +164,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
         .find((ymd) => ymd >= todayYmd && (byDate.get(ymd)?.length ?? 0) > 0) ??
       null
 
-    if (earliestOverall && earliestOverall !== selectedDate) {
+    if (earliestOverall) {
       onSelectDate(earliestOverall)
     }
   }, [

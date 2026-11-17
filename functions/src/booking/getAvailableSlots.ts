@@ -25,6 +25,9 @@ export const getAvailableSlots = onCall({ region: functionsRegion }, async (requ
   if (serviceId.length === 0 && serviceIds.length === 0) {
     throw new HttpsError('invalid-argument', 'serviceId or serviceIds is required.')
   }
+  if (serviceIds.length > 15) {
+    throw new HttpsError('invalid-argument', 'Too many services requested.')
+  }
   if (typeof fromDateYmd !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(fromDateYmd)) {
     throw new HttpsError('invalid-argument', 'fromDateYmd is required (YYYY-MM-DD).')
   }

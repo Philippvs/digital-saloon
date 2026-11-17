@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { createRoute, useNavigate } from '@tanstack/react-router'
 import * as v from 'valibot'
 
@@ -64,6 +65,14 @@ export const bookRoute = createRoute({
 
     const selectedServices =
       services.data?.filter((item) => selectedServiceIds.includes(item.id)) ?? []
+
+    const attemptKey = `${selectedServiceIds.join(',')}|${search.startAt ?? ''}`
+    const idempotencyKey = useMemo(() => {
+      void attemptKey
+      return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `idemp-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    }, [attemptKey])
 
     const serializeServiceIds = (ids: string[]) => (ids.length > 0 ? ids.join(',') : undefined)
 
@@ -227,10 +236,7 @@ export const bookRoute = createRoute({
               email: input.email,
               notes: input.notes,
               privacyAccepted: true,
-              idempotencyKey:
-                typeof crypto !== 'undefined' && 'randomUUID' in crypto
-                  ? crypto.randomUUID()
-                  : `idemp-${Date.now()}`,
+              idempotencyKey,
             },
             {
               onSuccess: (result) => {
