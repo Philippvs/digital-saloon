@@ -1,19 +1,15 @@
 import type * as React from 'react'
-import { Alert, Button, Paper, Stack, Typography } from '@mui/material'
+import { Box, Button, Paper, Stack, Typography } from '@mui/material'
 
 import { formatViennaDateTime } from '../data/dateFormat'
 import { useLocale } from '../i18n'
+import { brand } from '../theme'
 
 export type BookingConfirmedPageProps = {
   status: string
   serviceName: string | null
   startAt: string | null
-  managementUrl: string
-  shareHint: string | null
   onManageClick: () => void
-  onCopyLink: () => void
-  onShareLink: () => void
-  onMailtoLink: () => void
   onMyBookingsClick: () => void
   onHomeClick: () => void
 }
@@ -22,12 +18,7 @@ export const BookingConfirmedPage: React.FunctionComponent<BookingConfirmedPageP
   status,
   serviceName,
   startAt,
-  managementUrl,
-  shareHint,
   onManageClick,
-  onCopyLink,
-  onShareLink,
-  onMailtoLink,
   onMyBookingsClick,
   onHomeClick,
 }) => {
@@ -35,57 +26,82 @@ export const BookingConfirmedPage: React.FunctionComponent<BookingConfirmedPageP
   const pending = status === 'PENDING'
 
   return (
-    <Stack spacing={3}>
-      <Paper sx={{ p: 3 }}>
+    <Box sx={{ maxWidth: 560, mx: 'auto', width: '100%', py: { xs: 2, sm: 4 } }}>
+      <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+        <Box
+          aria-hidden
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            bgcolor: brand.stone,
+            border: 1,
+            borderColor: brand.orange,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 2,
+          }}
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={brand.orange}
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </Box>
         <Typography variant="h1" gutterBottom>
           {pending ? t('confirmed.pendingTitle') : t('confirmed.confirmedTitle')}
         </Typography>
-        <Typography color="text.secondary">
+        <Typography sx={{ fontSize: '1.05rem', color: 'text.primary', mb: 2 }}>
           {pending ? t('confirmed.pendingBody') : t('confirmed.confirmedBody')}
         </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          {t('confirmed.emailSentNote')}
+        </Typography>
+
         {serviceName && startAt ? (
-          <Typography sx={{ mt: 2 }}>
-            {serviceName} · {formatViennaDateTime(startAt, intlLocale)}
-          </Typography>
+          <Box
+            sx={{
+              bgcolor: brand.stone,
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 1,
+              p: 2,
+              mb: 3,
+            }}
+          >
+            <Typography sx={{ fontWeight: 600 }}>{serviceName}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {formatViennaDateTime(startAt, intlLocale)}
+            </Typography>
+          </Box>
         ) : null}
-      </Paper>
 
-      <Alert severity="warning">{t('confirmed.saveWarning')}</Alert>
-
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h2" sx={{ fontSize: '1.15rem', mb: 1 }}>
-          {t('confirmed.linkHeading')}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ wordBreak: 'break-all', mb: 2, fontFamily: 'ui-monospace, monospace' }}
-        >
-          {managementUrl}
-        </Typography>
-        {shareHint ? (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {shareHint}
-          </Alert>
-        ) : null}
-        <Stack spacing={1}>
-          <Button variant="contained" onClick={onManageClick}>
+        <Stack spacing={1.25}>
+          <Button variant="contained" size="large" onClick={onManageClick}>
             {t('confirmed.manage')}
           </Button>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <Button variant="outlined" onClick={onCopyLink}>
-              {t('confirmed.copy')}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.25}
+            sx={{ justifyContent: 'center' }}
+          >
+            <Button variant="outlined" onClick={onMyBookingsClick} fullWidth>
+              {t('confirmed.myBookings')}
             </Button>
-            <Button variant="outlined" onClick={onShareLink}>
-              {t('confirmed.share')}
-            </Button>
-            <Button variant="outlined" onClick={onMailtoLink}>
-              {t('confirmed.mailto')}
+            <Button variant="text" onClick={onHomeClick} fullWidth>
+              {t('confirmed.home')}
             </Button>
           </Stack>
-          <Button onClick={onMyBookingsClick}>{t('confirmed.myBookings')}</Button>
-          <Button onClick={onHomeClick}>{t('confirmed.home')}</Button>
         </Stack>
       </Paper>
-    </Stack>
+    </Box>
   )
 }

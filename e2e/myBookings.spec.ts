@@ -15,8 +15,10 @@ test.describe('my bookings @smoke', () => {
     await page.getByRole('button', { name: 'Termin verbindlich anfragen' }).click()
 
     await expect(page).toHaveURL(/\/booking\/confirmed/)
-    await expect(page.getByText('Ihr Verwaltungs-Link')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Link kopieren' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: /Termin bestätigt|Anfrage eingegangen/ }),
+    ).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Termin verwalten' })).toBeVisible()
 
     await page.getByRole('banner').getByRole('button', { name: 'Meine Termine' }).click()
     await expect(page).toHaveURL(/\/my-bookings/)

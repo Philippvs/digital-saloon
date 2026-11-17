@@ -7,8 +7,8 @@ test.describe('salon home page @smoke', () => {
     await expect(page.getByRole('heading', { level: 1, name: /KIMM Hair/ })).toBeVisible()
 
     const prices = page.getByRole('region', { name: 'Leistungen und Preise' })
-    await expect(prices.getByRole('button')).toHaveCount(5)
-    await expect(prices.getByRole('button', { name: /^Herrenschnitt.*€\s?26/ })).toBeVisible()
+    await expect(prices.getByRole('button')).toHaveCount(19)
+    await expect(prices.getByRole('button', { name: /^Herrenhaarschnitt.*22€/ })).toBeVisible()
 
     await expect(page.getByRole('heading', { name: 'Öffnungszeiten' })).toBeVisible()
     const hours = page.locator('dl').filter({ hasText: 'Montag' })

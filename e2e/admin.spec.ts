@@ -31,7 +31,7 @@ test.describe('admin @smoke', () => {
     await page.goto('/admin/manual')
 
     await page.getByLabel('Leistung').click()
-    await page.getByRole('option', { name: /^Herrenschnitt/ }).click()
+    await page.getByRole('option', { name: /^Herrenhaarschnitt/ }).click()
 
     const dateButtons = page.locator('button').filter({ hasText: /\d{2}\.\d{2}\.\d{4}/ })
     const dateCount = await dateButtons.count()
