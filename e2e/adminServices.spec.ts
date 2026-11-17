@@ -40,9 +40,9 @@ test.describe('admin services @smoke', () => {
 
   test('lists seeded services with price and duration', async ({ page }) => {
     const list = page.getByRole('list', { name: 'Leistungen' })
-    await expect(list.getByText('Herrenschnitt / Taglio uomo')).toBeVisible()
+    await expect(list.getByText('Herrenhaarschnitt / Taglio uomo')).toBeVisible()
     await expect(list.getByText('30 Min').first()).toBeVisible()
-    await expect(list.getByText(/€\s*26/).first()).toBeVisible()
+    await expect(list.getByText(/€\s*22/).first()).toBeVisible()
   })
 
   test('creates a new service that appears on the website in both languages', async ({ page }) => {
@@ -93,13 +93,13 @@ test.describe('admin services @smoke', () => {
   test('edits price and duration without changing existing reservations', async ({ page }) => {
     const booked = await findFutureReservationOfService('haircut')
     const before = await getReservation(booked.id)
-    expect(before?.serviceName).toBe('Herrenschnitt / Taglio uomo')
-    expect(before?.priceCents).toBe(2600)
+    expect(before?.serviceName).toBe('Herrenhaarschnitt / Taglio uomo')
+    expect(before?.priceCents).toBe(2200)
     expect(before?.durationMinutes).toBe(30)
 
-    await page.getByRole('button', { name: 'Herrenschnitt / Taglio uomo bearbeiten' }).click()
+    await page.getByRole('button', { name: 'Herrenhaarschnitt / Taglio uomo bearbeiten' }).click()
     const form = editor(page, 'Leistung bearbeiten')
-    await form.getByLabel('Name (Deutsch)').fill('Herrenschnitt neu')
+    await form.getByLabel('Name (Deutsch)').fill('Herrenhaarschnitt neu')
     await form.getByLabel('Name (Italienisch)').fill('Taglio uomo nuovo')
     await form.getByLabel('Dauer').fill('40')
     await form.getByLabel('Preis').fill('29')
@@ -108,7 +108,7 @@ test.describe('admin services @smoke', () => {
 
     await expect.poll(async () => (await getService('haircut'))?.priceCents).toBe(2900)
     expect(await getService('haircut')).toMatchObject({
-      nameDe: 'Herrenschnitt neu',
+      nameDe: 'Herrenhaarschnitt neu',
       nameIt: 'Taglio uomo nuovo',
       durationMinutes: 40,
       priceCents: 2900,
@@ -125,15 +125,17 @@ test.describe('admin services @smoke', () => {
     })
 
     await page.goto(`/admin/reservations/${booked.id}`)
-    await expect(page.getByText('Herrenschnitt / Taglio uomo')).toBeVisible()
-    await expect(page.getByText('Herrenschnitt neu')).toHaveCount(0)
+    await expect(page.getByText('Herrenhaarschnitt / Taglio uomo')).toBeVisible()
+    await expect(page.getByText('Herrenhaarschnitt neu')).toHaveCount(0)
   })
 
   test('deactivating a service hides it from booking but keeps old appointments', async ({
     page,
   }) => {
     const booked = await findFutureReservationOfService('blow-dry')
-    await page.getByRole('button', { name: 'Waschen & Föhnen / Piega bearbeiten' }).click()
+    await page
+      .getByRole('button', { name: 'Waschen, föhnen / Lavaggio e piega bearbeiten' })
+      .click()
     const form = editor(page, 'Leistung bearbeiten')
     await form.getByLabel('Online buchbar').uncheck()
     await form.getByRole('button', { name: 'Speichern' }).click()
@@ -144,12 +146,12 @@ test.describe('admin services @smoke', () => {
 
     await page.goto('/')
     await expect(
-      page.getByRole('region', { name: 'Leistungen und Preise' }).getByText('Waschen & Föhnen'),
+      page.getByRole('region', { name: 'Leistungen und Preise' }).getByText('Waschen, föhnen'),
     ).toHaveCount(0)
 
     await page.goto('/book')
     await expect(page.locator('[aria-labelledby="step-service"]')).not.toContainText(
-      'Waschen & Föhnen',
+      'Waschen, föhnen',
     )
 
     const after = await getReservation(booked.id)

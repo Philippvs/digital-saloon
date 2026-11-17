@@ -82,6 +82,7 @@ export type Messages = {
   'confirmed.confirmedTitle': string
   'confirmed.pendingBody': string
   'confirmed.confirmedBody': string
+  'confirmed.emailSentNote': string
   'confirmed.saveWarning': string
   'confirmed.linkHeading': string
   'confirmed.manage': string
@@ -420,7 +421,9 @@ export const de: Messages = {
   'confirmed.pendingTitle': 'Anfrage eingegangen',
   'confirmed.confirmedTitle': 'Termin bestätigt',
   'confirmed.pendingBody': 'Der Salon prüft Ihre Anfrage. Der Zeitslot ist vorerst reserviert.',
-  'confirmed.confirmedBody': 'Ihr Termin ist gebucht.',
+  'confirmed.confirmedBody': 'Ihr Termin ist gebucht — wir freuen uns auf Ihren Besuch!',
+  'confirmed.emailSentNote':
+    'Eine E-Mail mit allen Termindetails, Ihrem persönlichen Verwaltungs-Link und dem Kalendereintrag (.ics) ist unterwegs zu Ihnen.',
   'confirmed.saveWarning':
     'Speichern Sie diesen persönlichen Link. Ohne Kundenkonto ist er der einzige Zugang zum Termin. Er wurde auf diesem Gerät unter „Meine Termine“ hinterlegt.',
   'confirmed.linkHeading': 'Ihr Verwaltungs-Link',
@@ -770,7 +773,9 @@ export const it: Messages = {
   'confirmed.confirmedTitle': 'Appuntamento confermato',
   'confirmed.pendingBody':
     'Il salone sta esaminando la richiesta. Lo slot è riservato temporaneamente.',
-  'confirmed.confirmedBody': 'Il tuo appuntamento è prenotato.',
+  'confirmed.confirmedBody': 'Il tuo appuntamento è confermato — non vediamo l’ora di accoglierti!',
+  'confirmed.emailSentNote':
+    'Ti abbiamo inviato un’e-mail con tutti i dettagli, il link personale per gestire l’appuntamento e il file calendario (.ics).',
   'confirmed.saveWarning':
     'Salva questo link personale. Senza account è l’unico modo per gestire l’appuntamento. È stato salvato su questo dispositivo in “I miei appuntamenti”.',
   'confirmed.linkHeading': 'Il tuo link di gestione',

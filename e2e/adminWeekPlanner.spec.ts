@@ -103,7 +103,7 @@ test.describe('admin week planner @smoke', () => {
 
     await expect(page).toHaveURL(new RegExp(`/admin/manual\\?.*time=${time?.replace(':', '%3A')}`))
     await page.getByLabel('Leistung').click()
-    await page.getByRole('option', { name: /^Herrenschnitt/ }).click()
+    await page.getByRole('option', { name: /^Herrenhaarschnitt/ }).click()
     await expect(page.getByRole('button', { name: time, exact: true })).toHaveClass(
       /MuiButton-contained/,
     )
@@ -117,7 +117,7 @@ test.describe('admin week planner @smoke', () => {
     await page.goto(`/admin?week=${weekStart}`)
     await expect(
       planner(page).getByRole('button', {
-        name: new RegExp(`^${time}–\\d{2}:\\d{2}, Raster ${lastName}, Herrenschnitt`),
+        name: new RegExp(`^${time}–\\d{2}:\\d{2}, Raster ${lastName}, Herrenhaarschnitt`),
       }),
     ).toBeVisible()
   })

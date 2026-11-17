@@ -9,7 +9,7 @@ test.describe('smoke @smoke', () => {
     await expect(page.getByRole('heading', { name: 'Öffnungszeiten' })).toBeVisible()
     await expect(page.getByText('Via Piave 71, 39012 Meran').first()).toBeVisible()
 
-    await page.getByRole('button', { name: /^Herrenschnitt/ }).click()
+    await page.getByRole('button', { name: /^Herrenhaarschnitt/ }).click()
     await expect(page).toHaveURL(/\/book\?.*serviceId=haircut/)
     await expect(page.getByRole('heading', { name: /Datum wählen/ })).toBeVisible()
 
