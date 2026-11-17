@@ -79,6 +79,7 @@ export const bookRoute = createRoute({
 
     return (
       <BookingWizardPage
+        privacyHref="/datenschutz"
         services={services.data}
         servicesLoading={services.isLoading}
         servicesError={services.isError}

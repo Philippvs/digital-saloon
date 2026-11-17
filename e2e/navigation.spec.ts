@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 
+import { selectServiceDateAndTime } from './bookingHelpers'
 import { signInAsDemo } from './helpers'
 
 test.describe('navigation @smoke', () => {
@@ -62,5 +63,27 @@ test.describe('navigation @smoke', () => {
       'aria-current',
       'page',
     )
+  })
+
+  test('booking consent links the privacy policy in a new tab', async ({ page }) => {
+    await page.goto('/book')
+    await selectServiceDateAndTime(page)
+
+    const consent = page.getByLabel(/Datenschutzhinweise/)
+    const link = page.getByRole('link', { name: /^Datenschutzhinweise/ })
+    await expect(link).toHaveAttribute('href', '/datenschutz')
+    await expect(link).toHaveAttribute('target', '_blank')
+
+    const popupPromise = page.waitForEvent('popup')
+    await link.click()
+    const popup = await popupPromise
+    await expect(
+      popup.getByRole('heading', { level: 1, name: 'Datenschutzerklärung' }),
+    ).toBeVisible()
+    await popup.close()
+
+    await expect(consent).not.toBeChecked()
+    await consent.check()
+    await expect(consent).toBeChecked()
   })
 })

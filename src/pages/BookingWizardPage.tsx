@@ -12,6 +12,7 @@ import {
   Stack,
   TextField,
   Typography,
+  Link,
 } from '@mui/material'
 import * as v from 'valibot'
 
@@ -39,7 +40,22 @@ import type { ServiceWithId } from '../data/services'
 import { useLocale } from '../i18n'
 import { brand } from '../theme'
 
+/** Read by screen readers only (same rules as MUI's `visuallyHidden`). */
+const screenReaderOnly = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  margin: -1,
+  padding: 0,
+  border: 0,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+} as const
+
 export type BookingWizardPageProps = {
+  /** Privacy policy URL; opened in a new tab so the half-filled form survives. */
+  privacyHref: string
   services: ServiceWithId[] | undefined
   servicesLoading: boolean
   servicesError: boolean
@@ -73,6 +89,7 @@ export type BookingWizardPageProps = {
 }
 
 export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> = ({
+  privacyHref,
   services,
   servicesLoading,
   servicesError,
@@ -643,7 +660,18 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                       onChange={(event) => setPrivacyAccepted(event.target.checked)}
                     />
                   }
-                  label={t('book.privacy')}
+                  label={
+                    <>
+                      {t('book.privacyBefore')}
+                      <Link href={privacyHref} target="_blank" rel="noopener">
+                        {t('book.privacyLink')}
+                        <Box component="span" sx={screenReaderOnly}>
+                          {t('book.opensInNewTab')}
+                        </Box>
+                      </Link>
+                      {t('book.privacyAfter')}
+                    </>
+                  }
                 />
                 {fieldError ? <Alert severity="error">{fieldError}</Alert> : null}
                 {submitError ? <Alert severity="error">{submitError}</Alert> : null}
