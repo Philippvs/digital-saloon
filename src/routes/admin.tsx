@@ -80,7 +80,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const salon = useSalon()
   const navigate = useNavigate()
   const search = adminIndexRoute.useSearch()
-  const ops = useAdminOps()
   const actions = useAdminReservationActions()
   const openingHours = useOpeningHours(true)
   const closures = useClosures(true)
@@ -128,16 +127,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
     })
   }
 
-  const opsError =
-    ops.processPending.error instanceof Error ? ops.processPending.error.message : null
-  const opsMessage =
-    ops.processPending.isSuccess && ops.processPending.data
-      ? t('admin.expireResult', {
-          expired: ops.processPending.data.expired,
-          scanned: ops.processPending.data.scanned,
-        })
-      : null
-
   return (
     <AdminHomePage
       weekTitle={t('admin.weekNumber', { week: isoWeekNumber(weekStart) })}
@@ -151,9 +140,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
         actions.confirm.isPending ? (actions.confirm.variables ?? null) : null
       }
       confirmError={actions.confirm.error instanceof Error ? actions.confirm.error.message : null}
-      opsBusy={ops.processPending.isPending}
-      opsMessage={opsMessage}
-      opsError={opsError}
       onPrevWeekClick={() => {
         goToWeek(addCalendarDays(weekStart, -7))
       }}
@@ -175,20 +161,8 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       onAddReservationAt={(dateYmd, startTime) => {
         void navigate({ to: '/admin/manual', search: { date: dateYmd, time: startTime } })
       }}
-      onReservationsClick={() => {
+      onListViewClick={() => {
         void navigate({ to: '/admin/reservations' })
-      }}
-      onServicesClick={() => {
-        void navigate({ to: '/admin/services' })
-      }}
-      onSettingsClick={() => {
-        void navigate({ to: '/admin/settings' })
-      }}
-      onOpeningHoursClick={() => {
-        void navigate({ to: '/admin/opening-hours' })
-      }}
-      onProcessPendingClick={() => {
-        ops.processPending.mutate()
       }}
     />
   )
@@ -385,6 +359,7 @@ export const adminServicesRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/services',
   component: function AdminServicesRoute() {
+    const navigate = useNavigate()
     const services = useAllServices(true)
     const saveService = useSaveService()
     return (
@@ -394,6 +369,9 @@ export const adminServicesRoute = createRoute({
         isError={services.isError}
         saving={saveService.isPending}
         onSave={(serviceId, draft) => saveService.mutateAsync({ serviceId, draft })}
+        onBackClick={() => {
+          void navigate({ to: '/admin/settings' })
+        }}
       />
     )
   },
@@ -448,7 +426,7 @@ const AdminOpeningHoursRoute: React.FunctionComponent = () => {
       onDraftDatesChange={onDraftDatesChange}
       onAddAbsence={(absence) => addAbsence.mutateAsync(absence)}
       onBackClick={() => {
-        void navigate({ to: '/admin', search: { week: undefined } })
+        void navigate({ to: '/admin/settings' })
       }}
     />
   )
@@ -478,6 +456,8 @@ export const adminSettingsRoute = createRoute({
     const salon = useSalon()
     const saveSettings = useSaveBookingSettings()
     const saveSalon = useSaveSalonDetails()
+    const ops = useAdminOps()
+    const { t } = useLocale()
     const errorText = (error: unknown): string | null =>
       error instanceof Error ? error.message : error ? String(error) : null
 
@@ -504,11 +484,24 @@ export const adminSettingsRoute = createRoute({
         onSaveSalon={(details) => {
           saveSalon.mutate(details)
         }}
+        onServicesClick={() => {
+          void navigate({ to: '/admin/services' })
+        }}
         onOpeningHoursClick={() => {
           void navigate({ to: '/admin/opening-hours' })
         }}
-        onBackClick={() => {
-          void navigate({ to: '/admin' })
+        expireBusy={ops.processPending.isPending}
+        expireMessage={
+          ops.processPending.isSuccess && ops.processPending.data
+            ? t('admin.expireResult', {
+                expired: ops.processPending.data.expired,
+                scanned: ops.processPending.data.scanned,
+              })
+            : null
+        }
+        expireError={errorText(ops.processPending.error)}
+        onExpirePendingClick={() => {
+          ops.processPending.mutate()
         }}
       />
     )

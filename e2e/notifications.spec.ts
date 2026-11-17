@@ -8,7 +8,7 @@ test.describe('pending expiry @smoke', () => {
     expect(await getReservationStatus('demo-stale-pending')).toBe('PENDING')
 
     await signInAsDemo(page)
-    await page.goto('/admin')
+    await page.goto('/admin/settings')
     await page.getByRole('button', { name: 'Ausstehende Anfragen ablaufen lassen' }).click()
     await expect(page.getByText(/Ablauf:/)).toBeVisible({ timeout: 15_000 })
 

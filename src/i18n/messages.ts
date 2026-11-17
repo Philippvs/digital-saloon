@@ -1,5 +1,4 @@
 export type Messages = {
-  'nav.myBookings': string
   'nav.staffCalendar': string
   'nav.staffSettings': string
   'nav.staffLogin': string
@@ -182,7 +181,6 @@ export type Messages = {
   'admin.customer': string
   'admin.status': string
   'admin.open': string
-  'admin.toCalendar': string
   'admin.noReservations': string
   'admin.reservationsError': string
   'admin.services': string
@@ -196,7 +194,6 @@ export type Messages = {
   'admin.signInRequired': string
   'admin.forbidden': string
   'admin.today': string
-  'admin.allReservations': string
   'admin.calendarLoading': string
   'admin.detailTitle': string
   'admin.backToCalendar': string
@@ -311,7 +308,6 @@ export type Messages = {
 
   'admin.statPending': string
   'admin.pendingEmpty': string
-  'admin.manageTitle': string
   'admin.addReservation': string
   'admin.bookingRulesTitle': string
   'admin.modeAutomatic': string
@@ -339,7 +335,6 @@ export type Messages = {
   'admin.requiredError': string
   'admin.emailError': string
   'admin.tooLongError': string
-  'admin.backToDashboard': string
   'admin.weekNumber': string
   'admin.prevWeek': string
   'admin.nextWeek': string
@@ -355,12 +350,17 @@ export type Messages = {
   'admin.plannerDayFree': string
   'admin.plannerCount': string
   'admin.plannerCountOne': string
+  'admin.viewLabel': string
+  'admin.viewWeek': string
+  'admin.viewList': string
+  'admin.salonAreas': string
+  'admin.servicesHint': string
+  'admin.backToSettings': string
 }
 
 export type MessageKey = keyof Messages
 
 export const de: Messages = {
-  'nav.myBookings': 'Meine Termine',
   'nav.staffCalendar': 'Kalender',
   'nav.staffSettings': 'Einstellungen',
   'nav.staffLogin': 'Login für das Team',
@@ -560,21 +560,20 @@ export const de: Messages = {
   'admin.customer': 'Kunde',
   'admin.status': 'Status',
   'admin.open': 'Öffnen',
-  'admin.toCalendar': 'Zum Kalender',
   'admin.noReservations': 'Keine Termine im Zeitraum.',
   'admin.reservationsError': 'Termine konnten nicht geladen werden.',
   'admin.services': 'Leistungen',
   'admin.service': 'Leistung',
   'admin.settings': 'Einstellungen',
-  'admin.maintenance': 'Wartung',
-  'admin.maintenanceHint': 'Abgelaufene ausstehende Anfragen manuell prüfen (auch per Zeitplan).',
+  'admin.maintenance': 'Abgelaufene Anfragen',
+  'admin.maintenanceHint':
+    'Unbestätigte Anfragen verfallen automatisch nach der oben eingestellten Frist. Hier lösen Sie die Prüfung sofort aus.',
   'admin.expirePending': 'Ausstehende Anfragen ablaufen lassen',
   'admin.expireResult': 'Ablauf: {expired} von {scanned} ausstehenden Anfragen abgelaufen.',
   'admin.loading': 'Laden…',
   'admin.signInRequired': 'Anmeldung erforderlich.',
   'admin.forbidden': 'Dieser Bereich ist nur für Salon-Administratoren.',
   'admin.today': 'Heute',
-  'admin.allReservations': 'Alle Termine',
   'admin.calendarLoading': 'Kalender laden',
   'admin.detailTitle': 'Termin-Details',
   'admin.backToCalendar': 'Zurück zum Kalender',
@@ -628,7 +627,8 @@ export const de: Messages = {
   'admin.yes': 'Ja',
   'admin.no': 'Nein',
   'admin.minutes': '{minutes} Min',
-  'admin.settingsSubtitle': 'Regeln für Online-Buchungen und die Kontaktdaten auf der Website.',
+  'admin.settingsSubtitle':
+    'Leistungen, Öffnungszeiten, Online-Buchung und die Kontaktdaten auf der Website.',
   'admin.settingsLoading': 'Einstellungen laden',
   'admin.settingsError': 'Einstellungen konnten nicht geladen werden.',
   'admin.confirmationMode': 'Neue Buchungen',
@@ -695,7 +695,6 @@ export const de: Messages = {
   'hours.openOnly': 'Nur {hours} geöffnet',
   'admin.statPending': 'Offene Anfragen',
   'admin.pendingEmpty': 'Keine offenen Anfragen.',
-  'admin.manageTitle': 'Verwaltung',
   'admin.addReservation': 'Termin eintragen',
   'admin.bookingRulesTitle': 'Online-Buchung',
   'admin.modeAutomatic': 'Automatisch bestätigen',
@@ -723,7 +722,6 @@ export const de: Messages = {
   'admin.requiredError': 'Bitte ausfüllen.',
   'admin.emailError': 'Bitte eine gültige E-Mail-Adresse eingeben.',
   'admin.tooLongError': 'Höchstens {max} Zeichen.',
-  'admin.backToDashboard': 'Zum Kalender',
   'admin.weekNumber': 'KW {week}',
   'admin.prevWeek': 'Vorherige Woche',
   'admin.nextWeek': 'Nächste Woche',
@@ -739,10 +737,15 @@ export const de: Messages = {
   'admin.plannerDayFree': 'Noch frei',
   'admin.plannerCount': '{count} Termine',
   'admin.plannerCountOne': '1 Termin',
+  'admin.viewLabel': 'Ansicht',
+  'admin.viewWeek': 'Woche',
+  'admin.viewList': 'Liste',
+  'admin.salonAreas': 'Salon',
+  'admin.servicesHint': 'Preise, Dauer und welche Leistungen online buchbar sind.',
+  'admin.backToSettings': 'Zu den Einstellungen',
 }
 
 export const it: Messages = {
-  'nav.myBookings': 'I miei appuntamenti',
   'nav.staffCalendar': 'Calendario',
   'nav.staffSettings': 'Impostazioni',
   'nav.staffLogin': 'Accesso per il team',
@@ -942,22 +945,20 @@ export const it: Messages = {
   'admin.customer': 'Cliente',
   'admin.status': 'Stato',
   'admin.open': 'Apri',
-  'admin.toCalendar': 'Vai al calendario',
   'admin.noReservations': 'Nessun appuntamento nel periodo.',
   'admin.reservationsError': 'Impossibile caricare gli appuntamenti.',
   'admin.services': 'Servizi',
   'admin.service': 'Servizio',
   'admin.settings': 'Impostazioni',
-  'admin.maintenance': 'Manutenzione',
+  'admin.maintenance': 'Richieste scadute',
   'admin.maintenanceHint':
-    'Controlla manualmente le richieste in attesa scadute (anche tramite pianificazione).',
+    'Le richieste non confermate scadono automaticamente dopo il termine impostato sopra. Qui può avviare subito il controllo.',
   'admin.expirePending': 'Fai scadere le richieste in attesa',
   'admin.expireResult': 'Scadenza: {expired} di {scanned} richieste in attesa scadute.',
   'admin.loading': 'Caricamento…',
   'admin.signInRequired': 'Accesso richiesto.',
   'admin.forbidden': 'Area riservata agli amministratori del salone.',
   'admin.today': 'Oggi',
-  'admin.allReservations': 'Tutti gli appuntamenti',
   'admin.calendarLoading': 'Caricamento calendario',
   'admin.detailTitle': 'Dettagli appuntamento',
   'admin.backToCalendar': 'Torna al calendario',
@@ -1010,7 +1011,7 @@ export const it: Messages = {
   'admin.yes': 'Sì',
   'admin.no': 'No',
   'admin.minutes': '{minutes} min',
-  'admin.settingsSubtitle': 'Regole per le prenotazioni online e i contatti mostrati sul sito.',
+  'admin.settingsSubtitle': 'Servizi, orari, prenotazione online e i contatti mostrati sul sito.',
   'admin.settingsLoading': 'Caricamento impostazioni',
   'admin.settingsError': 'Impossibile caricare le impostazioni.',
   'admin.confirmationMode': 'Nuove prenotazioni',
@@ -1076,7 +1077,6 @@ export const it: Messages = {
   'hours.openOnly': 'Aperto solo {hours}',
   'admin.statPending': 'Richieste aperte',
   'admin.pendingEmpty': 'Nessuna richiesta aperta.',
-  'admin.manageTitle': 'Gestione',
   'admin.addReservation': 'Inserisci appuntamento',
   'admin.bookingRulesTitle': 'Prenotazione online',
   'admin.modeAutomatic': 'Conferma automatica',
@@ -1104,7 +1104,6 @@ export const it: Messages = {
   'admin.requiredError': 'Campo obbligatorio.',
   'admin.emailError': 'Inserite un indirizzo e-mail valido.',
   'admin.tooLongError': 'Al massimo {max} caratteri.',
-  'admin.backToDashboard': 'Al calendario',
   'admin.weekNumber': 'Settimana {week}',
   'admin.prevWeek': 'Settimana precedente',
   'admin.nextWeek': 'Settimana successiva',
@@ -1120,6 +1119,12 @@ export const it: Messages = {
   'admin.plannerDayFree': 'Ancora libero',
   'admin.plannerCount': '{count} appuntamenti',
   'admin.plannerCountOne': '1 appuntamento',
+  'admin.viewLabel': 'Vista',
+  'admin.viewWeek': 'Settimana',
+  'admin.viewList': 'Elenco',
+  'admin.salonAreas': 'Salone',
+  'admin.servicesHint': 'Prezzi, durata e quali servizi si possono prenotare online.',
+  'admin.backToSettings': 'Alle impostazioni',
 }
 
 export const catalogs: Record<'de' | 'it', Messages> = { de, it }

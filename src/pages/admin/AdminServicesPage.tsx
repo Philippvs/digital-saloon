@@ -40,6 +40,7 @@ export type AdminServicesPageProps = {
    * rejects with an Error on failure.
    */
   onSave: (serviceId: string | null, draft: ServiceDraft) => Promise<string>
+  onBackClick: () => void
 }
 
 type EditorTarget = { kind: 'new' } | { kind: 'edit'; serviceId: string }
@@ -199,6 +200,7 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
   isError,
   saving,
   onSave,
+  onBackClick,
 }) => {
   const { t, locale, intlLocale } = useLocale()
   const [editor, setEditor] = useState<EditorTarget | null>(null)
@@ -230,6 +232,9 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
         }}
       >
         <Box sx={{ maxWidth: '40rem' }}>
+          <Button onClick={onBackClick} sx={{ ml: -1, mb: 1 }}>
+            {t('admin.backToSettings')}
+          </Button>
           <Typography variant="h1">{t('admin.services')}</Typography>
           <Typography color="text.secondary" sx={{ mt: 1 }}>
             {t('admin.servicesSubtitle')} {t('admin.servicesKeepHint')}

@@ -11,6 +11,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuIcon from '@mui/icons-material/Menu'
@@ -74,7 +75,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
               <NavLink
                 type="button"
                 onClick={onBalayageClick}
-                sx={{ display: { xs: 'none', sm: 'inline' } }}
+                sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
               >
                 Balayage
               </NavLink>
@@ -85,7 +86,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                   type="button"
                   aria-current={activeAdminNav === 'calendar' ? 'page' : undefined}
                   onClick={onAdminClick}
-                  sx={{ display: { xs: 'none', sm: 'inline' } }}
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   {t('nav.staffCalendar')}
                 </NavLink>
@@ -101,7 +102,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                   type="button"
                   aria-current={activeAdminNav === 'settings' ? 'page' : undefined}
                   onClick={onAdminSettingsClick}
-                  sx={{ display: { xs: 'none', sm: 'inline' } }}
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   {t('nav.staffSettings')}
                 </NavLink>
@@ -247,21 +248,26 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                 ) : null}
               </>
             ) : null}
-            <Stack
-              direction="row"
-              spacing={3}
-              sx={{ ml: { sm: 'auto !important' }, alignItems: 'baseline' }}
-            >
-              <FooterLink type="button" onClick={onPrivacyClick}>
-                {t('footer.privacy')}
-              </FooterLink>
-              {email ? null : (
-                <FooterLink type="button" onClick={onLoginClick}>
-                  {t('nav.staffLogin')}
-                </FooterLink>
-              )}
-            </Stack>
           </Stack>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 3,
+              mt: 4,
+              pt: 2.5,
+              borderTop: `1px solid ${alpha(brand.paper, 0.15)}`,
+            }}
+          >
+            <FooterLink type="button" onClick={onPrivacyClick}>
+              {t('footer.privacy')}
+            </FooterLink>
+            {email ? null : (
+              <FooterLink type="button" onClick={onLoginClick}>
+                {t('nav.staffLogin')}
+              </FooterLink>
+            )}
+          </Box>
         </Container>
       </Box>
     </Box>

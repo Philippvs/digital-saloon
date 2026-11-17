@@ -546,7 +546,7 @@ export const AdminOpeningHoursPage: React.FunctionComponent<AdminOpeningHoursPag
     <Stack spacing={4} sx={{ maxWidth: 860 }}>
       <Box>
         <Button onClick={onBackClick} sx={{ ml: -1, mb: 1 }}>
-          {t('admin.backToDashboard')}
+          {t('admin.backToSettings')}
         </Button>
         <Typography variant="h1">{t('hours.title')}</Typography>
         <Typography color="text.secondary" sx={{ mt: 0.5 }}>

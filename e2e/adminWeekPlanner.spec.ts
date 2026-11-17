@@ -148,17 +148,23 @@ test.describe('admin week planner @smoke', () => {
       .click()
     await expect(page).toHaveURL(/\/admin\/manual/)
 
-    const manage = page.getByRole('region', { name: 'Verwaltung' })
-    const destinations: Array<[string, RegExp]> = [
-      ['Alle Termine', /\/admin\/reservations$/],
-      ['Leistungen', /\/admin\/services$/],
-      ['Einstellungen', /\/admin\/settings$/],
-    ]
-    for (const [name, url] of destinations) {
-      await page.goto('/admin')
-      await manage.getByRole('button', { name, exact: true }).click()
-      await expect(page).toHaveURL(url)
-    }
+    await page.goto('/admin')
+    const views = page.getByRole('group', { name: 'Ansicht' })
+    await views.getByRole('button', { name: 'Liste' }).click()
+    await expect(page).toHaveURL(/\/admin\/reservations$/)
+    await views.getByRole('button', { name: 'Woche' }).click()
+    await expect(page).toHaveURL(/\/admin$/)
+
+    await page.getByRole('banner').getByRole('button', { name: 'Einstellungen' }).click()
+    await expect(page).toHaveURL(/\/admin\/settings$/)
+    const salon = page.getByRole('navigation', { name: 'Salon' })
+    await salon.getByRole('button', { name: /^Leistungen/ }).click()
+    await expect(page).toHaveURL(/\/admin\/services$/)
+    await page.getByRole('button', { name: 'Zu den Einstellungen' }).click()
+    await salon.getByRole('button', { name: /^Öffnungszeiten/ }).click()
+    await expect(page).toHaveURL(/\/admin\/opening-hours$/)
+    await page.getByRole('button', { name: 'Zu den Einstellungen' }).click()
+    await expect(page).toHaveURL(/\/admin\/settings$/)
   })
 
   test('old calendar links open the matching week', async ({ page }) => {
