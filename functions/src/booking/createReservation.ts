@@ -111,7 +111,7 @@ export const createReservation = onCall({ region: functionsRegion }, async (requ
   )
 
   if (!result.ok) {
-    throw new HttpsError('failed-precondition', result.message)
+    throw new HttpsError('failed-precondition', result.message, { reason: result.code })
   }
 
   if (!result.reused && result.managementToken && result.serviceName && result.durationMinutes) {
@@ -186,7 +186,7 @@ export const createManualReservation = onCall({ region: functionsRegion }, async
   )
 
   if (!result.ok) {
-    throw new HttpsError('failed-precondition', result.message)
+    throw new HttpsError('failed-precondition', result.message, { reason: result.code })
   }
 
   return {

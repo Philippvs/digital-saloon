@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { createRoute, useNavigate } from '@tanstack/react-router'
 import * as v from 'valibot'
 
+import { bookingFailureOf } from '../data/bookingApi'
 import { addMonths, viennaTodayYmd, weekStartMondayYmd } from '../data/bookingCalendar'
 import { optionalSearchParam } from '../data/schemas'
 import { localizedServiceName } from '../data/serviceForm'
@@ -91,11 +92,10 @@ export const bookRoute = createRoute({
         rangeLoading={rangeSlots.isLoading}
         rangeError={rangeSlots.isError}
         isSubmitting={create.isPending}
-        submitError={
-          create.isError
-            ? create.error instanceof Error
-              ? create.error.message
-              : 'Buchung fehlgeschlagen'
+        submitFailure={
+          // Only for the slot that failed: picking another time clears the message.
+          create.isError && create.variables?.startAt === search.startAt
+            ? bookingFailureOf(create.error)
             : null
         }
         weekAnchorYmd={weekAnchorYmd}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import * as v from 'valibot'
 
-import { bookingContactSchema, normalizePhoneToE164, telHref } from './phone'
+import { bookingContactIssueOf, bookingContactSchema, normalizePhoneToE164, telHref } from './phone'
 
 describe('normalizePhoneToE164', () => {
   it('keeps valid E.164', () => {
@@ -75,5 +75,33 @@ describe('bookingContactSchema', () => {
 describe('telHref', () => {
   it('strips spaces and punctuation but keeps the leading +', () => {
     expect(telHref('+39 0473 449267')).toBe('tel:+390473449267')
+  })
+})
+
+describe('bookingContactIssueOf', () => {
+  const valid = {
+    firstName: 'Anna',
+    lastName: 'Muster',
+    phone: '+436601234567',
+    email: 'anna@example.com',
+    privacyAccepted: true,
+  }
+  const issueFor = (input: Record<string, unknown>) => {
+    const result = v.safeParse(bookingContactSchema, input)
+    if (result.success) throw new Error('expected a validation issue')
+    return bookingContactIssueOf(result.issues)
+  }
+
+  it('returns a translatable code instead of a German sentence', () => {
+    expect(issueFor({ ...valid, privacyAccepted: false })).toBe('privacyRequired')
+    expect(issueFor({ ...valid, firstName: '' })).toBe('firstNameRequired')
+    expect(issueFor({ ...valid, lastName: 'x'.repeat(81) })).toBe('lastNameTooLong')
+    expect(issueFor({ ...valid, phone: '123' })).toBe('phoneInvalid')
+    expect(issueFor({ ...valid, email: 'keine-mail' })).toBe('emailInvalid')
+    expect(issueFor({ ...valid, notes: 'x'.repeat(1001) })).toBe('notesTooLong')
+  })
+
+  it('falls back to a generic code for unexpected issues', () => {
+    expect(issueFor({ ...valid, firstName: 42 })).toBe('invalid')
   })
 })

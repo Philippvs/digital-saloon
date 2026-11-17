@@ -73,6 +73,20 @@ export type Messages = {
   'book.privacyLink': string
   'book.privacyAfter': string
   'book.opensInNewTab': string
+  'book.error.firstNameRequired': string
+  'book.error.firstNameTooLong': string
+  'book.error.lastNameRequired': string
+  'book.error.lastNameTooLong': string
+  'book.error.phoneInvalid': string
+  'book.error.emailRequired': string
+  'book.error.emailTooLong': string
+  'book.error.emailInvalid': string
+  'book.error.notesTooLong': string
+  'book.error.privacyRequired': string
+  'book.error.invalid': string
+  'book.error.slotTaken': string
+  'book.error.serviceUnavailable': string
+  'book.error.submitFailed': string
   'book.submit': string
   'book.submitting': string
   'book.otherTime': string
@@ -448,6 +462,24 @@ export const de: Messages = {
   'book.privacyLink': 'Datenschutzhinweise',
   'book.privacyAfter': ' zur Kenntnis genommen.',
   'book.opensInNewTab': ' (öffnet in neuem Tab)',
+  'book.error.firstNameRequired': 'Bitte geben Sie Ihren Vornamen ein.',
+  'book.error.firstNameTooLong': 'Der Vorname darf höchstens 80 Zeichen lang sein.',
+  'book.error.lastNameRequired': 'Bitte geben Sie Ihren Nachnamen ein.',
+  'book.error.lastNameTooLong': 'Der Nachname darf höchstens 80 Zeichen lang sein.',
+  'book.error.phoneInvalid': 'Bitte geben Sie eine gültige Telefonnummer ein, z. B. 0473 123456.',
+  'book.error.emailRequired': 'Bitte geben Sie Ihre E-Mail-Adresse ein.',
+  'book.error.emailTooLong': 'Die E-Mail-Adresse ist zu lang.',
+  'book.error.emailInvalid': 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
+  'book.error.notesTooLong': 'Die Anmerkungen dürfen höchstens 1000 Zeichen lang sein.',
+  'book.error.privacyRequired':
+    'Bitte bestätigen Sie, dass Sie die Datenschutzhinweise gelesen haben.',
+  'book.error.invalid': 'Bitte prüfen Sie Ihre Angaben.',
+  'book.error.slotTaken':
+    'Dieser Termin wurde gerade vergeben. Bitte wählen Sie eine andere Uhrzeit.',
+  'book.error.serviceUnavailable':
+    'Diese Leistung ist gerade nicht online buchbar. Bitte rufen Sie uns an.',
+  'book.error.submitFailed':
+    'Die Buchung hat nicht geklappt. Bitte versuchen Sie es erneut oder rufen Sie uns an.',
   'book.submit': 'Termin verbindlich anfragen',
   'book.submitting': 'Wird gebucht…',
   'book.otherTime': 'Andere Zeit',
@@ -836,6 +868,21 @@ export const it: Messages = {
   'book.privacyLink': 'informativa sulla privacy',
   'book.privacyAfter': '.',
   'book.opensInNewTab': ' (si apre in una nuova scheda)',
+  'book.error.firstNameRequired': 'Inserisca il suo nome.',
+  'book.error.firstNameTooLong': 'Il nome può contenere al massimo 80 caratteri.',
+  'book.error.lastNameRequired': 'Inserisca il suo cognome.',
+  'book.error.lastNameTooLong': 'Il cognome può contenere al massimo 80 caratteri.',
+  'book.error.phoneInvalid': 'Inserisca un numero di telefono valido, ad es. 0473 123456.',
+  'book.error.emailRequired': 'Inserisca il suo indirizzo e-mail.',
+  'book.error.emailTooLong': 'L’indirizzo e-mail è troppo lungo.',
+  'book.error.emailInvalid': 'Inserisca un indirizzo e-mail valido.',
+  'book.error.notesTooLong': 'Le note possono contenere al massimo 1000 caratteri.',
+  'book.error.privacyRequired': 'Confermi di aver letto l’informativa sulla privacy.',
+  'book.error.invalid': 'Controlli i dati inseriti.',
+  'book.error.slotTaken': 'Questo orario è appena stato prenotato. Scelga un altro orario.',
+  'book.error.serviceUnavailable':
+    'Questo servizio al momento non è prenotabile online. Ci chiami.',
+  'book.error.submitFailed': 'La prenotazione non è andata a buon fine. Riprovi o ci chiami.',
   'book.submit': 'Richiedi appuntamento',
   'book.submitting': 'Prenotazione in corso…',
   'book.otherTime': 'Altro orario',

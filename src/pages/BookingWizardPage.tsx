@@ -16,7 +16,7 @@ import {
 } from '@mui/material'
 import * as v from 'valibot'
 
-import type { AvailableSlotDto } from '../data/bookingApi'
+import type { AvailableSlotDto, BookingFailure } from '../data/bookingApi'
 import {
   addDays,
   addMonths,
@@ -28,7 +28,11 @@ import {
   weekDays,
 } from '../data/bookingCalendar'
 import { formatViennaDate, formatViennaDateTime, formatViennaTime } from '../data/dateFormat'
-import { bookingContactSchema } from '../data/phone'
+import {
+  bookingContactIssueOf,
+  bookingContactSchema,
+  type BookingContactIssue,
+} from '../data/phone'
 import { arePricesVisible } from '../data/salonConfig'
 import {
   formatServicePriceRange,
@@ -38,7 +42,28 @@ import {
 } from '../data/serviceForm'
 import type { ServiceWithId } from '../data/services'
 import { useLocale } from '../i18n'
+import type { MessageKey } from '../i18n'
 import { brand } from '../theme'
+
+const bookingFailureMessages: Record<BookingFailure, MessageKey> = {
+  slotTaken: 'book.error.slotTaken',
+  serviceUnavailable: 'book.error.serviceUnavailable',
+  failed: 'book.error.submitFailed',
+}
+
+const contactIssueMessages: Record<BookingContactIssue, MessageKey> = {
+  firstNameRequired: 'book.error.firstNameRequired',
+  firstNameTooLong: 'book.error.firstNameTooLong',
+  lastNameRequired: 'book.error.lastNameRequired',
+  lastNameTooLong: 'book.error.lastNameTooLong',
+  phoneInvalid: 'book.error.phoneInvalid',
+  emailRequired: 'book.error.emailRequired',
+  emailTooLong: 'book.error.emailTooLong',
+  emailInvalid: 'book.error.emailInvalid',
+  notesTooLong: 'book.error.notesTooLong',
+  privacyRequired: 'book.error.privacyRequired',
+  invalid: 'book.error.invalid',
+}
 
 /** Read by screen readers only (same rules as MUI's `visuallyHidden`). */
 const screenReaderOnly = {
@@ -67,7 +92,7 @@ export type BookingWizardPageProps = {
   rangeLoading: boolean
   rangeError: boolean
   isSubmitting: boolean
-  submitError: string | null
+  submitFailure: BookingFailure | null
   weekAnchorYmd: string
   monthAnchorYmd: string
   onToggleService: (serviceId: string) => void
@@ -101,7 +126,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
   rangeLoading,
   rangeError,
   isSubmitting,
-  submitError,
+  submitFailure,
   weekAnchorYmd,
   monthAnchorYmd,
   onToggleService,
@@ -124,7 +149,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
   const [email, setEmail] = useState('')
   const [notes, setNotes] = useState('')
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
-  const [fieldError, setFieldError] = useState<string | null>(null)
+  const [contactIssue, setContactIssue] = useState<BookingContactIssue | null>(null)
 
   const weekdays = [
     t('book.weekday.mo'),
@@ -590,7 +615,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   <TextField
                     label={t('book.firstName')}
                     value={firstName}
-                    onChange={(event) => setFirstName(event.target.value)}
+                    onChange={(event) => {
+                      setFirstName(event.target.value)
+                      setContactIssue(null)
+                    }}
                     required
                     fullWidth
                     autoComplete="given-name"
@@ -598,7 +626,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   <TextField
                     label={t('book.lastName')}
                     value={lastName}
-                    onChange={(event) => setLastName(event.target.value)}
+                    onChange={(event) => {
+                      setLastName(event.target.value)
+                      setContactIssue(null)
+                    }}
                     required
                     fullWidth
                     autoComplete="family-name"
@@ -606,7 +637,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   <TextField
                     label={t('book.phone')}
                     value={phone}
-                    onChange={(event) => setPhone(event.target.value)}
+                    onChange={(event) => {
+                      setPhone(event.target.value)
+                      setContactIssue(null)
+                    }}
                     required
                     fullWidth
                     autoComplete="tel"
@@ -616,7 +650,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                     label={t('book.email')}
                     type="email"
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => {
+                      setEmail(event.target.value)
+                      setContactIssue(null)
+                    }}
                     required
                     fullWidth
                     autoComplete="email"
@@ -624,7 +661,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   <TextField
                     label={t('book.notes')}
                     value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
+                    onChange={(event) => {
+                      setNotes(event.target.value)
+                      setContactIssue(null)
+                    }}
                     placeholder={t('book.notesPlaceholder')}
                     multiline
                     minRows={2}
@@ -657,7 +697,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   control={
                     <Checkbox
                       checked={privacyAccepted}
-                      onChange={(event) => setPrivacyAccepted(event.target.checked)}
+                      onChange={(event) => {
+                        setPrivacyAccepted(event.target.checked)
+                        setContactIssue(null)
+                      }}
                     />
                   }
                   label={
@@ -673,8 +716,12 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                     </>
                   }
                 />
-                {fieldError ? <Alert severity="error">{fieldError}</Alert> : null}
-                {submitError ? <Alert severity="error">{submitError}</Alert> : null}
+                {contactIssue ? (
+                  <Alert severity="error">{t(contactIssueMessages[contactIssue])}</Alert>
+                ) : null}
+                {submitFailure ? (
+                  <Alert severity="error">{t(bookingFailureMessages[submitFailure])}</Alert>
+                ) : null}
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 2 }}>
                   <Button
                     variant="contained"
@@ -689,11 +736,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                         privacyAccepted: privacyAccepted ? true : false,
                       })
                       if (!result.success) {
-                        const message = result.issues[0]?.message ?? '…'
-                        setFieldError(message)
+                        setContactIssue(bookingContactIssueOf(result.issues))
                         return
                       }
-                      setFieldError(null)
+                      setContactIssue(null)
                       onSubmit({
                         firstName: result.output.firstName,
                         lastName: result.output.lastName,
