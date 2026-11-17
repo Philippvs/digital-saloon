@@ -3,7 +3,12 @@ import { Box, Button, CircularProgress, Container, Link, Typography } from '@mui
 
 import { parseYmd, viennaTodayYmd } from '../data/bookingCalendar'
 import type { OpeningHoursByWeekday } from '../data/openingHours'
-import { localizedServiceDescription, localizedServiceName } from '../data/serviceForm'
+import { arePricesVisible } from '../data/salonConfig'
+import {
+  formatServicePriceRange,
+  localizedServiceDescription,
+  localizedServiceName,
+} from '../data/serviceForm'
 import { telHref } from '../data/phone'
 import type { Salon, Weekday } from '../data/schemas'
 import type { ServiceWithId } from '../data/services'
@@ -52,13 +57,8 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
   onServiceClick,
 }) => {
   const { t, locale, intlLocale } = useLocale()
+  const pricesVisible = arePricesVisible()
 
-  const priceFormat = (cents: number): string =>
-    new Intl.NumberFormat(intlLocale, {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
-    }).format(cents / 100)
   const weekdayFormat = new Intl.DateTimeFormat(intlLocale, { weekday: 'long', timeZone: 'UTC' })
   const today = parseYmd(viennaTodayYmd())
   const todayIndex =
@@ -160,7 +160,9 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
                           textAlign: 'right',
                         }}
                       >
-                        {priceFormat(service.priceCents)}
+                        {pricesVisible
+                          ? formatServicePriceRange(service.priceCents, service.priceMaxCents)
+                          : t('price.onRequest')}
                       </Typography>
                       {localizedServiceDescription(service, locale) ? (
                         <Typography

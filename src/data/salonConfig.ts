@@ -10,3 +10,15 @@ export function getSalonId(): string {
 }
 
 export const defaultSalonId = DEFAULT_SALON_ID
+
+/**
+ * Global price visibility flag (`VITE_SHOW_PRICES=true|false`).
+ * Defaults to `true` unless explicitly set to `'false'` or `'0'`.
+ */
+export function arePricesVisible(): boolean {
+  const raw = import.meta.env.VITE_SHOW_PRICES
+  if (typeof raw !== 'string') return true
+  const normalized = raw.trim().toLowerCase()
+  if (normalized === 'false' || normalized === '0') return false
+  return true
+}

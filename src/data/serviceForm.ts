@@ -76,13 +76,24 @@ export function normalizeServiceDocument(raw: Record<string, unknown>): Service 
         ? splitBilingual(raw.description).it
         : descriptionDe
 
+  const categoryDe = typeof raw.categoryDe === 'string' ? raw.categoryDe.trim() : undefined
+  const categoryIt = typeof raw.categoryIt === 'string' ? raw.categoryIt.trim() : categoryDe
+
+  const priceMaxCents =
+    typeof raw.priceMaxCents === 'number' && Number.isFinite(raw.priceMaxCents)
+      ? Math.round(raw.priceMaxCents)
+      : undefined
+
   return {
     nameDe,
     nameIt,
     descriptionDe,
     descriptionIt,
+    ...(categoryDe ? { categoryDe } : {}),
+    ...(categoryIt ? { categoryIt } : {}),
     durationMinutes: Number(raw.durationMinutes),
     priceCents: Number(raw.priceCents),
+    ...(priceMaxCents !== undefined ? { priceMaxCents } : {}),
     active: Boolean(raw.active),
     createdAt: String(raw.createdAt ?? ''),
     updatedAt: String(raw.updatedAt ?? ''),
@@ -107,6 +118,54 @@ export function localizedServiceName(service: ServiceDraft, locale: Locale): str
 export function localizedServiceDescription(service: ServiceDraft, locale: Locale): string {
   const text = locale === 'it' ? service.descriptionIt : service.descriptionDe
   return text.trim()
+}
+
+export function localizedServiceCategory(
+  service: Pick<Service, 'categoryDe' | 'categoryIt'>,
+  locale: Locale,
+  fallback: string,
+): string {
+  const text = locale === 'it' ? (service.categoryIt ?? service.categoryDe) : service.categoryDe
+  const trimmed = text?.trim()
+  return trimmed && trimmed.length > 0 ? trimmed : fallback
+}
+
+export type ServiceCategoryGroup<T extends Pick<Service, 'categoryDe' | 'categoryIt'>> = {
+  category: string
+  services: T[]
+}
+
+/** Groups services by localized category while preserving category encounter order. */
+export function groupServicesByCategory<T extends Pick<Service, 'categoryDe' | 'categoryIt'>>(
+  services: readonly T[],
+  locale: Locale,
+  fallbackCategory: string,
+): ServiceCategoryGroup<T>[] {
+  const groups = new Map<string, T[]>()
+  for (const service of services) {
+    const category = localizedServiceCategory(service, locale, fallbackCategory)
+    const list = groups.get(category)
+    if (list) {
+      list.push(service)
+    } else {
+      groups.set(category, [service])
+    }
+  }
+  return Array.from(groups.entries()).map(([category, items]) => ({
+    category,
+    services: items,
+  }))
+}
+
+export function formatEuroAmount(cents: number): string {
+  return cents % 100 === 0 ? `${cents / 100}€` : `${(cents / 100).toFixed(2).replace('.', ',')}€`
+}
+
+export function formatServicePriceRange(minCents: number, maxCents?: number): string {
+  if (maxCents !== undefined && maxCents > minCents) {
+    return `${formatEuroAmount(minCents)}–${formatEuroAmount(maxCents)}`
+  }
+  return formatEuroAmount(minCents)
 }
 
 /** Compact bilingual label for reservations and the admin list (both languages at once). */

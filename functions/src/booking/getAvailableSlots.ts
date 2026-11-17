@@ -12,12 +12,18 @@ export const getAvailableSlots = onCall({ region: functionsRegion }, async (requ
     throw new HttpsError('invalid-argument', 'Invalid payload.')
   }
 
-  const serviceId = data.serviceId
+  const serviceId = typeof data.serviceId === 'string' ? data.serviceId.trim() : ''
+  const serviceIds = Array.isArray(data.serviceIds)
+    ? data.serviceIds
+        .filter((item): item is string => typeof item === 'string')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : []
   const fromDateYmd = data.fromDateYmd
   const toDateYmd = data.toDateYmd
 
-  if (typeof serviceId !== 'string' || serviceId.length === 0) {
-    throw new HttpsError('invalid-argument', 'serviceId is required.')
+  if (serviceId.length === 0 && serviceIds.length === 0) {
+    throw new HttpsError('invalid-argument', 'serviceId or serviceIds is required.')
   }
   if (typeof fromDateYmd !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(fromDateYmd)) {
     throw new HttpsError('invalid-argument', 'fromDateYmd is required (YYYY-MM-DD).')
@@ -52,7 +58,8 @@ export const getAvailableSlots = onCall({ region: functionsRegion }, async (requ
   }
 
   const slots = await previewAvailableSlots({
-    serviceId,
+    ...(serviceId ? { serviceId } : {}),
+    ...(serviceIds.length > 0 ? { serviceIds } : {}),
     fromDateYmd,
     toDateYmd,
     salonId: getSalonId(),

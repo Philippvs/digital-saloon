@@ -4,12 +4,57 @@ import { assertAdmin } from '../authz'
 import { functionsRegion, getSalonId } from '../config'
 import { isObject } from '../schemas'
 import { createReservationTransactional } from './reservationWrite'
+import { sendBookingConfirmationEmail } from './sendBookingEmail'
 
 function requireString(value: unknown, field: string): string {
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new HttpsError('invalid-argument', `${field} is required.`)
   }
   return value.trim()
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function requireEmail(value: unknown): string {
+  const email = requireString(value, 'email')
+  if (email.length > 254 || !EMAIL_PATTERN.test(email)) {
+    throw new HttpsError('invalid-argument', 'email must be a valid email address.')
+  }
+  return email
+}
+
+function optionalNotes(value: unknown): string | null {
+  if (value === null || value === undefined) return null
+  if (typeof value !== 'string') {
+    throw new HttpsError('invalid-argument', 'notes must be a string.')
+  }
+  const trimmed = value.trim()
+  if (trimmed.length === 0) return null
+  if (trimmed.length > 1000) {
+    throw new HttpsError('invalid-argument', 'notes must be at most 1000 characters.')
+  }
+  return trimmed
+}
+
+function resolveServiceIds(data: Record<string, unknown>): {
+  serviceId: string
+  serviceIds: string[]
+} {
+  if (Array.isArray(data.serviceIds)) {
+    const ids = Array.from(
+      new Set(
+        data.serviceIds
+          .filter((item): item is string => typeof item === 'string')
+          .map((item) => item.trim())
+          .filter(Boolean),
+      ),
+    )
+    if (ids.length > 0) {
+      return { serviceId: ids[0], serviceIds: ids }
+    }
+  }
+  const serviceId = requireString(data.serviceId, 'serviceId')
+  return { serviceId, serviceIds: [serviceId] }
 }
 
 export const createReservation = onCall({ region: functionsRegion }, async (request) => {
@@ -29,14 +74,22 @@ export const createReservation = onCall({ region: functionsRegion }, async (requ
     throw new HttpsError('invalid-argument', 'startAt must be an ISO timestamp.')
   }
 
+  const { serviceId, serviceIds } = resolveServiceIds(data)
+  const email = requireEmail(data.email)
+  const notes = optionalNotes(data.notes)
+
+  const firstName = requireString(data.firstName, 'firstName')
+  const lastName = requireString(data.lastName, 'lastName')
+
   const result = await createReservationTransactional(
     {
-      firstName: requireString(data.firstName, 'firstName'),
-      lastName: requireString(data.lastName, 'lastName'),
+      firstName,
+      lastName,
       phone: requireString(data.phone, 'phone'),
-      email:
-        typeof data.email === 'string' && data.email.trim().length > 0 ? data.email.trim() : null,
-      serviceId: requireString(data.serviceId, 'serviceId'),
+      email,
+      notes,
+      serviceId,
+      serviceIds,
       startAt,
       source: 'ONLINE',
       internalNote: null,
@@ -52,6 +105,25 @@ export const createReservation = onCall({ region: functionsRegion }, async (requ
 
   if (!result.ok) {
     throw new HttpsError('failed-precondition', result.message)
+  }
+
+  if (!result.reused && result.managementToken && result.serviceName && result.durationMinutes) {
+    await sendBookingConfirmationEmail({
+      reservationId: result.reservationId,
+      to: email,
+      firstName,
+      lastName,
+      serviceName: result.serviceName,
+      durationMinutes: result.durationMinutes,
+      startAt,
+      status: result.status,
+      managementToken: result.managementToken,
+      notes,
+      timeZone: result.timeZone,
+      salonName: result.salonName,
+      salonAddress: result.salonAddress,
+      salonPhone: result.salonPhone,
+    })
   }
 
   return {
