@@ -1,18 +1,19 @@
 import { expect, type Page } from '@playwright/test'
 
 export const demoAccount = {
-  email: 'demo@example.com',
+  email: 'admin@salonflow.local',
   password: 'password123',
 } as const
 
 export async function signInAsDemo(page: Page): Promise<void> {
   await page.goto('/login')
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Admin-Anmeldung' })).toBeVisible()
 
-  await page.getByLabel('Email').fill(demoAccount.email)
-  await page.getByLabel('Password').fill(demoAccount.password)
-  await page.locator('form').getByRole('button', { name: 'Sign in' }).click()
+  await page.getByLabel('E-Mail').fill(demoAccount.email)
+  await page.getByLabel('Passwort').fill(demoAccount.password)
+  await page.locator('form').getByRole('button', { name: 'Als Admin anmelden' }).click()
 
-  await expect(page.getByRole('heading', { name: 'React Firebase Template' })).toBeVisible()
-  await expect(page.getByText(`Signed in as ${demoAccount.email}`)).toBeVisible()
+  await expect(page).toHaveURL(/\/admin/)
+  await expect(page.getByRole('banner').getByRole('button', { name: 'Kalender' })).toBeVisible()
+  await expect(page.getByRole('banner').getByRole('button', { name: 'Abmelden' })).toBeVisible()
 }

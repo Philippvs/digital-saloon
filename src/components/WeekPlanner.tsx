@@ -1,0 +1,258 @@
+import type * as React from 'react'
+
+import type { ReservationStatus } from '../data/schemas'
+import {
+  addSlotStepMinutes,
+  formatBookedTime,
+  hhmmOfMinute,
+  type PlannerDay,
+  type PlannerEntry,
+  type WeekPlan,
+} from '../data/weekPlanner'
+import { useLocale } from '../i18n'
+import type { MessageKey } from '../i18n'
+import {
+  AddSlot,
+  DayColumn,
+  DayHeader,
+  Entry,
+  GutterHeader,
+  HourGutter,
+  Legend,
+  NowLine,
+  OpenBand,
+  PlannerGrid,
+  PlannerScroller,
+  pixelsPerMinute,
+} from './WeekPlanner.styles'
+
+export type WeekPlannerProps = {
+  plan: WeekPlan
+  onSelectReservation: (reservationId: string) => void
+  onAddAt: (dateYmd: string, startTime: string) => void
+}
+
+const entryClass: Partial<Record<ReservationStatus, string>> = {
+  CONFIRMED: 'is-confirmed',
+  PENDING: 'is-pending',
+  COMPLETED: 'is-completed',
+}
+
+const compactEntryHeight = 44
+const detailedEntryHeight = 60
+
+function dateAt(dateYmd: string): Date {
+  return new Date(`${dateYmd}T12:00:00.000Z`)
+}
+
+type PlannerEntryButtonProps = {
+  entry: PlannerEntry
+  gridStartMinute: number
+  onSelect: (reservationId: string) => void
+}
+
+const PlannerEntryButton: React.FunctionComponent<PlannerEntryButtonProps> = ({
+  entry,
+  gridStartMinute,
+  onSelect,
+}) => {
+  const { t } = useLocale()
+  const { reservation } = entry
+  const time = `${hhmmOfMinute(entry.startMinute)}–${hhmmOfMinute(entry.endMinute)}`
+  const name = `${reservation.firstName} ${reservation.lastName}`
+  const status = t(`status.${reservation.status}` as MessageKey)
+  const height = Math.max((entry.endMinute - entry.startMinute) * pixelsPerMinute - 2, 22)
+  const widthShare = 100 / entry.laneCount
+
+  return (
+    <Entry
+      type="button"
+      className={entryClass[reservation.status]}
+      aria-label={`${time}, ${name}, ${reservation.serviceName}, ${status}`}
+      title={`${time}\n${name}\n${reservation.serviceName}\n${status}`}
+      style={{
+        top: (entry.startMinute - gridStartMinute) * pixelsPerMinute + 1,
+        height,
+        left: `calc(${entry.lane * widthShare}% + 2px)`,
+        width: `calc(${widthShare}% - 4px)`,
+        flexDirection: height < compactEntryHeight ? 'row' : 'column',
+        alignItems: height < compactEntryHeight ? 'center' : 'flex-start',
+        gap: height < compactEntryHeight ? 6 : 1,
+      }}
+      onClick={() => onSelect(reservation.id)}
+    >
+      <span className="entry-time">{hhmmOfMinute(entry.startMinute)}</span>
+      <span className="entry-name">{name}</span>
+      {height >= detailedEntryHeight ? (
+        <span className="entry-service">{reservation.serviceName}</span>
+      ) : null}
+    </Entry>
+  )
+}
+
+type PlannerDayColumnProps = {
+  day: PlannerDay
+  gridStartMinute: number
+  nowMinute: number | null
+  addLabel: (dateYmd: string, time: string) => string
+  onSelectReservation: (reservationId: string) => void
+  onAddAt: (dateYmd: string, startTime: string) => void
+}
+
+const PlannerDayColumn: React.FunctionComponent<PlannerDayColumnProps> = ({
+  day,
+  gridStartMinute,
+  nowMinute,
+  addLabel,
+  onSelectReservation,
+  onAddAt,
+}) => (
+  <DayColumn data-date={day.dateYmd}>
+    {day.openIntervals.map((interval) => (
+      <OpenBand
+        key={interval.startMinute}
+        style={{
+          top: (interval.startMinute - gridStartMinute) * pixelsPerMinute,
+          height: (interval.endMinute - interval.startMinute) * pixelsPerMinute,
+        }}
+      />
+    ))}
+    {day.addStartMinutes.map((minute) => {
+      const time = hhmmOfMinute(minute)
+      return (
+        <AddSlot
+          key={minute}
+          type="button"
+          tabIndex={-1}
+          aria-label={addLabel(day.dateYmd, time)}
+          style={{
+            top: (minute - gridStartMinute) * pixelsPerMinute + 1,
+            height: addSlotStepMinutes * pixelsPerMinute - 2,
+          }}
+          onClick={() => onAddAt(day.dateYmd, time)}
+        >
+          + {time}
+        </AddSlot>
+      )
+    })}
+    {day.entries.map((entry) => (
+      <PlannerEntryButton
+        key={entry.reservation.id}
+        entry={entry}
+        gridStartMinute={gridStartMinute}
+        onSelect={onSelectReservation}
+      />
+    ))}
+    {day.isToday && nowMinute !== null ? (
+      <NowLine aria-hidden style={{ top: (nowMinute - gridStartMinute) * pixelsPerMinute }} />
+    ) : null}
+  </DayColumn>
+)
+
+export const WeekPlanner: React.FunctionComponent<WeekPlannerProps> = ({
+  plan,
+  onSelectReservation,
+  onAddAt,
+}) => {
+  const { t, intlLocale } = useLocale()
+  const gridStartMinute = plan.firstHour * 60
+  const gridEndMinute = plan.lastHour * 60
+  const bodyHeight = (gridEndMinute - gridStartMinute) * pixelsPerMinute
+  const hours = Array.from(
+    { length: plan.lastHour - plan.firstHour },
+    (_, index) => plan.firstHour + index,
+  )
+  const nowMinute =
+    plan.nowMinute !== null && plan.nowMinute >= gridStartMinute && plan.nowMinute <= gridEndMinute
+      ? plan.nowMinute
+      : null
+
+  const weekdayFormat = new Intl.DateTimeFormat(intlLocale, { weekday: 'short', timeZone: 'UTC' })
+  const dayNumberFormat = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', timeZone: 'UTC' })
+  const longDateFormat = new Intl.DateTimeFormat(intlLocale, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  })
+  const addLabel = (dateYmd: string, time: string): string =>
+    t('admin.plannerAddAt', { date: longDateFormat.format(dateAt(dateYmd)), time })
+
+  const dayTotal = (day: PlannerDay): string => {
+    if (day.count === 0) {
+      return day.openIntervals.length === 0 ? t('admin.closed') : t('admin.plannerDayFree')
+    }
+    const count =
+      day.count === 1 ? t('admin.plannerCountOne') : t('admin.plannerCount', { count: day.count })
+    return `${count}, ${formatBookedTime(day.bookedMinutes)}`
+  }
+
+  return (
+    <div>
+      <PlannerScroller>
+        <PlannerGrid>
+          <GutterHeader />
+          {plan.days.map((day) => {
+            const classes = [
+              day.isToday ? 'is-today' : '',
+              day.openIntervals.length === 0 ? 'is-closed' : '',
+            ]
+            return (
+              <DayHeader
+                key={day.dateYmd}
+                className={classes.filter(Boolean).join(' ')}
+                aria-label={longDateFormat.format(dateAt(day.dateYmd))}
+                aria-current={day.isToday ? 'date' : undefined}
+              >
+                <span className="day-name">
+                  <span className="day-number">{dayNumberFormat.format(dateAt(day.dateYmd))}</span>
+                  {weekdayFormat.format(dateAt(day.dateYmd))}
+                </span>
+                <span className="day-total">{dayTotal(day)}</span>
+              </DayHeader>
+            )
+          })}
+
+          <HourGutter style={{ height: bodyHeight }} aria-hidden>
+            {hours.map((hour) => (
+              <span key={hour} style={{ top: (hour * 60 - gridStartMinute) * pixelsPerMinute }}>
+                {hhmmOfMinute(hour * 60)}
+              </span>
+            ))}
+          </HourGutter>
+          {plan.days.map((day) => (
+            <PlannerDayColumn
+              key={day.dateYmd}
+              day={day}
+              gridStartMinute={gridStartMinute}
+              nowMinute={day.isToday ? nowMinute : null}
+              addLabel={addLabel}
+              onSelectReservation={onSelectReservation}
+              onAddAt={onAddAt}
+            />
+          ))}
+        </PlannerGrid>
+      </PlannerScroller>
+
+      <Legend aria-label={t('admin.plannerLegend')}>
+        <li>
+          <span className="swatch is-confirmed" />
+          {t('status.CONFIRMED')}
+        </li>
+        <li>
+          <span className="swatch is-pending" />
+          {t('status.PENDING')}
+        </li>
+        <li>
+          <span className="swatch is-completed" />
+          {t('status.COMPLETED')}
+        </li>
+        <li>
+          <span className="swatch is-closed" />
+          {t('admin.closed')}
+        </li>
+        <li>{t('admin.plannerAddHint')}</li>
+      </Legend>
+    </div>
+  )
+}

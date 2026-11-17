@@ -17,7 +17,9 @@ const LoginRoute: React.FunctionComponent = () => {
   return (
     <LoginPage
       onSuccess={() => {
-        void navigate({ to: redirect && redirect.startsWith('/') ? redirect : '/' })
+        void navigate({
+          to: redirect && redirect.startsWith('/') ? redirect : '/admin',
+        })
       }}
       onHomeClick={() => {
         void navigate({ to: '/' })

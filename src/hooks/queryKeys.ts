@@ -3,7 +3,15 @@ import type { QueryClient } from '@tanstack/react-query'
 export type QueryVisibility = 'public' | 'private'
 
 export const queryRootVisibility = {
-  health: 'public',
+  salon: 'public',
+  services: 'public',
+  availableSlots: 'public',
+  managedReservation: 'public',
+  bookingSettings: 'private',
+  openingHours: 'public',
+  closures: 'private',
+  adminReservations: 'private',
+  adminReservation: 'private',
   userProfile: 'private',
 } as const
 

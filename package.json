@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "vite --port 3100 --host 127.0.0.1",
     "dev:local": "node scripts/start-dev.mjs",
+    "start": "node scripts/start-dev.mjs",
+    "start:local": "node scripts/start-dev.mjs",
     "free:ports": "node scripts/free-ports.mjs",
     "emulators": "node scripts/free-ports.mjs && firebase emulators:start --only auth,firestore,storage,functions,ui --project demo-react-firebase-template",
     "seed": "node scripts/seed-emulator.mjs",
@@ -32,7 +34,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@fontsource/roboto": "^5.3.0",
+    "@fontsource-variable/archivo": "^5.3.0",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "@tanstack/react-query": "^5.107.1",

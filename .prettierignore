@@ -6,3 +6,4 @@ pnpm-lock.yaml
 .agents/skills
 coverage
 *.mdc
+.superpowers/

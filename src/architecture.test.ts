@@ -68,13 +68,14 @@ const allowedLayerImports: Readonly<Record<string, readonly string[]>> = {
   'theme.ts': [],
   'firebase.ts': ['data'],
   auth: ['firebase.ts'],
-  data: ['firebase.ts'],
-  hooks: ['data', 'firebase.ts'],
-  components: ['hooks', 'data', 'theme.ts'],
-  pages: ['components', 'hooks', 'data', 'auth', 'theme.ts'],
-  routes: ['pages', 'components', 'hooks', 'data', 'auth', 'firebase.ts', 'theme.ts'],
+  i18n: [],
+  data: ['firebase.ts', 'i18n'],
+  hooks: ['data', 'firebase.ts', 'i18n'],
+  components: ['hooks', 'data', 'theme.ts', 'i18n'],
+  pages: ['components', 'hooks', 'data', 'auth', 'theme.ts', 'i18n'],
+  routes: ['pages', 'components', 'hooks', 'data', 'auth', 'firebase.ts', 'theme.ts', 'i18n'],
   'router.ts': ['routes'],
-  'main.tsx': ['router.ts', 'routes', 'auth', 'theme.ts'],
+  'main.tsx': ['router.ts', 'routes', 'auth', 'theme.ts', 'i18n'],
 }
 
 describe('architecture', () => {
