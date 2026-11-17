@@ -8,6 +8,10 @@ import { DEV_APP_PORTS, ensurePortsAvailable, resolveForceFreePorts } from './li
 import { createProcessSupervisor, localBin } from './lib/process-tree.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+const brandArg = process.argv.find((arg) => arg.startsWith('--brand='))?.split('=')[1]
+const activeBrand = (brandArg || process.env.VITE_BRAND || 'kimm').trim().toLowerCase()
+const defaultSalonId = activeBrand === 'salon1500' ? 'salon1500' : 'pilot'
+const activeSalonId = (process.env.VITE_SALON_ID || defaultSalonId).trim()
 const skipBuild = process.env.DEV_SKIP_BUILD === 'true'
 const forceFreePorts = resolveForceFreePorts()
 const supervisor = createProcessSupervisor({
@@ -36,7 +40,13 @@ function buildFunctions() {
 
 async function seed() {
   await new Promise((resolve, reject) => {
-    const child = supervisor.spawn('node', ['scripts/seed-emulator.mjs'], { critical: false })
+    const child = supervisor.spawn('node', ['scripts/seed-emulator.mjs'], {
+      env: {
+        SEED_BRAND: activeBrand,
+        SEED_SALON_ID: activeSalonId,
+      },
+      critical: false,
+    })
     child.on('error', reject)
     child.on('exit', (code) => {
       if (code === 0) {
@@ -62,12 +72,15 @@ async function main() {
     critical: false,
   })
 
+  console.log(`[dev] Brand: ${activeBrand} (salonId: ${activeSalonId})`)
   console.log('[dev] Starting Firebase emulators…')
   supervisor.spawn(
     localBin('firebase'),
     ['emulators:start', '--only', 'auth,firestore,storage,functions,ui', '--project', PROJECT_ID],
     {
       env: {
+        BRAND: activeBrand,
+        SALON_ID: activeSalonId,
         MAIL_CATCHER_URL: mailCatcherUrl,
         PUBLIC_APP_URL: `http://127.0.0.1:${EMULATOR_PORTS.app}`,
       },
@@ -85,7 +98,11 @@ async function main() {
     localBin('vite'),
     ['--port', String(EMULATOR_PORTS.app), '--host', '127.0.0.1'],
     {
-      env: { VITE_USE_FIREBASE_EMULATORS: 'true' },
+      env: {
+        VITE_USE_FIREBASE_EMULATORS: 'true',
+        VITE_BRAND: activeBrand,
+        VITE_SALON_ID: activeSalonId,
+      },
       critical: true,
     },
   )

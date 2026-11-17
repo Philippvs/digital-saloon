@@ -70,6 +70,7 @@ export async function submitOnlineReservation(input: {
   phone: string
   email: string
   notes: string | null
+  locale?: 'de' | 'it'
   privacyAccepted: true
   idempotencyKey: string
 }): Promise<CreateReservationResult> {

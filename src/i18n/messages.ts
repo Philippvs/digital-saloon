@@ -23,6 +23,9 @@ export type Messages = {
   'home.closed': string
   'home.today': string
   'home.visitTitle': string
+  'home.stylistsTitle': string
+  'home.stylesTitle': string
+  'home.stylesHint': string
   'home.directions': string
   'footer.vatId': string
 
@@ -359,6 +362,9 @@ export const de: Messages = {
   'home.closed': 'geschlossen',
   'home.today': 'heute',
   'home.visitTitle': 'So finden Sie uns',
+  'home.stylistsTitle': 'Stylistinnen',
+  'home.stylesTitle': 'Styles',
+  'home.stylesHint': 'Ausgewählte Schnitte, Balayage-Techniken und Colorationen aus unserem Salon.',
   'home.directions': 'Route in Google Maps öffnen',
   'footer.vatId': 'MwSt.-Nr.',
 
@@ -705,6 +711,9 @@ export const it: Messages = {
   'home.closed': 'chiuso',
   'home.today': 'oggi',
   'home.visitTitle': 'Come trovarci',
+  'home.stylistsTitle': 'Il team',
+  'home.stylesTitle': 'Styles',
+  'home.stylesHint': 'Tagli selezionati, tecniche balayage e colorazioni dal nostro salone.',
   'home.directions': 'Apri il percorso in Google Maps',
   'footer.vatId': 'P. IVA',
 

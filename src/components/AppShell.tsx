@@ -1,10 +1,23 @@
 import type * as React from 'react'
-import { Box, Button, Container, IconButton, Link, Stack, Typography } from '@mui/material'
+import { useState } from 'react'
+import {
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Link,
+  Menu,
+  MenuItem,
+  Stack,
+  Typography,
+} from '@mui/material'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
+import MenuIcon from '@mui/icons-material/Menu'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 
+import { getActiveBrand } from '../data/brands'
 import { telHref } from '../data/phone'
 import type { Salon } from '../data/schemas'
 import { useLocale } from '../i18n'
@@ -19,6 +32,7 @@ export type AppShellProps = {
   /** `full` lets the page own its width (home page bands); `wide` suits dashboards. */
   contentWidth: 'contained' | 'wide' | 'full'
   onHomeClick: () => void
+  onBalayageClick: () => void
   onBookClick: () => void
   onMyBookingsClick: () => void
   onLoginClick: () => void
@@ -33,6 +47,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   email,
   contentWidth,
   onHomeClick,
+  onBalayageClick,
   onBookClick,
   onMyBookingsClick,
   onLoginClick,
@@ -42,13 +57,24 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   children,
 }) => {
   const { locale, setLocale, t } = useLocale()
+  const activeBrand = getActiveBrand()
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<HTMLElement | null>(null)
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'clip' }}>
       <Header>
         <Container maxWidth="lg" className="header-inner">
           <HeaderWordmark label={t('nav.home')} onClick={onHomeClick} />
           <nav className="header-nav" aria-label={t('nav.main')}>
+            {activeBrand.key === 'salon1500' ? (
+              <NavLink
+                type="button"
+                onClick={onBalayageClick}
+                sx={{ display: { xs: 'none', sm: 'inline' } }}
+              >
+                Balayage
+              </NavLink>
+            ) : null}
             {email ? (
               <>
                 <NavLink
@@ -92,7 +118,14 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                 <IconButton
                   aria-label={t('nav.myBookings')}
                   onClick={onMyBookingsClick}
-                  sx={{ display: { xs: 'inline-flex', sm: 'none' }, color: 'primary.main' }}
+                  sx={{
+                    display: {
+                      xs: activeBrand.key === 'salon1500' ? 'none' : 'inline-flex',
+                      sm: 'none',
+                    },
+                    color: 'primary.main',
+                    p: 0.75,
+                  }}
                 >
                   <EventNoteOutlinedIcon />
                 </IconButton>
@@ -133,14 +166,57 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                 </IconButton>
               </>
             ) : (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={onBookClick}
-                sx={{ whiteSpace: 'nowrap', px: { xs: 1.5, sm: 2.5 } }}
-              >
-                {t('nav.book')}
-              </Button>
+              <>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={onBookClick}
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    px: { xs: 1.25, sm: 2.5 },
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                  }}
+                >
+                  {t('nav.book')}
+                </Button>
+                {activeBrand.key === 'salon1500' ? (
+                  <>
+                    <IconButton
+                      aria-label={t('nav.main')}
+                      onClick={(event) => setMobileMenuAnchor(event.currentTarget)}
+                      sx={{
+                        display: { xs: 'inline-flex', sm: 'none' },
+                        color: 'primary.main',
+                        p: 0.75,
+                      }}
+                    >
+                      <MenuIcon />
+                    </IconButton>
+                    <Menu
+                      anchorEl={mobileMenuAnchor}
+                      open={Boolean(mobileMenuAnchor)}
+                      onClose={() => setMobileMenuAnchor(null)}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          setMobileMenuAnchor(null)
+                          onBalayageClick()
+                        }}
+                      >
+                        Balayage
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          setMobileMenuAnchor(null)
+                          onMyBookingsClick()
+                        }}
+                      >
+                        {t('nav.myBookings')}
+                      </MenuItem>
+                    </Menu>
+                  </>
+                ) : null}
+              </>
             )}
           </nav>
         </Container>
@@ -163,14 +239,25 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
             spacing={{ xs: 2, sm: 6 }}
             sx={{ alignItems: { sm: 'baseline' } }}
           >
-            <Typography sx={{ fontWeight: 700, fontSize: '1.125rem' }}>
-              <Box component="span" sx={{ color: brand.orange }}>
-                KIMM
-              </Box>{' '}
-              <Box component="span" sx={{ fontWeight: 300 }}>
-                HAIR
-              </Box>
-            </Typography>
+            {activeBrand.key === 'salon1500' ? (
+              <Typography sx={{ fontWeight: 700, fontSize: '1.125rem' }}>
+                <Box component="span" sx={{ color: brand.orange }}>
+                  Salon
+                </Box>{' '}
+                <Box component="span" sx={{ fontWeight: 300 }}>
+                  1500
+                </Box>
+              </Typography>
+            ) : (
+              <Typography sx={{ fontWeight: 700, fontSize: '1.125rem' }}>
+                <Box component="span" sx={{ color: brand.orange }}>
+                  KIMM
+                </Box>{' '}
+                <Box component="span" sx={{ fontWeight: 300 }}>
+                  HAIR
+                </Box>
+              </Typography>
+            )}
             {salon ? (
               <>
                 <Typography variant="body2">{salon.address}</Typography>

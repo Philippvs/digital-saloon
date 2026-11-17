@@ -18,6 +18,8 @@ functions/lib
 .env
 .env.*
 !.env.example
+salons/*.env
+!salons/*.env.example
 
 # Emulator persistence
 emulator-data/

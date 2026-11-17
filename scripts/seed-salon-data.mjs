@@ -13,14 +13,24 @@ function envOr(name, fallback) {
 }
 
 export function salonSeedConfig() {
+  const brand = envOr('SEED_BRAND', envOr('VITE_BRAND', 'kimm')).toLowerCase()
+  const isSalon1500 = brand === 'salon1500'
+
   return {
-    salonId: envOr('SEED_SALON_ID', envOr('VITE_SALON_ID', 'pilot')),
-    name: envOr('SEED_SALON_NAME', 'KIMM Hair'),
+    brand: isSalon1500 ? 'salon1500' : 'kimm',
+    salonId: envOr('SEED_SALON_ID', envOr('VITE_SALON_ID', isSalon1500 ? 'salon1500' : 'pilot')),
+    name: envOr('SEED_SALON_NAME', isSalon1500 ? 'Salon 1500' : 'KIMM Hair'),
     timezone: envOr('SEED_SALON_TIMEZONE', 'Europe/Vienna'),
-    address: envOr('SEED_SALON_ADDRESS', 'Via Piave 71, 39012 Meran'),
-    phone: envOr('SEED_SALON_PHONE', '+39 0473 449267'),
-    email: envOr('SEED_SALON_EMAIL', 'hello@kimm-hair.local'),
-    vatId: envOr('SEED_SALON_VAT_ID', '01732550213'),
+    address: envOr(
+      'SEED_SALON_ADDRESS',
+      isSalon1500 ? 'Mauls 12A, 39040 Freienfeld (BZ)' : 'Via Piave 71, 39012 Meran',
+    ),
+    phone: envOr('SEED_SALON_PHONE', isSalon1500 ? '+39 349 5326663' : '+39 0473 449267'),
+    email: envOr(
+      'SEED_SALON_EMAIL',
+      isSalon1500 ? 'salon1500.pruensterelisabeth@gmail.com' : 'hello@kimm-hair.local',
+    ),
+    vatId: envOr('SEED_SALON_VAT_ID', isSalon1500 ? '' : '01732550213'),
     adminEmail: envOr('SEED_ADMIN_EMAIL', 'admin@salonflow.local'),
     adminPassword: envOr('SEED_ADMIN_PASSWORD', 'password123'),
   }
@@ -67,7 +77,7 @@ export async function seedSalonData(firestore, config = salonSeedConfig()) {
       phone: config.phone,
       email: config.email,
       timezone: config.timezone,
-      vatId: config.vatId,
+      ...(config.vatId ? { vatId: config.vatId } : {}),
     },
     { merge: true },
   )
@@ -301,6 +311,56 @@ export async function seedSalonData(firestore, config = salonSeedConfig()) {
       durationMinutes: 15,
       priceCents: 500,
     },
+    ...(config.brand === 'salon1500'
+      ? [
+          {
+            id: 'balayage-xs',
+            nameDe: 'Balayage Paket XS',
+            nameIt: 'Balayage Pacchetto XS',
+            descriptionDe: '“balayer” – to dye like an artist painting a masterpiece',
+            descriptionIt: '“balayer” – to dye like an artist painting a masterpiece',
+            categoryDe: 'Balayage',
+            categoryIt: 'Balayage',
+            durationMinutes: 180,
+            priceCents: 14000,
+          },
+          {
+            id: 'balayage-s',
+            nameDe: 'Balayage Paket S',
+            nameIt: 'Balayage Pacchetto S',
+            descriptionDe: '“balayer” – to dye like an artist painting a masterpiece',
+            descriptionIt: '“balayer” – to dye like an artist painting a masterpiece',
+            categoryDe: 'Balayage',
+            categoryIt: 'Balayage',
+            durationMinutes: 180,
+            priceCents: 15000,
+          },
+          {
+            id: 'balayage-m',
+            nameDe: 'Balayage Paket M',
+            nameIt: 'Balayage Pacchetto M',
+            descriptionDe: '“balayer” – to dye like an artist painting a masterpiece',
+            descriptionIt: '“balayer” – to dye like an artist painting a masterpiece',
+            categoryDe: 'Balayage',
+            categoryIt: 'Balayage',
+            durationMinutes: 210,
+            priceCents: 17000,
+            priceMaxCents: 18000,
+          },
+          {
+            id: 'balayage-l',
+            nameDe: 'Balayage Paket L',
+            nameIt: 'Balayage Pacchetto L',
+            descriptionDe: '“balayer” – to dye like an artist painting a masterpiece',
+            descriptionIt: '“balayer” – to dye like an artist painting a masterpiece',
+            categoryDe: 'Balayage',
+            categoryIt: 'Balayage',
+            durationMinutes: 270,
+            priceCents: 20000,
+            priceMaxCents: 25000,
+          },
+        ]
+      : []),
   ]
 
   await seedDemoWeek(salonRef, services, config.timezone)

@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "demo-react-firebase-template"
+    "default": "demo-react-firebase-template",
+    "kimm": "kimm-hair",
+    "salon1500": "salon-1500"
   }
 }

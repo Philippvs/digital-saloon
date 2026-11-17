@@ -1,3 +1,5 @@
+import { getActiveBrand } from './brands'
+
 const DEFAULT_SALON_ID = 'pilot'
 
 /** Salon document id for this single-salon deployment. */
@@ -6,7 +8,7 @@ export function getSalonId(): string {
   if (typeof fromEnv === 'string' && fromEnv.trim().length > 0) {
     return fromEnv.trim()
   }
-  return DEFAULT_SALON_ID
+  return getActiveBrand().defaultSalonId || DEFAULT_SALON_ID
 }
 
 export const defaultSalonId = DEFAULT_SALON_ID
