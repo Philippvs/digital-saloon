@@ -32,49 +32,87 @@ Optional salon overrides (see `.env.example`): `VITE_SALON_ID`, `SEED_SALON_NAME
 
 ## Environment files
 
-All real `.env*` files are gitignored; only the `*.example` files are committed. Local dev needs **no** env files — `pnpm dev:local` runs everything against the emulators (`demo-react-firebase-template`).
+All real `.env*` files are gitignored; only the `*.example` files are committed. Local dev needs **no** env files — `pnpm dev:local` (or `pnpm dev:salon1500`) runs everything against the emulators (`demo-react-firebase-template`).
 
-| File                       | Loaded by                                       | Purpose                                                  |
-| -------------------------- | ----------------------------------------------- | -------------------------------------------------------- |
-| `.env`                     | Vite, always (dev + build)                      | Local overrides only (`VITE_SALON_ID`, `SEED_*`, …)      |
-| `.env.production`          | Vite, `pnpm build` only                         | Firebase Web SDK config for the live project             |
-| `functions/.env.kimm-hair` | Firebase CLI, deploys to `kimm-hair` only       | Production Functions config (Resend email)               |
-| `functions/.env`           | Firebase CLI, every project **incl. emulators** | Avoid for secrets — the emulators would pick them up too |
+Each salon is its own Firebase project, addressed by an alias in `.firebaserc`:
 
-Do **not** put the `VITE_FIREBASE_*` values in `.env`: it is also loaded by `pnpm dev:local`, which would point the app at the live project while the emulators run as the demo project.
+| Brand (`VITE_BRAND` / `BRAND`) | Alias       | Project ID   | Salon ID    | Web config             | Functions config            |
+| ------------------------------ | ----------- | ------------ | ----------- | ---------------------- | --------------------------- |
+| `kimm`                         | `kimm`      | `kimm-hair`  | `pilot`     | `salons/kimm.env`      | `functions/.env.kimm-hair`  |
+| `salon1500`                    | `salon1500` | `salon-1500` | `salon1500` | `salons/salon1500.env` | `functions/.env.salon-1500` |
 
-### `.env.production` (web app → live Firebase project)
+| File                         | Loaded by                                         | Purpose                                                     |
+| ---------------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| `salons/<brand>.env`         | `pnpm deploy:salon <brand>` (Vite build + deploy) | Brand, salon ID and Firebase Web SDK config of that salon   |
+| `functions/.env.<projectId>` | Firebase CLI, deploys to that project only        | Functions config of that salon (`BRAND`, `SALON_ID`, email) |
+| `.env`                       | Vite, always (dev + build)                        | Local overrides only (`SEED_*`, …)                          |
+| `functions/.env`             | Firebase CLI, every project **incl. emulators**   | Avoid — would leak into every salon and the emulators       |
+
+- Do **not** put `VITE_FIREBASE_*` values in `.env` or `.env.production`: they would be baked into every salon's build (and `.env` also into local dev).
+- Functions do not see `salons/<brand>.env` — `BRAND` and `SALON_ID` must also be set in `functions/.env.<projectId>`, otherwise emails use the KIMM design and salon `pilot`.
+
+### `salons/<brand>.env` (web app → that salon's Firebase project)
 
 ```bash
-firebase apps:sdkconfig WEB --project kimm-hair   # copy values from the output
+cp salons/kimm.env.example salons/kimm.env
+firebase apps:sdkconfig WEB --project kimm-hair   # copy values into salons/kimm.env
 ```
 
 ```dotenv
+VITE_BRAND=kimm
+VITE_SALON_ID=pilot
+VITE_SHOW_PRICES=true
+BRAND=kimm
+SALON_ID=pilot
+
 VITE_FIREBASE_API_KEY=...
 VITE_FIREBASE_AUTH_DOMAIN=kimm-hair.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=kimm-hair
 VITE_FIREBASE_STORAGE_BUCKET=kimm-hair.firebasestorage.app
 VITE_FIREBASE_MESSAGING_SENDER_ID=...
 VITE_FIREBASE_APP_ID=...
-# VITE_SHOW_PRICES=true
 ```
 
-### `functions/.env.kimm-hair` (booking emails via Resend)
+Deploy a salon (build + hosting, rules, indexes, storage and functions): `pnpm deploy:salon kimm`.
 
-The file name must match the project ID (`functions/.env.<projectId>`), so it is only used when deploying to that project.
+### `functions/.env.<projectId>` (salon identity + booking emails)
+
+The file name must match the project ID (e.g. `functions/.env.kimm-hair`), so it is only used when deploying to that project. Copy `functions/.env.example` as a starting point.
+
+Booking emails are sent via the first configured transport: **Mail-Catcher** (local dev) → **SMTP** → **Resend** → none.
 
 ```dotenv
-RESEND_API_KEY=re_...                     # Resend → API Keys ("Sending access" is enough)
-RESEND_FROM_EMAIL=termine@your-domain.it  # must be on a domain verified in Resend
+BRAND=kimm                                # must match salons/<brand>.env
+SALON_ID=pilot
 PUBLIC_APP_URL=https://kimm-hair.web.app  # base URL for manage/cancel links in emails
+
+# Option A — Gmail SMTP (no own domain needed)
+SMTP_USER=yoursalon@gmail.com
+SMTP_PASS=abcdefghijklmnop                # Google App Password (16 chars, spaces are ignored)
+
+# Option B — Resend (needs a domain verified in Resend)
+RESEND_API_KEY=re_...                     # Resend → API Keys ("Sending access" is enough)
+RESEND_FROM_EMAIL="KIMM Hair <termine@your-domain.it>"
 ```
 
-- The sender domain must be verified in Resend (DNS records at your domain registrar). `*.web.app` / `*.firebaseapp.com` cannot be verified.
-- Without `RESEND_FROM_EMAIL`, mail is sent from `onboarding@resend.dev`, which Resend only delivers to your own account address.
-- Email failures never block a booking — check `firebase functions:log` if emails don't arrive.
-- Locally, `scripts/start-dev.mjs` sets `MAIL_CATCHER_URL`, which overrides Resend; open the Mail-Catcher instead of sending real mail.
+**Gmail SMTP setup**
 
-After changing the file, redeploy: `firebase deploy --only functions --project kimm-hair`.
+1. Use a dedicated Gmail account for the salon and turn on 2-Step Verification.
+2. Create an App Password at <https://myaccount.google.com/apppasswords> and paste it into `SMTP_PASS` — the normal Gmail password does not work.
+3. Emails are sent as `"<salon name>" <SMTP_USER>`; override with `SMTP_FROM`. Gmail always rewrites the address to the authenticated account.
+4. Optional: `SMTP_HOST` (default `smtp.gmail.com`), `SMTP_PORT` (default `465`; `587` uses STARTTLS). Gmail allows ~500 emails/day.
+
+**Resend notes**
+
+- The sender domain must be verified in Resend (DNS records at your domain registrar). `*.web.app` / `*.firebaseapp.com` cannot be verified.
+- Without a verified domain (`onboarding@resend.dev`), Resend only delivers to your own Resend account address.
+
+**General**
+
+- Email failures never block a booking — check `firebase functions:log` (look for `[email]`) if emails don't arrive.
+- Locally, `scripts/start-dev.mjs` sets `MAIL_CATCHER_URL`, which overrides SMTP/Resend; open the Mail-Catcher instead of sending real mail.
+
+After changing the file, redeploy: `firebase deploy --only functions -P kimm` (or `pnpm deploy:salon kimm`).
 
 ## Daily development
 
@@ -163,15 +201,15 @@ Project skills live under `.agents/skills/`:
 
 ## Firebase project checklist / deploy
 
-Live project: `kimm-hair` → https://kimm-hair.web.app. Setting up a project from scratch:
+Live: KIMM Hair → https://kimm-hair.web.app (`-P kimm`). Adding a new salon:
 
 1. Create a Firebase project on the Blaze plan; enable Auth (Email/Password), Firestore, Storage, Functions (`europe-west8`).
-2. Set `.firebaserc` (`firebase use --add <projectId>`) and create the env files — see [Environment files](#environment-files).
-3. (Optional) Functions `SALON_ID` in `functions/.env.<projectId>` (default `pilot`).
-4. Deploy rules + indexes: `firebase deploy --only firestore:rules,firestore:indexes,storage`
-5. Deploy functions: `firebase deploy --only functions --force` (`--force` sets up the Artifact Registry cleanup policy on first deploy).
-6. Build and deploy hosting: `pnpm build && firebase deploy --only hosting`
-7. Seed admin user / salon config for the real project (do not reuse emulator-only passwords).
+2. Add a brand in `src/data/brands.ts`, an alias in `.firebaserc`, and a deploy matrix entry in `.github/workflows/ci.yml`.
+3. Create `salons/<brand>.env` and `functions/.env.<projectId>` — see [Environment files](#environment-files).
+4. First deploy: `pnpm deploy:salon <brand>`. If functions fail with a cleanup-policy error, run `firebase deploy --only functions -P <brand> --force` once.
+5. Seed the salon config and an admin user in the live project (do not reuse emulator-only passwords).
+
+CI (`push` to `main`) rebuilds and deploys hosting, rules, indexes and storage for every salon whose `FIREBASE_SERVICE_ACCOUNT_<BRAND>` secret is set. **Functions are not deployed by CI** — run `pnpm deploy:salon <brand>` (or `firebase deploy --only functions -P <brand>`) after backend changes.
 
 Security notes:
 

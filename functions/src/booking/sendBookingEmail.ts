@@ -1,16 +1,94 @@
+import nodemailer, { type Transporter } from 'nodemailer'
 import { Resend } from 'resend'
 
 import { getBrandKey } from '../config'
 
-let cachedClient: { apiKey: string; client: Resend } | null = null
+export type EmailTransport =
+  | { kind: 'none' }
+  | { kind: 'mailCatcher'; url: string; from: string }
+  | {
+      kind: 'smtp'
+      host: string
+      port: number
+      secure: boolean
+      user: string
+      pass: string
+      from: string
+    }
+  | { kind: 'resend'; apiKey: string; from: string }
 
-function getResendClient(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY?.trim()
-  if (!apiKey) return null
-  if (!cachedClient || cachedClient.apiKey !== apiKey) {
-    cachedClient = { apiKey, client: new Resend(apiKey) }
+type EmailEnv = Record<string, string | undefined>
+
+function envValue(env: EmailEnv, name: string): string | undefined {
+  const value = env[name]?.trim()
+  return value ? value : undefined
+}
+
+/**
+ * Picks how booking emails are delivered. Priority:
+ * Mail-Catcher (local dev) → SMTP (e.g. Gmail app password) → Resend → none.
+ */
+export function resolveEmailTransport(env: EmailEnv, salonName: string): EmailTransport {
+  const mailCatcherUrl = envValue(env, 'MAIL_CATCHER_URL')
+  const smtpUser = envValue(env, 'SMTP_USER')
+  // Gmail shows app passwords with spaces ("abcd efgh ijkl mnop"); they are not part of it.
+  const smtpPass = envValue(env, 'SMTP_PASS')?.replace(/\s+/g, '')
+  const resendApiKey = envValue(env, 'RESEND_API_KEY')
+  const resendFrom = envValue(env, 'RESEND_FROM_EMAIL') ?? 'onboarding@resend.dev'
+
+  if (mailCatcherUrl) {
+    const from = smtpUser ? `"${salonName}" <${smtpUser}>` : resendFrom
+    return { kind: 'mailCatcher', url: mailCatcherUrl, from }
   }
-  return cachedClient.client
+
+  if (smtpUser && smtpPass) {
+    const port = Number(envValue(env, 'SMTP_PORT') ?? 465)
+    return {
+      kind: 'smtp',
+      host: envValue(env, 'SMTP_HOST') ?? 'smtp.gmail.com',
+      port,
+      secure: port === 465,
+      user: smtpUser,
+      pass: smtpPass,
+      from: envValue(env, 'SMTP_FROM') ?? `"${salonName.replace(/"/g, '')}" <${smtpUser}>`,
+    }
+  }
+
+  if (resendApiKey) {
+    return { kind: 'resend', apiKey: resendApiKey, from: resendFrom }
+  }
+
+  return { kind: 'none' }
+}
+
+let cachedResend: { apiKey: string; client: Resend } | null = null
+
+function getResendClient(apiKey: string): Resend {
+  if (!cachedResend || cachedResend.apiKey !== apiKey) {
+    cachedResend = { apiKey, client: new Resend(apiKey) }
+  }
+  return cachedResend.client
+}
+
+let cachedSmtp: { key: string; transporter: Transporter } | null = null
+
+function getSmtpTransporter(t: Extract<EmailTransport, { kind: 'smtp' }>): Transporter {
+  const key = `${t.host}:${t.port}:${t.user}:${t.pass}`
+  if (!cachedSmtp || cachedSmtp.key !== key) {
+    cachedSmtp = {
+      key,
+      transporter: nodemailer.createTransport({
+        host: t.host,
+        port: t.port,
+        secure: t.secure,
+        auth: { user: t.user, pass: t.pass },
+        connectionTimeout: 10_000,
+        greetingTimeout: 10_000,
+        socketTimeout: 15_000,
+      }),
+    }
+  }
+  return cachedSmtp.transporter
 }
 
 function escapeHtml(value: string): string {
@@ -307,17 +385,17 @@ function buildBookingEmailHtml(input: BookingEmailInput, manageUrl: string | nul
 
 /**
  * Sends at most one confirmation/request email per newly created online booking.
- * Uses local MAIL_CATCHER_URL when set (avoiding Resend quota in dev/tests),
- * no-ops when RESEND_API_KEY is unset, and never throws.
+ * Transport is chosen by `resolveEmailTransport` (Mail-Catcher → SMTP → Resend);
+ * no-ops when nothing is configured, and never throws.
  */
 export async function sendBookingConfirmationEmail(input: BookingEmailInput): Promise<void> {
-  const mailCatcherUrl = process.env.MAIL_CATCHER_URL?.trim()
-  const resend = mailCatcherUrl ? null : getResendClient()
-  if (!mailCatcherUrl && !resend) {
+  const salonName = input.salonName?.trim() || 'SalonFlow'
+  const transport = resolveEmailTransport(process.env, salonName)
+  if (transport.kind === 'none') {
     return
   }
 
-  const from = process.env.RESEND_FROM_EMAIL?.trim() || 'onboarding@resend.dev'
+  const from = transport.from
   const isIt = input.locale === 'it'
   const timeZone = input.timeZone ?? 'Europe/Vienna'
   const whenFormatted = new Intl.DateTimeFormat(isIt ? 'it-IT' : 'de-AT', {
@@ -326,7 +404,6 @@ export async function sendBookingConfirmationEmail(input: BookingEmailInput): Pr
     timeZone,
   }).format(input.startAt)
 
-  const salonName = input.salonName?.trim() || 'SalonFlow'
   const isConfirmed = input.status === 'CONFIRMED'
   const subject = isIt
     ? isConfirmed
@@ -346,8 +423,8 @@ export async function sendBookingConfirmationEmail(input: BookingEmailInput): Pr
   const icsBase64 = Buffer.from(icsContent, 'utf8').toString('base64')
 
   try {
-    if (mailCatcherUrl) {
-      const response = await fetch(mailCatcherUrl, {
+    if (transport.kind === 'mailCatcher') {
+      const response = await fetch(transport.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -370,7 +447,24 @@ export async function sendBookingConfirmationEmail(input: BookingEmailInput): Pr
       return
     }
 
-    const response = await resend!.emails.send({
+    if (transport.kind === 'smtp') {
+      await getSmtpTransporter(transport).sendMail({
+        from,
+        to: input.to,
+        subject,
+        html,
+        attachments: [
+          {
+            filename: 'termin.ics',
+            content: icsContent,
+            contentType: 'text/calendar; charset=utf-8; method=PUBLISH',
+          },
+        ],
+      })
+      return
+    }
+
+    const response = await getResendClient(transport.apiKey).emails.send({
       from,
       to: input.to,
       subject,
