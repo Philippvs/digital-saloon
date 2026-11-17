@@ -124,6 +124,7 @@ export async function seedSalonData(firestore, config = salonSeedConfig()) {
 
   await seedDemoWeek(salonRef, services, config.timezone)
 
+  const seededServiceIds = new Set(services.map((service) => service.id))
   for (const service of services) {
     const { id, ...fields } = service
     await salonRef
@@ -138,6 +139,11 @@ export async function seedSalonData(firestore, config = salonSeedConfig()) {
         },
         { merge: true },
       )
+  }
+  // Drop leftover services from tests so the public price list stays exact.
+  const existingServices = await salonRef.collection('services').get()
+  for (const doc of existingServices.docs) {
+    if (!seededServiceIds.has(doc.id)) await doc.ref.delete()
   }
 
   const weekly = {

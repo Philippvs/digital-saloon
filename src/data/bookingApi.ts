@@ -35,6 +35,8 @@ export async function fetchAvailableSlots(input: {
   fromDateYmd: string
   toDateYmd: string
   enforceAdvanceRestrictions?: boolean
+  /** When moving a booking: slots use that booking's own duration. */
+  managementToken?: string
 }): Promise<AvailableSlotDto[]> {
   const callable = httpsCallable<
     {
@@ -42,10 +44,17 @@ export async function fetchAvailableSlots(input: {
       fromDateYmd: string
       toDateYmd: string
       enforceAdvanceRestrictions?: boolean
+      managementToken?: string
     },
     { slots: AvailableSlotDto[] }
   >(firebaseFunctions, 'getAvailableSlots')
-  const result = await callable(input)
+  const result = await callable({
+    serviceId: input.serviceId,
+    fromDateYmd: input.fromDateYmd,
+    toDateYmd: input.toDateYmd,
+    ...(input.enforceAdvanceRestrictions === false ? { enforceAdvanceRestrictions: false } : {}),
+    ...(input.managementToken ? { managementToken: input.managementToken } : {}),
+  })
   return result.data.slots
 }
 

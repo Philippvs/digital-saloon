@@ -45,6 +45,22 @@ service cloud.firestore {
         && (!('vatId' in data) || isBoundedString(data.vatId, 40));
     }
 
+    function isValidService(data) {
+      return data.keys().hasOnly([
+          'name', 'description', 'durationMinutes', 'priceCents', 'active', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasAll([
+          'name', 'description', 'durationMinutes', 'priceCents', 'active', 'createdAt', 'updatedAt'
+        ])
+        && isBoundedString(data.name, 120)
+        && data.description is string && data.description.size() <= 1000
+        && isIntInRange(data.durationMinutes, 5, 480)
+        && isIntInRange(data.priceCents, 0, 999999)
+        && data.active is bool
+        && isBoundedString(data.createdAt, 40)
+        && isBoundedString(data.updatedAt, 40);
+    }
+
     function isValidBookingSettings(data) {
       return data.keys().hasOnly([
           'confirmationMode',
@@ -80,9 +96,14 @@ service cloud.firestore {
         allow delete: if isAdmin();
       }
 
+      // Services are deactivated, never deleted: reservations still reference their id.
       match /services/{serviceId} {
         allow read: if resource.data.active == true || isAdmin();
-        allow write: if isAdmin();
+        allow create: if isAdmin() && isValidService(request.resource.data);
+        allow update: if isAdmin()
+          && isValidService(request.resource.data)
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if false;
       }
 
       match /openingHours/{weekday} {

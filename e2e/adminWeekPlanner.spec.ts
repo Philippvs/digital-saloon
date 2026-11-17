@@ -141,15 +141,22 @@ test.describe('admin week planner @smoke', () => {
   })
 
   test('links to every admin area', async ({ page }) => {
+    await page.goto('/admin')
+    await page
+      .getByRole('main')
+      .getByRole('button', { name: 'Termin eintragen', exact: true })
+      .click()
+    await expect(page).toHaveURL(/\/admin\/manual/)
+
+    const manage = page.getByRole('region', { name: 'Verwaltung' })
     const destinations: Array<[string, RegExp]> = [
       ['Alle Termine', /\/admin\/reservations$/],
       ['Leistungen', /\/admin\/services$/],
       ['Einstellungen', /\/admin\/settings$/],
-      ['Termin eintragen', /\/admin\/manual/],
     ]
     for (const [name, url] of destinations) {
       await page.goto('/admin')
-      await page.getByRole('main').getByRole('button', { name, exact: true }).click()
+      await manage.getByRole('button', { name, exact: true }).click()
       await expect(page).toHaveURL(url)
     }
   })

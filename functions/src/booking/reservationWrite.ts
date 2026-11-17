@@ -213,22 +213,38 @@ export async function previewAvailableSlots(input: {
   salonId?: string
   context?: SalonContext
   enforceAdvanceRestrictions?: boolean
+  /**
+   * Moving an existing booking: use its stored duration (the service may have
+   * changed or been deactivated since) and ignore its own time as busy.
+   */
+  reschedule?: { reservationId: string; durationMinutes: number }
 }): Promise<{ startAt: string; endAt: string }[]> {
   const db = input.db ?? getFirestore()
   const context = input.context ?? (await loadSalonContext(db, input.salonId))
-  const serviceSnap = await db
-    .collection('salons')
-    .doc(context.salonId)
-    .collection('services')
-    .doc(input.serviceId)
-    .get()
-  if (!serviceSnap.exists || !serviceSnap.data()?.active) {
-    return []
+  let durationMinutes: number
+  if (input.reschedule) {
+    durationMinutes = input.reschedule.durationMinutes
+  } else {
+    const serviceSnap = await db
+      .collection('salons')
+      .doc(context.salonId)
+      .collection('services')
+      .doc(input.serviceId)
+      .get()
+    if (!serviceSnap.exists || !serviceSnap.data()?.active) {
+      return []
+    }
+    durationMinutes = Number(serviceSnap.data()!.durationMinutes)
   }
-  const durationMinutes = Number(serviceSnap.data()!.durationMinutes)
   const rangeStart = new Date(`${input.fromDateYmd}T00:00:00.000Z`)
   const rangeEnd = new Date(`${input.toDateYmd}T23:59:59.999Z`)
-  const busy = await loadBusyIntervals(db, context.salonId, rangeStart, rangeEnd)
+  const busy = await loadBusyIntervals(
+    db,
+    context.salonId,
+    rangeStart,
+    rangeEnd,
+    input.reschedule?.reservationId,
+  )
 
   const slots = listAvailableSlots({
     timeZone: context.timeZone,

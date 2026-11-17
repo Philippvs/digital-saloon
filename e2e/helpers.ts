@@ -14,6 +14,6 @@ export async function signInAsDemo(page: Page): Promise<void> {
   await page.locator('form').getByRole('button', { name: 'Als Admin anmelden' }).click()
 
   await expect(page).toHaveURL(/\/admin/)
-  await expect(page.getByRole('button', { name: 'Abmelden' })).toBeVisible()
-  await expect(page.getByText(`Angemeldet als ${demoAccount.email}`)).toBeVisible()
+  await expect(page.getByRole('banner').getByRole('button', { name: 'Kalender' })).toBeVisible()
+  await expect(page.getByRole('banner').getByRole('button', { name: 'Abmelden' })).toBeVisible()
 }

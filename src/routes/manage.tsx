@@ -32,6 +32,7 @@ export const manageRoute = createRoute({
       serviceId: showReschedule ? serviceId : null,
       fromDateYmd: showReschedule ? fromDateYmd : null,
       toDateYmd: showReschedule ? toDateYmd : null,
+      managementToken: token,
     })
 
     const actionError =

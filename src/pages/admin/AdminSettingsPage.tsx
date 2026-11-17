@@ -28,11 +28,10 @@ import {
   validateBookingRules,
   validateSalonDetails,
   type BookingNumberField,
-  type FieldIssue,
   type SalonDetailsField,
 } from '../../data/settingsForm'
+import { fieldIssueMessages } from '../../components/fieldIssueMessages'
 import { useLocale } from '../../i18n'
-import type { TranslateFn } from '../../i18n'
 
 export type SaveState = {
   saving: boolean
@@ -52,30 +51,6 @@ export type AdminSettingsPageProps = {
   onSaveSalon: (details: SalonDetails) => void
   onOpeningHoursClick: () => void
   onBackClick: () => void
-}
-
-function issueMessage(t: TranslateFn, issue: FieldIssue): string {
-  switch (issue.kind) {
-    case 'range':
-      return t('admin.rangeError', { min: issue.min, max: issue.max })
-    case 'required':
-      return t('admin.requiredError')
-    case 'email':
-      return t('admin.emailError')
-    case 'tooLong':
-      return t('admin.tooLongError', { max: issue.max })
-  }
-}
-
-function issueMessages<Field extends string>(
-  t: TranslateFn,
-  issues: Partial<Record<Field, FieldIssue>>,
-): Partial<Record<Field, string>> {
-  const messages: Partial<Record<Field, string>> = {}
-  for (const [field, issue] of Object.entries(issues) as Array<[Field, FieldIssue]>) {
-    messages[field] = issueMessage(t, issue)
-  }
-  return messages
 }
 
 type SaveFeedbackProps = {
@@ -147,7 +122,7 @@ const BookingRulesForm: React.FunctionComponent<BookingRulesFormProps> = ({
           numbers,
         })
         if (!result.ok) {
-          setErrors(issueMessages(t, result.issues))
+          setErrors(fieldIssueMessages(t, result.issues))
           return
         }
         setErrors({})
@@ -285,7 +260,7 @@ const SalonDetailsForm: React.FunctionComponent<SalonDetailsFormProps> = ({
         event.preventDefault()
         const result = validateSalonDetails(values)
         if (!result.ok) {
-          setErrors(issueMessages(t, result.issues))
+          setErrors(fieldIssueMessages(t, result.issues))
           return
         }
         setErrors({})

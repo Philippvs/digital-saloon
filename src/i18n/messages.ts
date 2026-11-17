@@ -178,6 +178,19 @@ export type Messages = {
   'admin.servicesLoading': string
   'admin.servicesError': string
   'admin.noServices': string
+  'admin.newService': string
+  'admin.editServiceLabel': string
+  'admin.edit': string
+  'admin.editServiceTitle': string
+  'admin.servicesKeepHint': string
+  'admin.fieldDescription': string
+  'admin.fieldDescriptionHint': string
+  'admin.fieldDurationHint': string
+  'admin.fieldActive': string
+  'admin.fieldActiveHint': string
+  'admin.inactiveTag': string
+  'admin.cancelEdit': string
+  'admin.priceError': string
   'admin.name': string
   'admin.duration': string
   'admin.price': string
@@ -482,11 +495,25 @@ export const de: Messages = {
   'admin.noteOptional': 'Interne Notiz (optional)',
   'admin.saving': 'Wird gespeichert…',
   'admin.createReservation': 'Termin anlegen',
-  'admin.servicesSubtitle':
-    'Katalog für Online- und manuelle Buchungen. Preise als Ganzzahl in Cent.',
+  'admin.servicesSubtitle': 'Preisliste für die Website und für Termine, die Sie selbst eintragen.',
   'admin.servicesLoading': 'Leistungen laden',
   'admin.servicesError': 'Leistungen konnten nicht geladen werden.',
   'admin.noServices': 'Noch keine Leistungen.',
+  'admin.newService': 'Neue Leistung',
+  'admin.editServiceLabel': '{name} bearbeiten',
+  'admin.edit': 'Bearbeiten',
+  'admin.editServiceTitle': 'Leistung bearbeiten',
+  'admin.servicesKeepHint':
+    'Änderungen gelten für neue Buchungen. Bereits gebuchte Termine behalten Leistung, Dauer und Preis.',
+  'admin.fieldDescription': 'Beschreibung (optional)',
+  'admin.fieldDescriptionHint': 'Steht in der Preisliste auf der Website.',
+  'admin.fieldDurationHint': 'So lange ist der Kalender für diese Leistung belegt.',
+  'admin.fieldActive': 'Online buchbar',
+  'admin.fieldActiveHint':
+    'Ausgeschaltet verschwindet die Leistung aus Preisliste und Buchung. Gebuchte Termine bleiben bestehen.',
+  'admin.inactiveTag': 'Nicht online buchbar',
+  'admin.cancelEdit': 'Abbrechen',
+  'admin.priceError': 'Bitte einen Betrag wie 26 oder 26,50 eingeben.',
   'admin.name': 'Name',
   'admin.duration': 'Dauer',
   'admin.price': 'Preis',
@@ -792,11 +819,25 @@ export const it: Messages = {
   'admin.noteOptional': 'Nota interna (opzionale)',
   'admin.saving': 'Salvataggio…',
   'admin.createReservation': 'Crea appuntamento',
-  'admin.servicesSubtitle':
-    'Catalogo per prenotazioni online e manuali. Prezzi interi in centesimi.',
+  'admin.servicesSubtitle': 'Listino per il sito e per gli appuntamenti inseriti da voi.',
   'admin.servicesLoading': 'Caricamento servizi',
   'admin.servicesError': 'Impossibile caricare i servizi.',
   'admin.noServices': 'Nessun servizio ancora.',
+  'admin.newService': 'Nuovo servizio',
+  'admin.editServiceLabel': 'Modifica {name}',
+  'admin.edit': 'Modifica',
+  'admin.editServiceTitle': 'Modifica servizio',
+  'admin.servicesKeepHint':
+    'Le modifiche valgono per le nuove prenotazioni. Gli appuntamenti già prenotati mantengono servizio, durata e prezzo.',
+  'admin.fieldDescription': 'Descrizione (facoltativa)',
+  'admin.fieldDescriptionHint': 'Appare nel listino prezzi sul sito.',
+  'admin.fieldDurationHint': 'Per questo tempo il calendario risulta occupato.',
+  'admin.fieldActive': 'Prenotabile online',
+  'admin.fieldActiveHint':
+    'Se disattivato, il servizio sparisce dal listino e dalla prenotazione. Gli appuntamenti prenotati restano.',
+  'admin.inactiveTag': 'Non prenotabile online',
+  'admin.cancelEdit': 'Annulla',
+  'admin.priceError': 'Inserite un importo come 26 o 26,50.',
   'admin.name': 'Nome',
   'admin.duration': 'Durata',
   'admin.price': 'Prezzo',

@@ -35,6 +35,7 @@ export type FieldIssue =
   | { kind: 'required' }
   | { kind: 'email' }
   | { kind: 'tooLong'; max: number }
+  | { kind: 'price' }
 
 export type ValidationResult<Value, Field extends string> =
   { ok: true; value: Value } | { ok: false; issues: Partial<Record<Field, FieldIssue>> }

@@ -23,6 +23,7 @@ import { useOpeningHoursAdmin } from '../hooks/useOpeningHoursAdmin'
 import { useSalon } from '../hooks/useSalon'
 import { useSaveBookingSettings } from '../hooks/useSaveBookingSettings'
 import { useSaveSalonDetails } from '../hooks/useSaveSalonDetails'
+import { useSaveService } from '../hooks/useSaveService'
 import { useUserProfile } from '../hooks/useUserProfile'
 import { useLocale } from '../i18n'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
@@ -385,11 +386,14 @@ export const adminServicesRoute = createRoute({
   path: '/services',
   component: function AdminServicesRoute() {
     const services = useAllServices(true)
+    const saveService = useSaveService()
     return (
       <AdminServicesPage
         services={services.data}
         isLoading={services.isLoading}
         isError={services.isError}
+        saving={saveService.isPending}
+        onSave={(serviceId, draft) => saveService.mutateAsync({ serviceId, draft })}
       />
     )
   },

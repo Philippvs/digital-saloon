@@ -121,3 +121,85 @@ export async function findReservationByLastName(
     status: String(data.status),
   }
 }
+
+export type ServiceSnapshot = Map<string, Record<string, unknown>>
+
+function servicesCollection(salonId: string) {
+  return emulatorFirestore().collection('salons').doc(salonId).collection('services')
+}
+
+/** Current services, to put back after a spec edits them. */
+export async function snapshotServices(salonId = 'pilot'): Promise<ServiceSnapshot> {
+  const snap = await servicesCollection(salonId).get()
+  return new Map(snap.docs.map((doc) => [doc.id, doc.data()]))
+}
+
+/** Restores snapshotted services and removes any created since. */
+export async function restoreServices(snapshot: ServiceSnapshot, salonId = 'pilot'): Promise<void> {
+  const current = await servicesCollection(salonId).get()
+  for (const doc of current.docs) {
+    const original = snapshot.get(doc.id)
+    if (original) await doc.ref.set(original)
+    else await doc.ref.delete()
+  }
+}
+
+export async function getService(
+  serviceId: string,
+  salonId = 'pilot',
+): Promise<Record<string, unknown> | null> {
+  const snap = await servicesCollection(salonId).doc(serviceId).get()
+  return snap.exists ? (snap.data() ?? null) : null
+}
+
+export async function findServiceByName(
+  name: string,
+  salonId = 'pilot',
+): Promise<(Record<string, unknown> & { id: string }) | null> {
+  const snap = await servicesCollection(salonId).where('name', '==', name).limit(1).get()
+  const doc = snap.docs[0]
+  return doc ? { id: doc.id, ...doc.data() } : null
+}
+
+/** First future PENDING or CONFIRMED reservation of a service. */
+export async function findFutureReservationOfService(
+  serviceId: string,
+  salonId = 'pilot',
+): Promise<DemoReservation & { priceCents: number; serviceName: string }> {
+  const snap = await emulatorFirestore()
+    .collection('salons')
+    .doc(salonId)
+    .collection('reservations')
+    .where('serviceId', '==', serviceId)
+    .get()
+  const nowIso = new Date().toISOString()
+  const match = snap.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }) as Record<string, unknown> & { id: string })
+    .filter(
+      (item) =>
+        String(item.startAt) > nowIso && (item.status === 'CONFIRMED' || item.status === 'PENDING'),
+    )
+    .sort((a, b) => String(a.startAt).localeCompare(String(b.startAt)))[0]
+  if (!match) throw new Error(`No future reservation for ${serviceId}`)
+  return {
+    id: match.id,
+    firstName: String(match.firstName),
+    lastName: String(match.lastName),
+    startAt: String(match.startAt),
+    priceCents: Number(match.priceCents),
+    serviceName: String(match.serviceName),
+  }
+}
+
+export async function getReservation(
+  reservationId: string,
+  salonId = 'pilot',
+): Promise<Record<string, unknown> | null> {
+  const snap = await emulatorFirestore()
+    .collection('salons')
+    .doc(salonId)
+    .collection('reservations')
+    .doc(reservationId)
+    .get()
+  return snap.exists ? (snap.data() ?? null) : null
+}
