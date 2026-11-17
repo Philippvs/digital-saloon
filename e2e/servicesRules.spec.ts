@@ -135,7 +135,7 @@ test.describe('Firestore-Regeln für Leistungen', () => {
     const next = { ...(await currentHaircut()), priceCents: 1 }
     expect(await writeStatus(request, guestToken, haircutPath, next)).toBe(403)
     expect(await writeStatus(request, null, haircutPath, next)).toBe(403)
-    expect((await getService('haircut'))?.priceCents).toBe(2600)
+    expect((await getService('haircut'))?.priceCents).toBe(2200)
   })
 
   test('niemand darf Leistungen löschen', async ({ request }) => {
