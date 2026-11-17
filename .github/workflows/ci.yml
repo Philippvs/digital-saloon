@@ -47,3 +47,58 @@ jobs:
       - run: pnpm test:e2e
         env:
           CI: true
+
+  deploy:
+    needs: [app, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - brand: kimm
+            alias: kimm
+            salonId: pilot
+            projectId: kimm-hair
+            serviceAccountSecret: FIREBASE_SERVICE_ACCOUNT_KIMM
+          - brand: salon1500
+            alias: salon1500
+            salonId: salon1500
+            projectId: salon-1500
+            serviceAccountSecret: FIREBASE_SERVICE_ACCOUNT_SALON1500
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: npm --prefix functions ci
+
+      - name: Build frontend for ${{ matrix.brand }}
+        run: pnpm build
+        env:
+          VITE_BRAND: ${{ matrix.brand }}
+          VITE_SALON_ID: ${{ matrix.salonId }}
+          VITE_SHOW_PRICES: ${{ vars[format('VITE_SHOW_PRICES_{0}', matrix.brand)] || 'true' }}
+          VITE_FIREBASE_API_KEY: ${{ secrets[format('VITE_FIREBASE_API_KEY_{0}', matrix.brand)] }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets[format('VITE_FIREBASE_AUTH_DOMAIN_{0}', matrix.brand)] || format('{0}.firebaseapp.com', matrix.projectId) }}
+          VITE_FIREBASE_PROJECT_ID: ${{ matrix.projectId }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets[format('VITE_FIREBASE_STORAGE_BUCKET_{0}', matrix.brand)] || format('{0}.firebasestorage.app', matrix.projectId) }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets[format('VITE_FIREBASE_MESSAGING_SENDER_ID_{0}', matrix.brand)] }}
+          VITE_FIREBASE_APP_ID: ${{ secrets[format('VITE_FIREBASE_APP_ID_{0}', matrix.brand)] }}
+
+      - name: Deploy ${{ matrix.brand }} to Firebase (${{ matrix.projectId }})
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets[matrix.serviceAccountSecret] }}
+          BRAND: ${{ matrix.brand }}
+          SALON_ID: ${{ matrix.salonId }}
+        run: |
+          if [ -z "$SERVICE_ACCOUNT_JSON" ]; then
+            echo "Skipping deploy for ${{ matrix.brand }}: secret ${{ matrix.serviceAccountSecret }} is not set."
+            exit 0
+          fi
+          printf '%s' "$SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx -y firebase-tools deploy --only hosting,firestore:rules,firestore:indexes,storage --project "${{ matrix.projectId }}" --non-interactive
