@@ -57,5 +57,8 @@ test.describe('customer booking @smoke', () => {
     await expect(page.getByRole('alert')).toHaveText(
       'Bitte bestätigen Sie, dass Sie die Datenschutzhinweise gelesen haben.',
     )
+
+    await page.getByLabel(/Datenschutzhinweise/).check()
+    await expect(page.getByRole('alert')).toHaveCount(0)
   })
 })

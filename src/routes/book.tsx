@@ -92,7 +92,12 @@ export const bookRoute = createRoute({
         rangeLoading={rangeSlots.isLoading}
         rangeError={rangeSlots.isError}
         isSubmitting={create.isPending}
-        submitFailure={create.isError ? bookingFailureOf(create.error) : null}
+        submitFailure={
+          // Only for the slot that failed: picking another time clears the message.
+          create.isError && create.variables?.startAt === search.startAt
+            ? bookingFailureOf(create.error)
+            : null
+        }
         weekAnchorYmd={weekAnchorYmd}
         monthAnchorYmd={monthAnchorYmd}
         onToggleService={(serviceId) => {

@@ -615,7 +615,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   <TextField
                     label={t('book.firstName')}
                     value={firstName}
-                    onChange={(event) => setFirstName(event.target.value)}
+                    onChange={(event) => {
+                      setFirstName(event.target.value)
+                      setContactIssue(null)
+                    }}
                     required
                     fullWidth
                     autoComplete="given-name"
@@ -623,7 +626,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   <TextField
                     label={t('book.lastName')}
                     value={lastName}
-                    onChange={(event) => setLastName(event.target.value)}
+                    onChange={(event) => {
+                      setLastName(event.target.value)
+                      setContactIssue(null)
+                    }}
                     required
                     fullWidth
                     autoComplete="family-name"
@@ -631,7 +637,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   <TextField
                     label={t('book.phone')}
                     value={phone}
-                    onChange={(event) => setPhone(event.target.value)}
+                    onChange={(event) => {
+                      setPhone(event.target.value)
+                      setContactIssue(null)
+                    }}
                     required
                     fullWidth
                     autoComplete="tel"
@@ -641,7 +650,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                     label={t('book.email')}
                     type="email"
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => {
+                      setEmail(event.target.value)
+                      setContactIssue(null)
+                    }}
                     required
                     fullWidth
                     autoComplete="email"
@@ -649,7 +661,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   <TextField
                     label={t('book.notes')}
                     value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
+                    onChange={(event) => {
+                      setNotes(event.target.value)
+                      setContactIssue(null)
+                    }}
                     placeholder={t('book.notesPlaceholder')}
                     multiline
                     minRows={2}
@@ -682,7 +697,10 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   control={
                     <Checkbox
                       checked={privacyAccepted}
-                      onChange={(event) => setPrivacyAccepted(event.target.checked)}
+                      onChange={(event) => {
+                        setPrivacyAccepted(event.target.checked)
+                        setContactIssue(null)
+                      }}
                     />
                   }
                   label={
