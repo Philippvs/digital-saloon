@@ -17,6 +17,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined'
 import type { BookingSettings, ConfirmationMode, Salon, SalonDetails } from '../../data/schemas'
 import {
   bookingNumbersOf,
@@ -48,6 +50,7 @@ export type AdminSettingsPageProps = {
   salonLoading: boolean
   salonSave: SaveState
   onSaveSalon: (details: SalonDetails) => void
+  onOpeningHoursClick: () => void
   onBackClick: () => void
 }
 
@@ -317,6 +320,7 @@ export const AdminSettingsPage: React.FunctionComponent<AdminSettingsPageProps> 
   salonLoading,
   salonSave,
   onSaveSalon,
+  onOpeningHoursClick,
   onBackClick,
 }) => {
   const { t } = useLocale()
@@ -332,6 +336,33 @@ export const AdminSettingsPage: React.FunctionComponent<AdminSettingsPageProps> 
           {t('admin.settingsSubtitle')}
         </Typography>
       </Box>
+
+      <Paper
+        component="button"
+        type="button"
+        onClick={onOpeningHoursClick}
+        sx={{
+          p: { xs: 2, sm: 3 },
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          textAlign: 'left',
+          font: 'inherit',
+          color: 'inherit',
+          bgcolor: 'background.paper',
+          cursor: 'pointer',
+          '&:hover, &:focus-visible': { borderColor: 'primary.main' },
+        }}
+      >
+        <ScheduleOutlinedIcon color="primary" />
+        <Box sx={{ flexGrow: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: '1.125rem' }}>{t('hours.title')}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t('hours.absencesHint')}
+          </Typography>
+        </Box>
+        <ChevronRightIcon color="action" />
+      </Paper>
 
       <Paper component="section" aria-labelledby="settings-booking" sx={{ p: { xs: 2, sm: 3 } }}>
         <Typography id="settings-booking" variant="h2" sx={{ mb: 2.5 }}>

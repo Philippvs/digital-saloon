@@ -196,10 +196,58 @@ export type Messages = {
   'admin.openingHours': string
   'admin.openingHoursLoading': string
   'admin.openingHoursError': string
-  'admin.openingHoursEmpty': string
   'admin.closed': string
-  'admin.holidays': string
-  'admin.holidaysHint': string
+
+  'hours.title': string
+  'hours.subtitle': string
+  'hours.weeklyTitle': string
+  'hours.weeklyHint': string
+  'hours.open': string
+  'hours.from': string
+  'hours.to': string
+  'hours.addInterval': string
+  'hours.removeInterval': string
+  'hours.copyToOpenDays': string
+  'hours.copied': string
+  'hours.intervalOrder': string
+  'hours.intervalOverlap': string
+  'hours.intervalInvalid': string
+  'hours.unsaved': string
+  'hours.absencesTitle': string
+  'hours.absencesHint': string
+  'hours.addAbsence': string
+  'hours.absencesEmpty': string
+  'hours.absencesError': string
+  'hours.kindQuestion': string
+  'hours.kindDays': string
+  'hours.kindDaysHint': string
+  'hours.kindMorning': string
+  'hours.kindMorningHint': string
+  'hours.kindAfternoon': string
+  'hours.kindAfternoonHint': string
+  'hours.kindCustom': string
+  'hours.kindCustomHint': string
+  'hours.firstDay': string
+  'hours.lastDay': string
+  'hours.date': string
+  'hours.note': string
+  'hours.notePlaceholder': string
+  'hours.defaultName': string
+  'hours.dayCount': string
+  'hours.openThen': string
+  'hours.closedThen': string
+  'hours.customHint': string
+  'hours.conflicts': string
+  'hours.dateRequired': string
+  'hours.endBeforeStart': string
+  'hours.tooLong': string
+  'hours.checkIntervals': string
+  'hours.submitAbsence': string
+  'hours.dialogCancel': string
+  'hours.deleteAbsence': string
+  'hours.closedAllDay': string
+  'hours.openOnly': string
+
   'admin.statPending': string
   'admin.pendingEmpty': string
   'admin.manageTitle': string
@@ -457,11 +505,60 @@ export const de: Messages = {
   'admin.openingHours': 'Öffnungszeiten',
   'admin.openingHoursLoading': 'Laden…',
   'admin.openingHoursError': 'Öffnungszeiten konnten nicht geladen werden.',
-  'admin.openingHoursEmpty': 'Keine Öffnungszeiten konfiguriert.',
   'admin.closed': 'Geschlossen',
-  'admin.holidays': 'Feiertage',
-  'admin.holidaysHint':
-    'Feiertags-Editor folgt später; geseedete Feiertage beeinflussen bereits die Verfügbarkeit.',
+  'hours.title': 'Öffnungszeiten & Abwesenheiten',
+  'hours.subtitle':
+    'Was du hier einträgst, sehen Kund:innen nur so: In geschlossenen Zeiten gibt es einfach keine freien Termine.',
+  'hours.weeklyTitle': 'Jede Woche',
+  'hours.weeklyHint':
+    'Deine normalen Öffnungszeiten. Mit „Zeitraum“ planst du z. B. eine Mittagspause ein.',
+  'hours.open': 'Geöffnet',
+  'hours.from': 'Von',
+  'hours.to': 'Bis',
+  'hours.addInterval': 'Zeitraum',
+  'hours.removeInterval': 'Zeitraum entfernen',
+  'hours.copyToOpenDays': 'Auf alle geöffneten Tage übertragen',
+  'hours.copied': 'Übertragen – noch speichern.',
+  'hours.intervalOrder': 'Ende muss nach dem Beginn liegen.',
+  'hours.intervalOverlap': 'Überschneidet sich mit einem anderen Zeitraum.',
+  'hours.intervalInvalid': 'Bitte eine Uhrzeit eingeben.',
+  'hours.unsaved': 'Nicht gespeicherte Änderungen',
+  'hours.absencesTitle': 'Abwesenheiten & Ausnahmen',
+  'hours.absencesHint':
+    'Urlaub, Feiertag oder mal ein Vormittag zu – in diesen Zeiten kann niemand online buchen.',
+  'hours.addAbsence': 'Abwesenheit eintragen',
+  'hours.absencesEmpty': 'Keine geplanten Abwesenheiten.',
+  'hours.absencesError': 'Abwesenheiten konnten nicht geladen werden.',
+  'hours.kindQuestion': 'Was möchtest du eintragen?',
+  'hours.kindDays': 'Ganze Tage',
+  'hours.kindDaysHint': 'Urlaub, Feiertag, krank',
+  'hours.kindMorning': 'Vormittag zu',
+  'hours.kindMorningHint': 'Erst ab 12:00 geöffnet',
+  'hours.kindAfternoon': 'Nachmittag zu',
+  'hours.kindAfternoonHint': 'Nur bis 12:00 geöffnet',
+  'hours.kindCustom': 'Andere Zeiten',
+  'hours.kindCustomHint': 'Eigene Öffnungszeiten für einen Tag',
+  'hours.firstDay': 'Erster Tag',
+  'hours.lastDay': 'Letzter Tag',
+  'hours.date': 'Datum',
+  'hours.note': 'Notiz (optional)',
+  'hours.notePlaceholder': 'z. B. Urlaub',
+  'hours.defaultName': 'Geschlossen',
+  'hours.dayCount': 'Tage: {count}',
+  'hours.openThen': 'An diesem Tag geöffnet: {hours}',
+  'hours.closedThen': 'An diesem Tag ist dann ganz geschlossen.',
+  'hours.customHint': 'Öffnungszeiten nur für diesen Tag:',
+  'hours.conflicts':
+    'Bestehende Termine in dieser Zeit: {count}. Sie bleiben bestehen – bitte bei Bedarf selbst absagen.',
+  'hours.dateRequired': 'Bitte ein Datum wählen.',
+  'hours.endBeforeStart': 'Der letzte Tag liegt vor dem ersten.',
+  'hours.tooLong': 'Höchstens ein Jahr am Stück.',
+  'hours.checkIntervals': 'Bitte die Zeiten prüfen.',
+  'hours.submitAbsence': 'Eintragen',
+  'hours.dialogCancel': 'Abbrechen',
+  'hours.deleteAbsence': 'Abwesenheit löschen',
+  'hours.closedAllDay': 'Ganztags geschlossen',
+  'hours.openOnly': 'Nur {hours} geöffnet',
   'admin.statPending': 'Offene Anfragen',
   'admin.pendingEmpty': 'Keine offenen Anfragen.',
   'admin.manageTitle': 'Verwaltung',
@@ -718,11 +815,59 @@ export const it: Messages = {
   'admin.openingHours': 'Orari di apertura',
   'admin.openingHoursLoading': 'Caricamento…',
   'admin.openingHoursError': 'Impossibile caricare gli orari di apertura.',
-  'admin.openingHoursEmpty': 'Nessun orario di apertura configurato.',
   'admin.closed': 'Chiuso',
-  'admin.holidays': 'Festività',
-  'admin.holidaysHint':
-    'L’editor festività arriverà più avanti; le festività seed influenzano già la disponibilità.',
+  'hours.title': 'Orari e assenze',
+  'hours.subtitle':
+    'I clienti non vedono nulla di tutto questo: negli orari di chiusura semplicemente non ci sono appuntamenti liberi.',
+  'hours.weeklyTitle': 'Ogni settimana',
+  'hours.weeklyHint': 'I tuoi orari normali. Con „Fascia“ puoi inserire ad es. una pausa pranzo.',
+  'hours.open': 'Aperto',
+  'hours.from': 'Dalle',
+  'hours.to': 'Alle',
+  'hours.addInterval': 'Fascia',
+  'hours.removeInterval': 'Rimuovi fascia',
+  'hours.copyToOpenDays': 'Applica a tutti i giorni aperti',
+  'hours.copied': 'Applicato – ora salva.',
+  'hours.intervalOrder': 'La fine deve essere dopo l’inizio.',
+  'hours.intervalOverlap': 'Si sovrappone a un’altra fascia.',
+  'hours.intervalInvalid': 'Inserisci un orario.',
+  'hours.unsaved': 'Modifiche non salvate',
+  'hours.absencesTitle': 'Assenze ed eccezioni',
+  'hours.absencesHint':
+    'Ferie, festività o una mattina chiusa – in questi orari nessuno può prenotare online.',
+  'hours.addAbsence': 'Inserisci assenza',
+  'hours.absencesEmpty': 'Nessuna assenza programmata.',
+  'hours.absencesError': 'Impossibile caricare le assenze.',
+  'hours.kindQuestion': 'Cosa vuoi inserire?',
+  'hours.kindDays': 'Giorni interi',
+  'hours.kindDaysHint': 'Ferie, festività, malattia',
+  'hours.kindMorning': 'Mattina chiuso',
+  'hours.kindMorningHint': 'Aperto solo dalle 12:00',
+  'hours.kindAfternoon': 'Pomeriggio chiuso',
+  'hours.kindAfternoonHint': 'Aperto solo fino alle 12:00',
+  'hours.kindCustom': 'Altri orari',
+  'hours.kindCustomHint': 'Orari speciali per un giorno',
+  'hours.firstDay': 'Primo giorno',
+  'hours.lastDay': 'Ultimo giorno',
+  'hours.date': 'Data',
+  'hours.note': 'Nota (facoltativa)',
+  'hours.notePlaceholder': 'es. Ferie',
+  'hours.defaultName': 'Chiuso',
+  'hours.dayCount': 'Giorni: {count}',
+  'hours.openThen': 'Aperto quel giorno: {hours}',
+  'hours.closedThen': 'Quel giorno sarà chiuso tutto il giorno.',
+  'hours.customHint': 'Orari solo per questo giorno:',
+  'hours.conflicts':
+    'Appuntamenti esistenti in questo periodo: {count}. Restano validi – se necessario annullali tu.',
+  'hours.dateRequired': 'Scegli una data.',
+  'hours.endBeforeStart': 'L’ultimo giorno è prima del primo.',
+  'hours.tooLong': 'Al massimo un anno di seguito.',
+  'hours.checkIntervals': 'Controlla gli orari.',
+  'hours.submitAbsence': 'Inserisci',
+  'hours.dialogCancel': 'Annulla',
+  'hours.deleteAbsence': 'Elimina assenza',
+  'hours.closedAllDay': 'Chiuso tutto il giorno',
+  'hours.openOnly': 'Aperto solo {hours}',
   'admin.statPending': 'Richieste aperte',
   'admin.pendingEmpty': 'Nessuna richiesta aperta.',
   'admin.manageTitle': 'Gestione',

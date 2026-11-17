@@ -57,6 +57,19 @@ export const theme = createTheme({
     borderRadius: 4,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        // App feel: no rubber-band overscroll and no pinch / double-tap zoom.
+        'html, body': {
+          overscrollBehavior: 'none',
+          touchAction: 'pan-x pan-y',
+          WebkitTextSizeAdjust: '100%',
+        },
+        body: {
+          WebkitTapHighlightColor: 'transparent',
+        },
+      },
+    },
     MuiPaper: {
       defaultProps: {
         elevation: 0,

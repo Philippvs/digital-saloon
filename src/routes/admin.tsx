@@ -1,5 +1,5 @@
 import type * as React from 'react'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Outlet, createRoute, redirect, useNavigate } from '@tanstack/react-router'
 import * as v from 'valibot'
 
@@ -9,14 +9,17 @@ import { listRange, startOfWeekYmd } from '../data/calendarRange'
 import { addCalendarDays, todayYmdInTimeZone } from '../data/calendarMath'
 import { upcomingViennaDates } from '../data/dateFormat'
 import { optionalSearchParam } from '../data/schemas'
+import { reservationQueryRange, upcomingAbsences } from '../data/openingHoursForm'
 import { defaultWeekStartYmd, isoWeekNumber, planWeek, weekQueryRange } from '../data/weekPlanner'
 import { useAdminOps } from '../hooks/useAdminOps'
 import { useAdminReservation } from '../hooks/useAdminReservation'
 import { useAdminReservationActions, useAdminReservations } from '../hooks/useAdminReservations'
 import { useAllServices } from '../hooks/useAllServices'
 import { useAvailableSlots } from '../hooks/useAvailableSlots'
+import { useClosures } from '../hooks/useClosures'
 import { useBookingSettings } from '../hooks/useBookingSettings'
 import { useOpeningHours } from '../hooks/useOpeningHours'
+import { useOpeningHoursAdmin } from '../hooks/useOpeningHoursAdmin'
 import { useSalon } from '../hooks/useSalon'
 import { useSaveBookingSettings } from '../hooks/useSaveBookingSettings'
 import { useSaveSalonDetails } from '../hooks/useSaveSalonDetails'
@@ -24,6 +27,7 @@ import { useUserProfile } from '../hooks/useUserProfile'
 import { useLocale } from '../i18n'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
 import { AdminManualBookingPage } from '../pages/admin/AdminManualBookingPage'
+import { AdminOpeningHoursPage } from '../pages/admin/AdminOpeningHoursPage'
 import { AdminPlaceholderPage } from '../pages/admin/AdminPlaceholderPage'
 import { AdminReservationDetailPage } from '../pages/admin/AdminReservationDetailPage'
 import { AdminReservationsPage } from '../pages/admin/AdminReservationsPage'
@@ -78,6 +82,7 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const ops = useAdminOps()
   const actions = useAdminReservationActions()
   const openingHours = useOpeningHours(true)
+  const closures = useClosures(true)
   const { t, intlLocale } = useLocale()
   const timeZone = salon.data?.timezone ?? 'Europe/Vienna'
   const now = new Date()
@@ -88,11 +93,12 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const weekRange = weekQueryRange(weekStart)
   const weekReservations = useAdminReservations(weekRange.startIso, weekRange.endIso, true)
   const plan =
-    weekReservations.data && !openingHours.isLoading
+    weekReservations.data && !openingHours.isLoading && !closures.isLoading
       ? planWeek({
           reservations: weekReservations.data,
           weekStartYmd: weekStart,
           openingHours: openingHours.data,
+          closures: closures.data,
           timeZone,
           now,
         })
@@ -137,7 +143,7 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       weekRangeLabel={weekRangeLabel}
       isCurrentWeek={weekStart === currentWeekStart}
       plan={plan}
-      planLoading={weekReservations.isLoading || openingHours.isLoading}
+      planLoading={weekReservations.isLoading || openingHours.isLoading || closures.isLoading}
       planError={weekReservations.isError}
       pending={pending}
       confirmingReservationId={
@@ -176,6 +182,9 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       }}
       onSettingsClick={() => {
         void navigate({ to: '/admin/settings' })
+      }}
+      onOpeningHoursClick={() => {
+        void navigate({ to: '/admin/opening-hours' })
       }}
       onProcessPendingClick={() => {
         ops.processPending.mutate()
@@ -386,45 +395,73 @@ export const adminServicesRoute = createRoute({
   },
 })
 
+const AdminOpeningHoursRoute: React.FunctionComponent = () => {
+  const navigate = useNavigate()
+  const salon = useSalon()
+  const timeZone = salon.data?.timezone ?? 'Europe/Vienna'
+  const todayYmd = todayYmdInTimeZone(timeZone)
+  const hours = useOpeningHours(true)
+  const closures = useClosures(true)
+  const { saveWeekly, addAbsence, removeAbsence } = useOpeningHoursAdmin()
+  const [draftRange, setDraftRange] = useState<{ startYmd: string; endYmd: string } | null>(null)
+  const draftQuery = draftRange
+    ? reservationQueryRange(draftRange.startYmd, draftRange.endYmd)
+    : null
+  const draftReservations = useAdminReservations(
+    draftQuery?.startIso ?? '',
+    draftQuery?.endIso ?? '',
+    draftQuery !== null,
+  )
+  const onDraftDatesChange = useCallback((range: { startYmd: string; endYmd: string } | null) => {
+    setDraftRange((current) =>
+      current?.startYmd === range?.startYmd && current?.endYmd === range?.endYmd ? current : range,
+    )
+  }, [])
+
+  return (
+    <AdminOpeningHoursPage
+      todayYmd={todayYmd}
+      timeZone={timeZone}
+      weekly={hours.data}
+      weeklyLoading={hours.isLoading}
+      weeklyError={hours.isError}
+      weeklySave={{
+        saving: saveWeekly.isPending,
+        saved: saveWeekly.isSuccess,
+        error: saveWeekly.error instanceof Error ? saveWeekly.error.message : null,
+      }}
+      onSaveWeekly={(draft) => {
+        saveWeekly.mutate(draft)
+      }}
+      absences={closures.data ? upcomingAbsences(closures.data, todayYmd) : undefined}
+      absencesLoading={closures.isLoading}
+      absencesError={closures.isError}
+      deletingAbsenceId={removeAbsence.isPending ? (removeAbsence.variables?.id ?? null) : null}
+      onDeleteAbsence={(absence) => {
+        removeAbsence.mutate(absence)
+      }}
+      draftReservations={draftQuery ? draftReservations.data : undefined}
+      onDraftDatesChange={onDraftDatesChange}
+      onAddAbsence={(absence) => addAbsence.mutateAsync(absence)}
+      onBackClick={() => {
+        void navigate({ to: '/admin', search: { week: undefined } })
+      }}
+    />
+  )
+}
+
 export const adminOpeningHoursRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/opening-hours',
-  component: function AdminOpeningHoursRoute() {
-    const { t } = useLocale()
-    const hours = useOpeningHours(true)
-    const lines = hours.data
-      ? Object.entries(hours.data).map(([day, value]) => {
-          const label =
-            value.intervals.length === 0
-              ? t('admin.closed')
-              : value.intervals.map((i) => `${i.start}–${i.end}`).join(', ')
-          return `${day}: ${label}`
-        })
-      : []
-
-    return (
-      <AdminPlaceholderPage
-        title={t('admin.openingHours')}
-        description={
-          hours.isLoading
-            ? t('admin.openingHoursLoading')
-            : hours.isError
-              ? t('admin.openingHoursError')
-              : lines.join(' · ') || t('admin.openingHoursEmpty')
-        }
-      />
-    )
-  },
+  component: AdminOpeningHoursRoute,
 })
 
+/** Holidays are managed together with opening hours; keep old links working. */
 export const adminHolidaysRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/holidays',
-  component: function AdminHolidaysRoute() {
-    const { t } = useLocale()
-    return (
-      <AdminPlaceholderPage title={t('admin.holidays')} description={t('admin.holidaysHint')} />
-    )
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/opening-hours' })
   },
 })
 
@@ -462,6 +499,9 @@ export const adminSettingsRoute = createRoute({
         }}
         onSaveSalon={(details) => {
           saveSalon.mutate(details)
+        }}
+        onOpeningHoursClick={() => {
+          void navigate({ to: '/admin/opening-hours' })
         }}
         onBackClick={() => {
           void navigate({ to: '/admin' })

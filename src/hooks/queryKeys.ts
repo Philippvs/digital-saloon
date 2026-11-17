@@ -9,6 +9,7 @@ export const queryRootVisibility = {
   managedReservation: 'public',
   bookingSettings: 'private',
   openingHours: 'public',
+  closures: 'private',
   adminReservations: 'private',
   adminReservation: 'private',
   userProfile: 'private',

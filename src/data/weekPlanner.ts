@@ -1,20 +1,11 @@
 import { addCalendarDays } from './calendarMath'
 import { startOfWeekYmd } from './calendarRange'
 import type { OpeningHoursByWeekday } from './openingHours'
+import { minuteOfHhmm, openIntervalsForDate, weekdayOfYmd, type Closures } from './openingRules'
 import type { ReservationWithId } from './reservations'
 import type { ReservationStatus, Weekday } from './schemas'
 
 export const addSlotStepMinutes = 30
-
-const weekdaysByUtcDay: readonly Weekday[] = [
-  'sunday',
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-]
 
 const plannedStatuses: ReadonlySet<ReservationStatus> = new Set([
   'PENDING',
@@ -54,10 +45,7 @@ export type WeekPlan = {
   totals: { count: number; bookedMinutes: number; revenueCents: number }
 }
 
-export function weekdayOfYmd(dateYmd: string): Weekday {
-  const [y, m, d] = dateYmd.split('-').map(Number)
-  return weekdaysByUtcDay[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]
-}
+export { minuteOfHhmm, weekdayOfYmd }
 
 /**
  * Week the planner opens on: the current week, or the next one when the salon
@@ -121,11 +109,6 @@ export function zonedDateAndMinute(
   }
 }
 
-export function minuteOfHhmm(hhmm: string): number {
-  const [hours, minutes] = hhmm.split(':').map(Number)
-  return hours * 60 + minutes
-}
-
 export function hhmmOfMinute(minute: number): string {
   return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`
 }
@@ -176,6 +159,8 @@ export type PlanWeekInput = {
   reservations: readonly ReservationWithId[]
   weekStartYmd: string
   openingHours: Partial<OpeningHoursByWeekday> | undefined
+  /** Holidays and day exceptions; days they close show as closed in the planner. */
+  closures?: Closures
   timeZone: string
   now: Date
 }
@@ -184,6 +169,7 @@ export function planWeek({
   reservations,
   weekStartYmd,
   openingHours,
+  closures,
   timeZone,
   now,
 }: PlanWeekInput): WeekPlan {
@@ -208,7 +194,7 @@ export function planWeek({
 
   const days = dates.map((dateYmd): PlannerDay => {
     const weekday = weekdayOfYmd(dateYmd)
-    const openIntervals = (openingHours?.[weekday]?.intervals ?? []).map((interval) => ({
+    const openIntervals = openIntervalsForDate(dateYmd, openingHours, closures).map((interval) => ({
       startMinute: minuteOfHhmm(interval.start),
       endMinute: minuteOfHhmm(interval.end),
     }))

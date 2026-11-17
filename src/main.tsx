@@ -19,6 +19,13 @@ const queryClient = new QueryClient({
   },
 })
 
+// iOS Safari ignores `user-scalable=no`; its proprietary gesture events still allow pinch zoom.
+for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(type, (event) => {
+    event.preventDefault()
+  })
+}
+
 const rootElement = document.getElementById('root')
 if (!rootElement) {
   throw new Error('Root element #root not found')
