@@ -20,7 +20,6 @@ import {
   bilingualServiceName,
   emptyServiceFormInput,
   formatServiceDurationRange,
-  formatServicePriceRange,
   serviceFormInputOf,
   sortServicesForAdmin,
   validateServiceForm,
@@ -230,10 +229,22 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
   onSave,
   onBackClick,
 }) => {
-  const { t, locale } = useLocale()
+  const { t, locale, intlLocale } = useLocale()
   const [editor, setEditor] = useState<EditorTarget | null>(null)
   const [savedServiceId, setSavedServiceId] = useState<string | null>(null)
   const sorted = services ? sortServicesForAdmin(services) : undefined
+
+  const formatPrice = (cents: number): string =>
+    new Intl.NumberFormat(intlLocale, {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+    }).format(cents / 100)
+
+  const formatPriceRange = (minCents: number, maxCents?: number): string =>
+    maxCents !== undefined && maxCents > minCents
+      ? `${formatPrice(minCents)}–${formatPrice(maxCents)}`
+      : formatPrice(minCents)
 
   const save = async (serviceId: string | null, draft: ServiceDraft): Promise<void> => {
     const savedId = await onSave(serviceId, draft)
@@ -318,7 +329,7 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
                     })}
                   </span>
                   <span className="service-price">
-                    {formatServicePriceRange(service.priceCents, service.priceMaxCents)}
+                    {formatPriceRange(service.priceCents, service.priceMaxCents)}
                   </span>
                   <Button
                     size="small"

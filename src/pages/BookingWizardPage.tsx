@@ -444,6 +444,9 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
           </Paper>
 
           <Paper sx={{ p: { xs: 2, sm: 3 } }} component="section" aria-labelledby="step-date">
+            <Typography id="step-date" variant="h2" sx={{ fontSize: '1.15rem', mb: 1.5 }}>
+              {t('book.step.date')}
+            </Typography>
             <Stack
               direction="row"
               sx={{ mb: 2, alignItems: 'center', justifyContent: 'space-between' }}
@@ -460,7 +463,6 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                 <ChevronLeftIcon />
               </IconButton>
               <Button
-                id="step-date"
                 color="inherit"
                 onClick={() => setCalendarExpanded((prev) => !prev)}
                 endIcon={calendarExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
