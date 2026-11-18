@@ -204,8 +204,8 @@ test.describe('admin week planner @smoke', () => {
     ).toBeVisible()
   })
 
-  test('confirms an open request from the list next to the calendar', async ({ page }) => {
-    await page.goto('/admin')
+  test('confirms an open request from the pending page', async ({ page }) => {
+    await page.goto('/admin/pending')
     const pending = await findFutureDemoReservation('PENDING')
     const requests = page.getByRole('region', { name: 'Offene Anfragen' })
     const request = requests
@@ -236,6 +236,10 @@ test.describe('admin week planner @smoke', () => {
     await expect(page).toHaveURL(/\/admin\/reservations\?week=/)
     await views.getByRole('button', { name: 'Woche' }).click()
     await expect(page).toHaveURL(/\/admin\?week=/)
+
+    await page.getByRole('banner').getByRole('button', { name: 'Anfragen' }).click()
+    await expect(page).toHaveURL(/\/admin\/pending$/)
+    await expect(page.getByRole('heading', { name: /Offene Anfragen/ })).toBeVisible()
 
     await page.getByRole('banner').getByRole('button', { name: 'Einstellungen' }).click()
     await expect(page).toHaveURL(/\/admin\/settings$/)

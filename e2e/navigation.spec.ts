@@ -48,7 +48,22 @@ test.describe('navigation @smoke', () => {
       'aria-current',
       'page',
     )
+    await expect(header.getByRole('button', { name: 'Anfragen' })).not.toHaveAttribute(
+      'aria-current',
+      'page',
+    )
     await expect(header.getByRole('button', { name: 'Einstellungen' })).not.toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+
+    await header.getByRole('button', { name: 'Anfragen' }).click()
+    await expect(page).toHaveURL(/\/admin\/pending$/)
+    await expect(header.getByRole('button', { name: 'Anfragen' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    await expect(header.getByRole('button', { name: 'Kalender' })).not.toHaveAttribute(
       'aria-current',
       'page',
     )
@@ -60,6 +75,10 @@ test.describe('navigation @smoke', () => {
       'page',
     )
     await expect(header.getByRole('button', { name: 'Kalender' })).not.toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    await expect(header.getByRole('button', { name: 'Anfragen' })).not.toHaveAttribute(
       'aria-current',
       'page',
     )

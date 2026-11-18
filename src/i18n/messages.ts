@@ -1,5 +1,6 @@
 export type Messages = {
   'nav.staffCalendar': string
+  'nav.staffPending': string
   'nav.staffSettings': string
   'nav.staffLogin': string
   'nav.signedInAs': string
@@ -219,6 +220,7 @@ export type Messages = {
   'admin.calendarLoading': string
   'admin.detailTitle': string
   'admin.backToCalendar': string
+  'admin.backToPending': string
   'admin.detailLoading': string
   'admin.notFound': string
   'admin.source': string
@@ -446,6 +448,7 @@ export type MessageKey = keyof Messages
 
 export const de: Messages = {
   'nav.staffCalendar': 'Kalender',
+  'nav.staffPending': 'Anfragen',
   'nav.staffSettings': 'Einstellungen',
   'nav.staffLogin': 'Login für das Team',
   'nav.signedInAs': 'Angemeldet als {email}',
@@ -689,6 +692,7 @@ export const de: Messages = {
   'admin.calendarLoading': 'Kalender laden',
   'admin.detailTitle': 'Termin-Details',
   'admin.backToCalendar': 'Zurück zum Kalender',
+  'admin.backToPending': 'Zurück zu Anfragen',
   'admin.detailLoading': 'Termin laden',
   'admin.notFound': 'Termin nicht gefunden.',
   'admin.source': 'Quelle: {source}',
@@ -928,6 +932,7 @@ export const de: Messages = {
 
 export const it: Messages = {
   'nav.staffCalendar': 'Calendario',
+  'nav.staffPending': 'Richieste',
   'nav.staffSettings': 'Impostazioni',
   'nav.staffLogin': 'Accesso per il team',
   'nav.signedInAs': 'Accesso come {email}',
@@ -1167,6 +1172,7 @@ export const it: Messages = {
   'admin.calendarLoading': 'Caricamento calendario',
   'admin.detailTitle': 'Dettagli appuntamento',
   'admin.backToCalendar': 'Torna al calendario',
+  'admin.backToPending': 'Torna alle richieste',
   'admin.detailLoading': 'Caricamento appuntamento',
   'admin.notFound': 'Appuntamento non trovato.',
   'admin.source': 'Origine: {source}',
