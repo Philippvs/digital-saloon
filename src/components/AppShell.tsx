@@ -14,6 +14,7 @@ import {
 import { alpha } from '@mui/material/styles'
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
+import MarkEmailUnreadOutlinedIcon from '@mui/icons-material/MarkEmailUnreadOutlined'
 import MenuIcon from '@mui/icons-material/Menu'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
 import { useQueryClient } from '@tanstack/react-query'
@@ -29,7 +30,7 @@ import { PullToRefresh } from './PullToRefresh'
 import { HeaderWordmark } from './Wordmark'
 
 /** Staff header entry matching the current page; `null` outside the admin area. */
-export type AdminNavItem = 'calendar' | 'settings'
+export type AdminNavItem = 'calendar' | 'pending' | 'settings'
 
 export type AppShellProps = {
   salon: Salon | null
@@ -43,6 +44,7 @@ export type AppShellProps = {
   onLoginClick: () => void
   onPrivacyClick: () => void
   onAdminClick: () => void
+  onAdminPendingClick: () => void
   onAdminSettingsClick: () => void
   onSignOutClick: () => void
   children: React.ReactNode
@@ -59,6 +61,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   onLoginClick,
   onPrivacyClick,
   onAdminClick,
+  onAdminPendingClick,
   onAdminSettingsClick,
   onSignOutClick,
   children,
@@ -100,6 +103,22 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
                   sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
                 >
                   <CalendarMonthOutlinedIcon />
+                </NavIconButton>
+                <NavLink
+                  type="button"
+                  aria-current={activeAdminNav === 'pending' ? 'page' : undefined}
+                  onClick={onAdminPendingClick}
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                >
+                  {t('nav.staffPending')}
+                </NavLink>
+                <NavIconButton
+                  aria-label={t('nav.staffPending')}
+                  aria-current={activeAdminNav === 'pending' ? 'page' : undefined}
+                  onClick={onAdminPendingClick}
+                  sx={{ display: { xs: 'inline-flex', sm: 'none' } }}
+                >
+                  <MarkEmailUnreadOutlinedIcon />
                 </NavIconButton>
                 <NavLink
                   type="button"

@@ -40,6 +40,7 @@ import { useLocale } from '../i18n'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
 import { AdminHomepagePage } from '../pages/admin/AdminHomepagePage'
 import { AdminManualBookingPage } from '../pages/admin/AdminManualBookingPage'
+import { AdminPendingPage } from '../pages/admin/AdminPendingPage'
 import { AdminOpeningHoursPage } from '../pages/admin/AdminOpeningHoursPage'
 import { AdminPlaceholderPage } from '../pages/admin/AdminPlaceholderPage'
 import { AdminReservationDetailPage } from '../pages/admin/AdminReservationDetailPage'
@@ -92,7 +93,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const salon = useSalon()
   const navigate = useNavigate()
   const search = adminIndexRoute.useSearch()
-  const actions = useAdminReservationActions()
   const openingHours = useOpeningHours(true)
   const closures = useClosures(true)
   const { t, intlLocale } = useLocale()
@@ -130,12 +130,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
         })
       : undefined
 
-  const upcomingRange = dashboardRange(today)
-  const upcoming = useAdminReservations(upcomingRange.startIso, upcomingRange.endIso, true)
-  const pending = upcoming.data
-    ? summarizeDashboard(upcoming.data, today, timeZone).pending
-    : undefined
-
   const weekRangeLabel = new Intl.DateTimeFormat(intlLocale, {
     day: 'numeric',
     month: 'long',
@@ -165,11 +159,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
         !weekReady || weekReservations.isLoading || openingHours.isLoading || closures.isLoading
       }
       planError={weekReservations.isError}
-      pending={pending}
-      confirmingReservationId={
-        actions.confirm.isPending ? (actions.confirm.variables ?? null) : null
-      }
-      confirmError={actions.confirm.error instanceof Error ? actions.confirm.error.message : null}
       onPrevWeekClick={() => {
         goToWeek(addCalendarDays(weekStart, -7))
       }}
@@ -192,9 +181,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
           search: { reservationId, ...weekSearch },
         })
       }}
-      onConfirmReservation={(reservationId) => {
-        actions.confirm.mutate(reservationId)
-      }}
       onAddReservationClick={() => {
         void navigate({ to: '/admin/manual', search: weekSearch })
       }}
@@ -216,6 +202,44 @@ export const adminIndexRoute = createRoute({
   path: '/',
   validateSearch: (search: Record<string, unknown>) => v.parse(adminWeekSearchSchema, search),
   component: AdminIndexRoute,
+})
+
+export const adminPendingRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '/pending',
+  component: function AdminPendingRoute() {
+    const navigate = useNavigate()
+    const salon = useSalon()
+    const actions = useAdminReservationActions()
+    const timeZone = salon.data?.timezone ?? 'Europe/Vienna'
+    const today = todayYmdInTimeZone(timeZone)
+    const upcomingRange = dashboardRange(today)
+    const upcoming = useAdminReservations(upcomingRange.startIso, upcomingRange.endIso, true)
+    const pending = upcoming.data
+      ? summarizeDashboard(upcoming.data, today, timeZone).pending
+      : undefined
+
+    return (
+      <AdminPendingPage
+        pending={pending}
+        isLoading={upcoming.isLoading}
+        isError={upcoming.isError}
+        confirmingReservationId={
+          actions.confirm.isPending ? (actions.confirm.variables ?? null) : null
+        }
+        confirmError={actions.confirm.error instanceof Error ? actions.confirm.error.message : null}
+        onConfirmReservation={(reservationId) => {
+          actions.confirm.mutate(reservationId)
+        }}
+        onOpenReservationDetails={(reservationId) => {
+          void navigate({
+            to: '/admin/reservations/$reservationId',
+            params: { reservationId },
+          })
+        }}
+      />
+    )
+  },
 })
 
 const calendarSearchSchema = v.object({

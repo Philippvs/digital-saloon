@@ -10,7 +10,6 @@ import {
   ListItemText,
   Menu,
   MenuItem,
-  Paper,
   Stack,
   Typography,
 } from '@mui/material'
@@ -21,11 +20,10 @@ import EditCalendarIcon from '@mui/icons-material/EditCalendar'
 
 import { AdminViewSwitch } from '../../components/AdminViewSwitch'
 import { WeekPlanner } from '../../components/WeekPlanner'
-import { formatViennaDateTime } from '../../data/dateFormat'
-import type { ReservationWithId } from '../../data/reservations'
-import { formatBookedTime, type WeekPlan } from '../../data/weekPlanner'
+import type { WeekPlan } from '../../data/weekPlanner'
+import { formatBookedTime } from '../../data/weekPlanner'
 import { useLocale } from '../../i18n'
-import { PendingItem, Toolbar, WeekTitle, WeekTotals } from './AdminHomePage.styles'
+import { Toolbar, WeekTitle, WeekTotals } from './AdminHomePage.styles'
 
 export type AdminHomePageProps = {
   weekTitle: string
@@ -34,15 +32,11 @@ export type AdminHomePageProps = {
   plan: WeekPlan | undefined
   planLoading: boolean
   planError: boolean
-  pending: ReservationWithId[] | undefined
-  confirmingReservationId: string | null
-  confirmError: string | null
   onPrevWeekClick: () => void
   onNextWeekClick: () => void
   onThisWeekClick: () => void
   onOpenReservationDetails: (reservationId: string) => void
   onEditReservation: (reservationId: string) => void
-  onConfirmReservation: (reservationId: string) => void
   onAddReservationClick: () => void
   onAddReservationAt: (dateYmd: string, startTime: string) => void
   onListViewClick: () => void
@@ -55,15 +49,11 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
   plan,
   planLoading,
   planError,
-  pending,
-  confirmingReservationId,
-  confirmError,
   onPrevWeekClick,
   onNextWeekClick,
   onThisWeekClick,
   onOpenReservationDetails,
   onEditReservation,
-  onConfirmReservation,
   onAddReservationClick,
   onAddReservationAt,
   onListViewClick,
@@ -201,65 +191,6 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
           </Box>
         ) : null}
       </Box>
-
-      <Paper component="section" aria-label={t('admin.statPending')} sx={{ p: { xs: 2, sm: 3 } }}>
-        <Typography variant="h2" sx={{ fontSize: '1.25rem', mb: 2 }}>
-          {t('admin.statPending')}
-          {pending && pending.length > 0 ? (
-            <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400, ml: 1 }}>
-              {pending.length}
-            </Box>
-          ) : null}
-        </Typography>
-        {pending && pending.length === 0 ? (
-          <Typography color="text.secondary">{t('admin.pendingEmpty')}</Typography>
-        ) : null}
-        {confirmError ? (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {confirmError}
-          </Alert>
-        ) : null}
-        <Box
-          component="ul"
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))',
-            gap: { xs: 2, sm: 2.5 },
-            listStyle: 'none',
-            m: 0,
-            p: 0,
-          }}
-        >
-          {pending?.map((reservation) => (
-            <PendingItem key={reservation.id}>
-              <Box sx={{ minWidth: 0, maxWidth: '100%' }}>
-                <Typography sx={{ fontWeight: 600 }}>
-                  {reservation.firstName} {reservation.lastName}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {formatViennaDateTime(reservation.startAt, intlLocale)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" noWrap>
-                  {reservation.serviceName}
-                </Typography>
-              </Box>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                <Button
-                  size="small"
-                  variant="contained"
-                  disabled={confirmingReservationId !== null}
-                  onClick={() => onConfirmReservation(reservation.id)}
-                >
-                  {t('admin.confirm')}
-                </Button>
-                <Button size="small" onClick={() => onOpenReservationDetails(reservation.id)}>
-                  {t('admin.open')}
-                </Button>
-              </Stack>
-            </PendingItem>
-          ))}
-        </Box>
-      </Paper>
     </Stack>
   )
 }

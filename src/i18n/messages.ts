@@ -1,5 +1,6 @@
 export type Messages = {
   'nav.staffCalendar': string
+  'nav.staffPending': string
   'nav.staffSettings': string
   'nav.staffLogin': string
   'nav.signedInAs': string
@@ -446,6 +447,7 @@ export type MessageKey = keyof Messages
 
 export const de: Messages = {
   'nav.staffCalendar': 'Kalender',
+  'nav.staffPending': 'Anfragen',
   'nav.staffSettings': 'Einstellungen',
   'nav.staffLogin': 'Login für das Team',
   'nav.signedInAs': 'Angemeldet als {email}',
@@ -928,6 +930,7 @@ export const de: Messages = {
 
 export const it: Messages = {
   'nav.staffCalendar': 'Calendario',
+  'nav.staffPending': 'Richieste',
   'nav.staffSettings': 'Impostazioni',
   'nav.staffLogin': 'Accesso per il team',
   'nav.signedInAs': 'Accesso come {email}',
