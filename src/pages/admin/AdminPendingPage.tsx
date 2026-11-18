@@ -77,6 +77,7 @@ export const AdminPendingPage: React.FunctionComponent<AdminPendingPageProps> = 
                     size="small"
                     variant="contained"
                     disabled={confirmingReservationId !== null}
+                    aria-busy={confirmingReservationId === reservation.id}
                     onClick={() => onConfirmReservation(reservation.id)}
                   >
                     {t('admin.confirm')}

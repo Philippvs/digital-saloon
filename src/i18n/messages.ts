@@ -220,6 +220,7 @@ export type Messages = {
   'admin.calendarLoading': string
   'admin.detailTitle': string
   'admin.backToCalendar': string
+  'admin.backToPending': string
   'admin.detailLoading': string
   'admin.notFound': string
   'admin.source': string
@@ -691,6 +692,7 @@ export const de: Messages = {
   'admin.calendarLoading': 'Kalender laden',
   'admin.detailTitle': 'Termin-Details',
   'admin.backToCalendar': 'Zurück zum Kalender',
+  'admin.backToPending': 'Zurück zu Anfragen',
   'admin.detailLoading': 'Termin laden',
   'admin.notFound': 'Termin nicht gefunden.',
   'admin.source': 'Quelle: {source}',
@@ -1170,6 +1172,7 @@ export const it: Messages = {
   'admin.calendarLoading': 'Caricamento calendario',
   'admin.detailTitle': 'Dettagli appuntamento',
   'admin.backToCalendar': 'Torna al calendario',
+  'admin.backToPending': 'Torna alle richieste',
   'admin.detailLoading': 'Caricamento appuntamento',
   'admin.notFound': 'Appuntamento non trovato.',
   'admin.source': 'Origine: {source}',

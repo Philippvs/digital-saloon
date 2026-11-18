@@ -26,6 +26,7 @@ export type AdminReservationDetailPageProps = {
   isLoading: boolean
   actionError: string | null
   busy: boolean
+  backLabel: string
   onBackClick: () => void
   onConfirm: () => void
   onDecline: () => void
@@ -41,6 +42,7 @@ export const AdminReservationDetailPage: React.FunctionComponent<
   isLoading,
   actionError,
   busy,
+  backLabel,
   onBackClick,
   onConfirm,
   onDecline,
@@ -57,7 +59,7 @@ export const AdminReservationDetailPage: React.FunctionComponent<
         <Typography variant="h1" gutterBottom>
           {t('admin.detailTitle')}
         </Typography>
-        <Button onClick={onBackClick}>{t('admin.backToCalendar')}</Button>
+        <Button onClick={onBackClick}>{backLabel}</Button>
       </Paper>
 
       {isLoading ? <CircularProgress aria-label={t('admin.detailLoading')} /> : null}

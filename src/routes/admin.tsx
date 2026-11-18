@@ -5,7 +5,6 @@ import { Outlet, createRoute, redirect, useNavigate } from '@tanstack/react-rout
 import * as v from 'valibot'
 
 import { useAuth } from '../auth/AuthProvider'
-import { dashboardRange, summarizeDashboard } from '../data/adminDashboard'
 import { listRange, startOfWeekYmd } from '../data/calendarRange'
 import { addCalendarDays, todayYmdInTimeZone } from '../data/calendarMath'
 import { upcomingViennaDates } from '../data/dateFormat'
@@ -15,6 +14,7 @@ import { parseSelectedServiceIds, serializeServiceIds } from '../data/serviceSel
 import { reservationQueryRange, upcomingAbsences } from '../data/openingHoursForm'
 import { defaultWeekStartYmd, isoWeekNumber, planWeek, weekQueryRange } from '../data/weekPlanner'
 import { useAdminOps } from '../hooks/useAdminOps'
+import { useAdminPendingReservations } from '../hooks/useAdminPendingReservations'
 import { useAdminReservation } from '../hooks/useAdminReservation'
 import { useAdminReservationActions, useAdminReservations } from '../hooks/useAdminReservations'
 import { useAllServices } from '../hooks/useAllServices'
@@ -87,6 +87,11 @@ const ymdSearchParam = optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d
 
 const adminWeekSearchSchema = v.object({
   week: ymdSearchParam,
+})
+
+const adminDetailSearchSchema = v.object({
+  week: ymdSearchParam,
+  from: optionalSearchParam(v.literal('pending')),
 })
 
 const AdminIndexRoute: React.FunctionComponent = () => {
@@ -209,21 +214,14 @@ export const adminPendingRoute = createRoute({
   path: '/pending',
   component: function AdminPendingRoute() {
     const navigate = useNavigate()
-    const salon = useSalon()
     const actions = useAdminReservationActions()
-    const timeZone = salon.data?.timezone ?? 'Europe/Vienna'
-    const today = todayYmdInTimeZone(timeZone)
-    const upcomingRange = dashboardRange(today)
-    const upcoming = useAdminReservations(upcomingRange.startIso, upcomingRange.endIso, true)
-    const pending = upcoming.data
-      ? summarizeDashboard(upcoming.data, today, timeZone).pending
-      : undefined
+    const pendingQuery = useAdminPendingReservations(true)
 
     return (
       <AdminPendingPage
-        pending={pending}
-        isLoading={upcoming.isLoading}
-        isError={upcoming.isError}
+        pending={pendingQuery.pending}
+        isLoading={pendingQuery.isLoading}
+        isError={pendingQuery.isError}
         confirmingReservationId={
           actions.confirm.isPending ? (actions.confirm.variables ?? null) : null
         }
@@ -235,6 +233,7 @@ export const adminPendingRoute = createRoute({
           void navigate({
             to: '/admin/reservations/$reservationId',
             params: { reservationId },
+            search: { from: 'pending' },
           })
         }}
       />
@@ -299,12 +298,14 @@ export const adminReservationsRoute = createRoute({
 export const adminReservationDetailRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/reservations/$reservationId',
-  validateSearch: (search: Record<string, unknown>) => v.parse(adminWeekSearchSchema, search),
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminDetailSearchSchema, search),
   component: function AdminReservationDetailRoute() {
     const navigate = useNavigate()
+    const { t } = useLocale()
     const { reservationId } = adminReservationDetailRoute.useParams()
     const search = adminReservationDetailRoute.useSearch()
     const returnWeek = search.week ? startOfWeekYmd(search.week) : undefined
+    const fromPending = search.from === 'pending'
     const reservation = useAdminReservation(reservationId)
     const actions = useAdminReservationActions()
 
@@ -327,7 +328,12 @@ export const adminReservationDetailRoute = createRoute({
           actions.cancel.isPending ||
           actions.complete.isPending
         }
+        backLabel={fromPending ? t('admin.backToPending') : t('admin.backToCalendar')}
         onBackClick={() => {
+          if (fromPending) {
+            void navigate({ to: '/admin/pending' })
+            return
+          }
           void navigate({
             to: '/admin',
             search: returnWeek ? { week: returnWeek } : {},
@@ -351,6 +357,7 @@ export const adminReservationDetailRoute = createRoute({
             search: {
               reservationId,
               week: returnWeek,
+              from: fromPending ? 'pending' : undefined,
             },
           })
         }}
@@ -366,6 +373,7 @@ const manualSearchSchema = v.object({
   date: ymdSearchParam,
   time: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/))),
   week: ymdSearchParam,
+  from: optionalSearchParam(v.literal('pending')),
 })
 
 const viennaYmdOfIso = (iso: string): string =>
@@ -416,15 +424,17 @@ export const adminManualRoute = createRoute({
           date: viennaYmdOfIso(reservation.startAt),
           time,
           week: search.week ? startOfWeekYmd(search.week) : undefined,
+          from: search.from === 'pending' ? 'pending' : undefined,
         },
         replace: true,
         resetScroll: false,
       })
-    }, [editingReservationId, editing.data, navigate, search.week])
+    }, [editingReservationId, editing.data, navigate, search.week, search.from])
 
     const selectedServiceIds = parseSelectedServiceIds(search)
     const selectedDate = search.date ?? null
     const returnWeek = search.week ? startOfWeekYmd(search.week) : undefined
+    const fromPending = search.from === 'pending'
     const baseDates = upcomingViennaDates(14)
     const dates =
       selectedDate && !baseDates.includes(selectedDate)
@@ -456,6 +466,7 @@ export const adminManualRoute = createRoute({
     const manualSearchBase = {
       reservationId: editingReservationId ?? undefined,
       week: returnWeek,
+      from: fromPending ? ('pending' as const) : undefined,
     }
 
     if (isEdit && editing.isLoading) {
@@ -497,6 +508,10 @@ export const adminManualRoute = createRoute({
         isSubmitting={submitPending}
         submitError={submitError}
         onBackClick={() => {
+          if (fromPending) {
+            void navigate({ to: '/admin/pending' })
+            return
+          }
           void navigate({
             to: '/admin',
             search: returnWeek ? { week: returnWeek } : {},
@@ -543,7 +558,10 @@ export const adminManualRoute = createRoute({
                   void navigate({
                     to: '/admin/reservations/$reservationId',
                     params: { reservationId: reservation.reservationId },
-                    search: returnWeek ? { week: returnWeek } : {},
+                    search: {
+                      week: returnWeek,
+                      from: fromPending ? 'pending' : undefined,
+                    },
                   })
                 },
               },
@@ -563,7 +581,10 @@ export const adminManualRoute = createRoute({
                 void navigate({
                   to: '/admin/reservations/$reservationId',
                   params: { reservationId: result.reservationId },
-                  search: returnWeek ? { week: returnWeek } : {},
+                  search: {
+                    week: returnWeek,
+                    from: fromPending ? 'pending' : undefined,
+                  },
                 })
               },
             },
