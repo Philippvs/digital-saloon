@@ -42,7 +42,6 @@ import { arePricesVisible } from '../data/salonConfig'
 import {
   formatServiceDurationRange,
   formatServicePriceRange,
-  groupServicesByCategory,
   localizedServiceDescription,
   localizedServiceName,
 } from '../data/serviceForm'
@@ -191,11 +190,6 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
     () => selectedServices.reduce((sum, item) => sum + (item.priceMaxCents ?? item.priceCents), 0),
     [selectedServices],
   )
-  const groupedServices = useMemo(
-    () => groupServicesByCategory(services ?? [], locale, t('book.categoryOther')),
-    [services, locale, t],
-  )
-
   const byDate = useMemo(() => slotsByDate(rangeSlots ?? []), [rangeSlots])
   const daySlots = selectedDate ? (byDate.get(selectedDate) ?? []) : []
   const todayYmd = viennaTodayYmd()
@@ -269,106 +263,92 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
               <CircularProgress aria-label={t('book.servicesLoading')} size={28} />
             ) : null}
             {servicesError ? <Alert severity="error">{t('book.servicesError')}</Alert> : null}
-            <Stack spacing={3}>
-              {groupedServices.map((group) => (
-                <Box key={group.category}>
-                  <Typography
-                    variant="h3"
-                    sx={{ fontSize: '0.95rem', fontWeight: 700, color: 'text.secondary', mb: 1.25 }}
-                  >
-                    {group.category}
-                  </Typography>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(2, minmax(0, 1fr))',
+                  md: 'repeat(3, minmax(0, 1fr))',
+                },
+                gap: 1.25,
+              }}
+            >
+              {(services ?? []).map((service) => {
+                const selected = selectedServiceIds.includes(service.id)
+                const description = localizedServiceDescription(service, locale)
+                return (
                   <Box
+                    key={service.id}
+                    component="button"
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => onToggleService(service.id)}
                     sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        sm: 'repeat(2, minmax(0, 1fr))',
-                        md: 'repeat(3, minmax(0, 1fr))',
-                      },
-                      gap: 1.25,
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: 1,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      borderRadius: 2,
+                      border: '1.5px solid',
+                      borderColor: selected ? 'primary.main' : 'divider',
+                      bgcolor: selected ? brand.stone : 'background.paper',
+                      p: 1.5,
+                      font: 'inherit',
+                      color: 'inherit',
+                      width: '100%',
+                      height: '100%',
+                      transition: 'border-color 120ms ease, background-color 120ms ease',
                     }}
                   >
-                    {group.services.map((service) => {
-                      const selected = selectedServiceIds.includes(service.id)
-                      const description = localizedServiceDescription(service, locale)
-                      return (
-                        <Box
-                          key={service.id}
-                          component="button"
-                          type="button"
-                          aria-pressed={selected}
-                          onClick={() => onToggleService(service.id)}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            justifyContent: 'space-between',
-                            gap: 1,
-                            textAlign: 'left',
-                            cursor: 'pointer',
-                            borderRadius: 2,
-                            border: '1.5px solid',
-                            borderColor: selected ? 'primary.main' : 'divider',
-                            bgcolor: selected ? brand.stone : 'background.paper',
-                            p: 1.5,
-                            font: 'inherit',
-                            color: 'inherit',
-                            width: '100%',
-                            height: '100%',
-                            transition: 'border-color 120ms ease, background-color 120ms ease',
-                          }}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.3 }}>
+                        {localizedServiceName(service, locale)}
+                      </Typography>
+                      {description ? (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mt: 0.25, fontSize: '0.8rem' }}
                         >
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography
-                              sx={{ fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.3 }}
-                            >
-                              {localizedServiceName(service, locale)}
-                            </Typography>
-                            {description ? (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ mt: 0.25, fontSize: '0.8rem' }}
-                              >
-                                {description}
-                              </Typography>
-                            ) : null}
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{
-                                mt: 0.5,
-                                fontSize: '0.85rem',
-                                fontVariantNumeric: 'tabular-nums',
-                              }}
-                            >
-                              {t('book.durationMinutes', {
-                                minutes: formatServiceDurationRange(
-                                  service.durationMinutes,
-                                  service.durationMaxMinutes,
-                                ),
-                              })}{' '}
-                              ·{' '}
-                              {pricesVisible
-                                ? formatServicePriceRange(service.priceCents, service.priceMaxCents)
-                                : t('price.onRequest')}
-                            </Typography>
-                          </Box>
-                          <Checkbox
-                            checked={selected}
-                            tabIndex={-1}
-                            readOnly
-                            aria-hidden
-                            size="small"
-                            sx={{ p: 0.25 }}
-                          />
-                        </Box>
-                      )
-                    })}
+                          {description}
+                        </Typography>
+                      ) : null}
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          mt: 0.5,
+                          fontSize: '0.85rem',
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
+                        {t('book.durationMinutes', {
+                          minutes: formatServiceDurationRange(
+                            service.durationMinutes,
+                            service.durationMaxMinutes,
+                          ),
+                        })}{' '}
+                        ·{' '}
+                        {pricesVisible
+                          ? formatServicePriceRange(service.priceCents, service.priceMaxCents)
+                          : t('price.onRequest')}
+                      </Typography>
+                    </Box>
+                    <Checkbox
+                      checked={selected}
+                      tabIndex={-1}
+                      readOnly
+                      aria-hidden
+                      size="small"
+                      sx={{ p: 0.25 }}
+                    />
                   </Box>
-                </Box>
-              ))}
-            </Stack>
+                )
+              })}
+            </Box>
           </Paper>
 
           <Paper

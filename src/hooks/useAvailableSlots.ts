@@ -11,6 +11,8 @@ export function useAvailableSlots(input: {
   enforceAdvanceRestrictions?: boolean
   /** Set when moving an existing booking, so its stored duration is used. */
   managementToken?: string
+  /** Admin edit: ignore this reservation while loading free slots. */
+  excludeReservationId?: string
 }) {
   const serviceIds =
     input.serviceIds && input.serviceIds.length > 0
@@ -30,6 +32,7 @@ export function useAvailableSlots(input: {
       input.toDateYmd,
       enforceAdvanceRestrictions,
       input.managementToken ?? null,
+      input.excludeReservationId ?? null,
     ),
     queryFn: () =>
       fetchAvailableSlots({
@@ -39,6 +42,7 @@ export function useAvailableSlots(input: {
         toDateYmd: input.toDateYmd!,
         enforceAdvanceRestrictions,
         managementToken: input.managementToken,
+        excludeReservationId: input.excludeReservationId,
       }),
     enabled,
   })

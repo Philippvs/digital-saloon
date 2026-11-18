@@ -8,6 +8,8 @@ export type Messages = {
   'nav.language': string
   'nav.book': string
   'nav.home': string
+  'app.pullToRefresh': string
+  'app.refreshing': string
 
   'home.place': string
   'home.intro': string
@@ -105,7 +107,6 @@ export type Messages = {
   'book.selectedServicesCount': string
   'book.totalDuration': string
   'book.totalPrice': string
-  'book.categoryOther': string
   'book.weekPrev': string
   'book.weekNext': string
   'book.expandCalendar': string
@@ -195,6 +196,10 @@ export type Messages = {
   'admin.calendar': string
   'admin.reservations': string
   'admin.time': string
+  'admin.timeFreeLabel': string
+  'admin.nextFreeSlotHint': string
+  'admin.nextFreeSlotTag': string
+  'admin.currentSlotKept': string
   'admin.customer': string
   'admin.status': string
   'admin.open': string
@@ -223,6 +228,18 @@ export type Messages = {
   'admin.decline': string
   'admin.complete': string
   'admin.cancel': string
+  'admin.quickDetails': string
+  'admin.reschedule': string
+  'admin.cancelConfirmTitle': string
+  'admin.cancelConfirmBody': string
+  'admin.cancelConfirmAction': string
+  'admin.declineConfirmTitle': string
+  'admin.declineConfirmBody': string
+  'admin.declineConfirmAction': string
+  'admin.dialogDismiss': string
+  'admin.editReservationTitle': string
+  'admin.editReservationSubtitle': string
+  'admin.saveReservation': string
   'admin.manualTitle': string
   'admin.manualSubtitle': string
   'admin.back': string
@@ -437,6 +454,8 @@ export const de: Messages = {
   'nav.language': 'Sprache',
   'nav.book': 'Termin buchen',
   'nav.home': 'KIMM Hair, zur Startseite',
+  'app.pullToRefresh': 'Zum Aktualisieren nach unten ziehen',
+  'app.refreshing': 'Wird aktualisiert…',
 
   'home.place': 'Friseur in Meran',
   'home.intro':
@@ -548,7 +567,6 @@ export const de: Messages = {
   'book.selectedServicesCount': '{count} gewählt',
   'book.totalDuration': 'Gesamtdauer: {minutes} Min',
   'book.totalPrice': 'Gesamtpreis: {price}',
-  'book.categoryOther': 'Weitere Leistungen',
   'book.weekPrev': 'Vorherige Woche',
   'book.weekNext': 'Nächste Woche',
   'book.expandCalendar': 'Monatsansicht aufklappen',
@@ -645,6 +663,11 @@ export const de: Messages = {
   'admin.calendar': 'Kalender',
   'admin.reservations': 'Termine',
   'admin.time': 'Zeit',
+  'admin.timeFreeLabel': 'Freie Zeiten',
+  'admin.nextFreeSlotHint': 'Nächster freier Termin ist vorausgewählt — andere Zeit einfach antippen.',
+  'admin.nextFreeSlotTag': 'Nächster',
+  'admin.currentSlotKept':
+    'Bisherige Uhrzeit {time} bleibt erhalten, bis Sie eine neue freie Zeit wählen.',
   'admin.customer': 'Kunde',
   'admin.status': 'Status',
   'admin.open': 'Öffnen',
@@ -674,6 +697,21 @@ export const de: Messages = {
   'admin.decline': 'Ablehnen',
   'admin.complete': 'Als erledigt markieren',
   'admin.cancel': 'Stornieren',
+  'admin.quickDetails': 'Details anzeigen',
+  'admin.reschedule': 'Umbuchen',
+  'admin.cancelConfirmTitle': 'Termin stornieren?',
+  'admin.cancelConfirmBody':
+    'Der Termin wird storniert und der Slot wieder freigegeben. Das lässt sich nicht rückgängig machen.',
+  'admin.cancelConfirmAction': 'Ja, stornieren',
+  'admin.declineConfirmTitle': 'Anfrage ablehnen?',
+  'admin.declineConfirmBody':
+    'Die Anfrage wird abgelehnt und der Slot freigegeben. Der Kunde kann online nicht mehr darüber verfügen.',
+  'admin.declineConfirmAction': 'Ja, ablehnen',
+  'admin.dialogDismiss': 'Abbrechen',
+  'admin.editReservationTitle': 'Termin bearbeiten',
+  'admin.editReservationSubtitle':
+    'Leistungen, Zeit und Kundendaten ändern. Der Termin behält seinen Status.',
+  'admin.saveReservation': 'Änderungen speichern',
   'admin.manualTitle': 'Manueller Termin',
   'admin.manualSubtitle':
     'Für Telefonbuchungen — wird sofort bestätigt. Advance-Limits gelten nicht.',
@@ -897,6 +935,8 @@ export const it: Messages = {
   'nav.language': 'Lingua',
   'nav.book': 'Prenota',
   'nav.home': 'KIMM Hair, vai alla home',
+  'app.pullToRefresh': 'Trascina verso il basso per aggiornare',
+  'app.refreshing': 'Aggiornamento…',
 
   'home.place': 'Parrucchiere a Merano',
   'home.intro':
@@ -1005,7 +1045,6 @@ export const it: Messages = {
   'book.selectedServicesCount': '{count} selezionati',
   'book.totalDuration': 'Durata totale: {minutes} min',
   'book.totalPrice': 'Prezzo totale: {price}',
-  'book.categoryOther': 'Altri servizi',
   'book.weekPrev': 'Settimana precedente',
   'book.weekNext': 'Settimana successiva',
   'book.expandCalendar': 'Espandi vista mensile',
@@ -1102,6 +1141,12 @@ export const it: Messages = {
   'admin.calendar': 'Calendario',
   'admin.reservations': 'Appuntamenti',
   'admin.time': 'Orario',
+  'admin.timeFreeLabel': 'Orari liberi',
+  'admin.nextFreeSlotHint':
+    'Il prossimo appuntamento libero è preselezionato — tocca un altro orario per cambiarlo.',
+  'admin.nextFreeSlotTag': 'Prossimo',
+  'admin.currentSlotKept':
+    'L’orario attuale {time} resta finché non scegli un nuovo slot libero.',
   'admin.customer': 'Cliente',
   'admin.status': 'Stato',
   'admin.open': 'Apri',
@@ -1131,6 +1176,21 @@ export const it: Messages = {
   'admin.decline': 'Rifiuta',
   'admin.complete': 'Segna come completato',
   'admin.cancel': 'Annulla',
+  'admin.quickDetails': 'Mostra dettagli',
+  'admin.reschedule': 'Riprogramma',
+  'admin.cancelConfirmTitle': 'Annullare l’appuntamento?',
+  'admin.cancelConfirmBody':
+    'L’appuntamento verrà annullato e lo slot liberato. Non si può annullare questa azione.',
+  'admin.cancelConfirmAction': 'Sì, annulla',
+  'admin.declineConfirmTitle': 'Rifiutare la richiesta?',
+  'admin.declineConfirmBody':
+    'La richiesta verrà rifiutata e lo slot liberato. Il cliente non potrà più gestirla online.',
+  'admin.declineConfirmAction': 'Sì, rifiuta',
+  'admin.dialogDismiss': 'Chiudi',
+  'admin.editReservationTitle': 'Modifica appuntamento',
+  'admin.editReservationSubtitle':
+    'Modifica servizi, orario e dati del cliente. Lo stato dell’appuntamento resta invariato.',
+  'admin.saveReservation': 'Salva modifiche',
   'admin.manualTitle': 'Appuntamento manuale',
   'admin.manualSubtitle':
     'Per prenotazioni telefoniche — confermato subito. I limiti di anticipo non valgono.',

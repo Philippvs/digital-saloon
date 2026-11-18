@@ -28,7 +28,7 @@ import {
 
 export type WeekPlannerProps = {
   plan: WeekPlan
-  onSelectReservation: (reservationId: string) => void
+  onSelectReservation: (reservationId: string, anchorEl: HTMLElement) => void
   onAddAt: (dateYmd: string, startTime: string) => void
 }
 
@@ -48,7 +48,7 @@ function dateAt(dateYmd: string): Date {
 type PlannerEntryButtonProps = {
   entry: PlannerEntry
   gridStartMinute: number
-  onSelect: (reservationId: string) => void
+  onSelect: (reservationId: string, anchorEl: HTMLElement) => void
 }
 
 const PlannerEntryButton: React.FunctionComponent<PlannerEntryButtonProps> = ({
@@ -79,7 +79,9 @@ const PlannerEntryButton: React.FunctionComponent<PlannerEntryButtonProps> = ({
         alignItems: height < compactEntryHeight ? 'center' : 'flex-start',
         gap: height < compactEntryHeight ? 6 : 1,
       }}
-      onClick={() => onSelect(reservation.id)}
+      onClick={(event) => {
+        onSelect(reservation.id, event.currentTarget)
+      }}
     >
       <span className="entry-time">{hhmmOfMinute(entry.startMinute)}</span>
       <span className="entry-name">{name}</span>
@@ -95,7 +97,7 @@ type PlannerDayColumnProps = {
   gridStartMinute: number
   nowMinute: number | null
   addLabel: (dateYmd: string, time: string) => string
-  onSelectReservation: (reservationId: string) => void
+  onSelectReservation: (reservationId: string, anchorEl: HTMLElement) => void
   onAddAt: (dateYmd: string, startTime: string) => void
 }
 

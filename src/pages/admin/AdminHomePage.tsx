@@ -1,16 +1,23 @@
 import type * as React from 'react'
+import { useState } from 'react'
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
   IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   Typography,
 } from '@mui/material'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import EventNoteIcon from '@mui/icons-material/EventNote'
+import EditCalendarIcon from '@mui/icons-material/EditCalendar'
 
 import { AdminViewSwitch } from '../../components/AdminViewSwitch'
 import { WeekPlanner } from '../../components/WeekPlanner'
@@ -33,7 +40,8 @@ export type AdminHomePageProps = {
   onPrevWeekClick: () => void
   onNextWeekClick: () => void
   onThisWeekClick: () => void
-  onSelectReservation: (reservationId: string) => void
+  onOpenReservationDetails: (reservationId: string) => void
+  onEditReservation: (reservationId: string) => void
   onConfirmReservation: (reservationId: string) => void
   onAddReservationClick: () => void
   onAddReservationAt: (dateYmd: string, startTime: string) => void
@@ -53,13 +61,19 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
   onPrevWeekClick,
   onNextWeekClick,
   onThisWeekClick,
-  onSelectReservation,
+  onOpenReservationDetails,
+  onEditReservation,
   onConfirmReservation,
   onAddReservationClick,
   onAddReservationAt,
   onListViewClick,
 }) => {
   const { t, intlLocale } = useLocale()
+  const [menu, setMenu] = useState<{
+    reservationId: string
+    anchorEl: HTMLElement
+    canEdit: boolean
+  } | null>(null)
   const revenue = new Intl.NumberFormat(intlLocale, {
     style: 'currency',
     currency: 'EUR',
@@ -129,10 +143,58 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
         {plan ? (
           <WeekPlanner
             plan={plan}
-            onSelectReservation={onSelectReservation}
+            onSelectReservation={(reservationId, anchorEl) => {
+              const entry = plan.days
+                .flatMap((day) => day.entries)
+                .find((item) => item.reservation.id === reservationId)
+              const status = entry?.reservation.status
+              setMenu({
+                reservationId,
+                anchorEl,
+                canEdit: status === 'PENDING' || status === 'CONFIRMED',
+              })
+            }}
             onAddAt={onAddReservationAt}
           />
         ) : null}
+        <Menu
+          anchorEl={menu?.anchorEl ?? null}
+          open={menu !== null}
+          onClose={() => {
+            setMenu(null)
+          }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        >
+          <MenuItem
+            onClick={() => {
+              if (!menu) return
+              const { reservationId } = menu
+              setMenu(null)
+              onOpenReservationDetails(reservationId)
+            }}
+          >
+            <ListItemIcon>
+              <EventNoteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>{t('admin.quickDetails')}</ListItemText>
+          </MenuItem>
+          {menu?.canEdit ? (
+            <MenuItem
+              onClick={() => {
+                if (!menu) return
+                const { reservationId } = menu
+                setMenu(null)
+                onEditReservation(reservationId)
+              }}
+            >
+              <ListItemIcon>
+                <EditCalendarIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{t('admin.reschedule')}</ListItemText>
+            </MenuItem>
+          ) : null}
+        </Menu>
         {planLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
             <CircularProgress aria-label={t('admin.calendarLoading')} />
@@ -190,7 +252,7 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
                 >
                   {t('admin.confirm')}
                 </Button>
-                <Button size="small" onClick={() => onSelectReservation(reservation.id)}>
+                <Button size="small" onClick={() => onOpenReservationDetails(reservation.id)}>
                   {t('admin.open')}
                 </Button>
               </Stack>

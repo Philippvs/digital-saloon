@@ -1,5 +1,6 @@
 import type * as React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Alert, CircularProgress } from '@mui/material'
 import { Outlet, createRoute, redirect, useNavigate } from '@tanstack/react-router'
 import * as v from 'valibot'
 
@@ -10,6 +11,7 @@ import { addCalendarDays, todayYmdInTimeZone } from '../data/calendarMath'
 import { upcomingViennaDates } from '../data/dateFormat'
 import { optionalSearchParam } from '../data/schemas'
 import { uploadHomepageImage } from '../data/homepageConfig'
+import { parseSelectedServiceIds, serializeServiceIds } from '../data/serviceSelection'
 import { reservationQueryRange, upcomingAbsences } from '../data/openingHoursForm'
 import { defaultWeekStartYmd, isoWeekNumber, planWeek, weekQueryRange } from '../data/weekPlanner'
 import { useAdminOps } from '../hooks/useAdminOps'
@@ -159,8 +161,14 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       onThisWeekClick={() => {
         goToWeek(currentWeekStart)
       }}
-      onSelectReservation={(reservationId) => {
+      onOpenReservationDetails={(reservationId) => {
         void navigate({ to: '/admin/reservations/$reservationId', params: { reservationId } })
+      }}
+      onEditReservation={(reservationId) => {
+        void navigate({
+          to: '/admin/manual',
+          search: { reservationId },
+        })
       }}
       onConfirmReservation={(reservationId) => {
         actions.confirm.mutate(reservationId)
@@ -267,17 +275,19 @@ export const adminReservationDetailRoute = createRoute({
           actions.confirm.mutate(reservationId)
         }}
         onDecline={() => {
-          if (window.confirm('Termin wirklich ablehnen? Der Slot wird freigegeben.')) {
-            actions.decline.mutate(reservationId)
-          }
+          actions.decline.mutate(reservationId)
         }}
         onCancel={() => {
-          if (window.confirm('Termin wirklich stornieren?')) {
-            actions.cancel.mutate(reservationId)
-          }
+          actions.cancel.mutate(reservationId)
         }}
         onComplete={() => {
           actions.complete.mutate(reservationId)
+        }}
+        onEditClick={() => {
+          void navigate({
+            to: '/admin/manual',
+            search: { reservationId },
+          })
         }}
       />
     )
@@ -285,10 +295,20 @@ export const adminReservationDetailRoute = createRoute({
 })
 
 const manualSearchSchema = v.object({
+  reservationId: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
   serviceId: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
+  serviceIds: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
   date: ymdSearchParam,
   time: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/))),
 })
+
+const viennaYmdOfIso = (iso: string): string =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Vienna',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(iso))
 
 export const adminManualRoute = createRoute({
   getParentRoute: () => adminRoute,
@@ -296,52 +316,167 @@ export const adminManualRoute = createRoute({
   validateSearch: (search: Record<string, unknown>) => v.parse(manualSearchSchema, search),
   component: function AdminManualRoute() {
     const navigate = useNavigate()
+    const { t } = useLocale()
     const search = adminManualRoute.useSearch()
+    const editingReservationId = search.reservationId ?? null
+    const editing = useAdminReservation(editingReservationId)
     const services = useAllServices(true)
-    const dates = upcomingViennaDates(14)
-    const selectedServiceId = search.serviceId ?? null
+    const actions = useAdminReservationActions()
+    const hydratedEditId = useRef<string | null>(null)
+
+    useEffect(() => {
+      if (!editingReservationId) {
+        hydratedEditId.current = null
+        return
+      }
+      if (!editing.data) return
+      if (hydratedEditId.current === editingReservationId) return
+      hydratedEditId.current = editingReservationId
+      const reservation = editing.data
+      const serviceIds =
+        reservation.serviceIds && reservation.serviceIds.length > 0
+          ? reservation.serviceIds
+          : [reservation.serviceId]
+      const time = new Intl.DateTimeFormat('de-AT', {
+        timeZone: 'Europe/Vienna',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date(reservation.startAt))
+      void navigate({
+        to: '/admin/manual',
+        search: {
+          reservationId: editingReservationId,
+          serviceIds: serializeServiceIds(serviceIds),
+          date: viennaYmdOfIso(reservation.startAt),
+          time,
+        },
+        replace: true,
+        resetScroll: false,
+      })
+    }, [editingReservationId, editing.data, navigate])
+
+    const selectedServiceIds = parseSelectedServiceIds(search)
     const selectedDate = search.date ?? null
+    const baseDates = upcomingViennaDates(14)
+    const dates =
+      selectedDate && !baseDates.includes(selectedDate)
+        ? [selectedDate, ...baseDates].sort()
+        : baseDates
     const slots = useAvailableSlots({
-      serviceId: selectedServiceId,
+      serviceIds: selectedServiceIds,
       fromDateYmd: selectedDate,
       toDateYmd: selectedDate,
       enforceAdvanceRestrictions: false,
+      excludeReservationId: editingReservationId ?? undefined,
     })
-    const actions = useAdminReservationActions()
 
-    return (
+    const isEdit = editingReservationId !== null
+    const editReady = !isEdit || editing.data != null
+    const submitPending = isEdit ? actions.updateManual.isPending : actions.createManual.isPending
+    const submitError = isEdit
+      ? actions.updateManual.isError
+        ? actions.updateManual.error instanceof Error
+          ? actions.updateManual.error.message
+          : 'Speichern fehlgeschlagen'
+        : null
+      : actions.createManual.isError
+        ? actions.createManual.error instanceof Error
+          ? actions.createManual.error.message
+          : 'Speichern fehlgeschlagen'
+        : null
+
+    const manualSearchBase = {
+      reservationId: editingReservationId ?? undefined,
+    }
+
+    if (isEdit && editing.isLoading) {
+      return (
+        <CircularProgress aria-label={t('admin.detailLoading')} sx={{ display: 'block', m: 4 }} />
+      )
+    }
+    if (isEdit && (editing.isError || !editing.data)) {
+      return (
+        <Alert severity="error" sx={{ m: 3 }}>
+          {t('admin.notFound')}
+        </Alert>
+      )
+    }
+
+    return editReady ? (
       <AdminManualBookingPage
+        key={editingReservationId ?? 'create'}
+        mode={isEdit ? 'edit' : 'create'}
         services={services.data?.filter((service) => service.active)}
         dates={dates}
-        selectedServiceId={selectedServiceId}
+        selectedServiceIds={selectedServiceIds}
         selectedDate={selectedDate}
         preferredTime={search.time ?? null}
-        slots={slots.data}
-        slotsLoading={slots.isLoading}
-        isSubmitting={actions.createManual.isPending}
-        submitError={
-          actions.createManual.isError
-            ? actions.createManual.error instanceof Error
-              ? actions.createManual.error.message
-              : 'Speichern fehlgeschlagen'
+        preferredStartAt={editing.data?.startAt ?? null}
+        initialCustomer={
+          editing.data
+            ? {
+                firstName: editing.data.firstName,
+                lastName: editing.data.lastName,
+                phone: editing.data.phone,
+                email: editing.data.email ?? '',
+                internalNote: editing.data.internalNote ?? '',
+              }
             : null
         }
+        slots={slots.data}
+        slotsLoading={slots.isLoading}
+        isSubmitting={submitPending}
+        submitError={submitError}
         onBackClick={() => {
           void navigate({ to: '/admin', search: { week: undefined } })
         }}
-        onServiceChange={(serviceId) => {
+        onToggleService={(serviceId) => {
+          const exists = selectedServiceIds.includes(serviceId)
+          const nextIds = exists
+            ? selectedServiceIds.filter((id) => id !== serviceId)
+            : [...selectedServiceIds, serviceId]
           void navigate({
             to: '/admin/manual',
-            search: { serviceId, date: selectedDate ?? undefined, time: search.time },
+            search: {
+              ...manualSearchBase,
+              serviceIds: serializeServiceIds(nextIds),
+              serviceId: undefined,
+              date: selectedDate ?? undefined,
+              time: undefined,
+            },
+            replace: true,
+            resetScroll: false,
           })
         }}
         onDateChange={(dateYmd) => {
           void navigate({
             to: '/admin/manual',
-            search: { serviceId: selectedServiceId ?? undefined, date: dateYmd },
+            search: {
+              ...manualSearchBase,
+              serviceIds: serializeServiceIds(selectedServiceIds),
+              serviceId: undefined,
+              date: dateYmd,
+              time: undefined,
+            },
+            replace: true,
+            resetScroll: false,
           })
         }}
         onSubmit={(input) => {
+          if (isEdit && editingReservationId) {
+            actions.updateManual.mutate(
+              { reservationId: editingReservationId, ...input },
+              {
+                onSuccess: (reservation) => {
+                  void navigate({
+                    to: '/admin/reservations/$reservationId',
+                    params: { reservationId: reservation.reservationId },
+                  })
+                },
+              },
+            )
+            return
+          }
           actions.createManual.mutate(
             {
               ...input,
@@ -361,7 +496,7 @@ export const adminManualRoute = createRoute({
           )
         }}
       />
-    )
+    ) : null
   },
 })
 
