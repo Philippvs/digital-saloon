@@ -136,7 +136,7 @@ test.describe('admin week planner @smoke', () => {
       .toBe('CONFIRMED')
 
     await page.getByRole('button', { name: 'Stornieren' }).click()
-    await page.getByRole('dialog').getByRole('button', { name: 'Stornieren' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Ja, stornieren' }).click()
     await expect
       .poll(async () => getReservationStatus(confirmed.id), { timeout: 15_000 })
       .toBe('CANCELLED')

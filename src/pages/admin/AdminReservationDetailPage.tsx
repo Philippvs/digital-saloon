@@ -161,7 +161,7 @@ export const AdminReservationDetailPage: React.FunctionComponent<
               setConfirmAction(null)
             }}
           >
-            {t('admin.cancelEdit')}
+            {t('admin.dialogDismiss')}
           </Button>
           <Button
             color="error"
@@ -173,7 +173,9 @@ export const AdminReservationDetailPage: React.FunctionComponent<
               setConfirmAction(null)
             }}
           >
-            {confirmAction === 'decline' ? t('admin.decline') : t('admin.cancel')}
+            {confirmAction === 'decline'
+              ? t('admin.declineConfirmAction')
+              : t('admin.cancelConfirmAction')}
           </Button>
         </DialogActions>
       </Dialog>

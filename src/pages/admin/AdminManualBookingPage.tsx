@@ -84,14 +84,18 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
   const [internalNote, setInternalNote] = useState(initialCustomer?.internalNote ?? '')
   const [pickedStartAt, setStartAt] = useState<string | null>(null)
   const preferredMatchStartAt =
-    (preferredStartAt && slots?.some((slot) => slot.startAt === preferredStartAt)
-      ? preferredStartAt
-      : null) ??
     slots?.find((slot) => formatViennaTime(slot.startAt, 'de-AT') === preferredTime)?.startAt ??
     null
   const nextFreeStartAt = slots?.[0]?.startAt ?? null
-  const startAt = pickedStartAt ?? preferredMatchStartAt ?? nextFreeStartAt
+  // Edit: keep the booking's own start even if it is missing from the free-slot list
+  // (e.g. after a duration change) so saving customer fields cannot silently move time.
+  const startAt =
+    pickedStartAt ??
+    preferredMatchStartAt ??
+    (mode === 'edit' ? preferredStartAt : null) ??
+    (mode === 'create' ? nextFreeStartAt : null)
   const showsNextFreeSuggestion =
+    mode === 'create' &&
     startAt !== null &&
     nextFreeStartAt !== null &&
     startAt === nextFreeStartAt &&
@@ -221,6 +225,16 @@ export const AdminManualBookingPage: React.FunctionComponent<AdminManualBookingP
               {showsNextFreeSuggestion ? (
                 <Alert severity="info" sx={{ py: 0.5 }}>
                   {t('admin.nextFreeSlotHint')}
+                </Alert>
+              ) : null}
+              {mode === 'edit' &&
+              startAt &&
+              slots &&
+              !slots.some((slot) => slot.startAt === startAt) ? (
+                <Alert severity="info" sx={{ py: 0.5 }}>
+                  {t('admin.currentSlotKept', {
+                    time: formatViennaTime(startAt, intlLocale),
+                  })}
                 </Alert>
               ) : null}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>

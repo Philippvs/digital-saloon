@@ -69,7 +69,11 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
   onListViewClick,
 }) => {
   const { t, intlLocale } = useLocale()
-  const [menu, setMenu] = useState<{ reservationId: string; anchorEl: HTMLElement } | null>(null)
+  const [menu, setMenu] = useState<{
+    reservationId: string
+    anchorEl: HTMLElement
+    canEdit: boolean
+  } | null>(null)
   const revenue = new Intl.NumberFormat(intlLocale, {
     style: 'currency',
     currency: 'EUR',
@@ -140,7 +144,15 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
           <WeekPlanner
             plan={plan}
             onSelectReservation={(reservationId, anchorEl) => {
-              setMenu({ reservationId, anchorEl })
+              const entry = plan.days
+                .flatMap((day) => day.entries)
+                .find((item) => item.reservation.id === reservationId)
+              const status = entry?.reservation.status
+              setMenu({
+                reservationId,
+                anchorEl,
+                canEdit: status === 'PENDING' || status === 'CONFIRMED',
+              })
             }}
             onAddAt={onAddReservationAt}
           />
@@ -167,19 +179,21 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
             </ListItemIcon>
             <ListItemText>{t('admin.quickDetails')}</ListItemText>
           </MenuItem>
-          <MenuItem
-            onClick={() => {
-              if (!menu) return
-              const { reservationId } = menu
-              setMenu(null)
-              onEditReservation(reservationId)
-            }}
-          >
-            <ListItemIcon>
-              <EditCalendarIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>{t('admin.reschedule')}</ListItemText>
-          </MenuItem>
+          {menu?.canEdit ? (
+            <MenuItem
+              onClick={() => {
+                if (!menu) return
+                const { reservationId } = menu
+                setMenu(null)
+                onEditReservation(reservationId)
+              }}
+            >
+              <ListItemIcon>
+                <EditCalendarIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{t('admin.reschedule')}</ListItemText>
+            </MenuItem>
+          ) : null}
         </Menu>
         {planLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>

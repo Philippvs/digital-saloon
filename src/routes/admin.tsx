@@ -1,5 +1,6 @@
 import type * as React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Alert, CircularProgress } from '@mui/material'
 import { Outlet, createRoute, redirect, useNavigate } from '@tanstack/react-router'
 import * as v from 'valibot'
 
@@ -305,15 +306,22 @@ export const adminManualRoute = createRoute({
   validateSearch: (search: Record<string, unknown>) => v.parse(manualSearchSchema, search),
   component: function AdminManualRoute() {
     const navigate = useNavigate()
+    const { t } = useLocale()
     const search = adminManualRoute.useSearch()
     const editingReservationId = search.reservationId ?? null
     const editing = useAdminReservation(editingReservationId)
     const services = useAllServices(true)
     const actions = useAdminReservationActions()
+    const hydratedEditId = useRef<string | null>(null)
 
     useEffect(() => {
-      if (!editingReservationId || !editing.data) return
-      if (search.serviceIds || search.serviceId || search.date) return
+      if (!editingReservationId) {
+        hydratedEditId.current = null
+        return
+      }
+      if (!editing.data) return
+      if (hydratedEditId.current === editingReservationId) return
+      hydratedEditId.current = editingReservationId
       const reservation = editing.data
       const serviceIds =
         reservation.serviceIds && reservation.serviceIds.length > 0
@@ -335,14 +343,7 @@ export const adminManualRoute = createRoute({
         replace: true,
         resetScroll: false,
       })
-    }, [
-      editingReservationId,
-      editing.data,
-      search.serviceIds,
-      search.serviceId,
-      search.date,
-      navigate,
-    ])
+    }, [editingReservationId, editing.data, navigate])
 
     const selectedServiceIds = parseSelectedServiceIds(search)
     const selectedDate = search.date ?? null
@@ -379,10 +380,16 @@ export const adminManualRoute = createRoute({
     }
 
     if (isEdit && editing.isLoading) {
-      return null
+      return (
+        <CircularProgress aria-label={t('admin.detailLoading')} sx={{ display: 'block', m: 4 }} />
+      )
     }
-    if (isEdit && editing.isError) {
-      return null
+    if (isEdit && (editing.isError || !editing.data)) {
+      return (
+        <Alert severity="error" sx={{ m: 3 }}>
+          {t('admin.notFound')}
+        </Alert>
+      )
     }
 
     return editReady ? (
@@ -425,7 +432,7 @@ export const adminManualRoute = createRoute({
               serviceIds: serializeServiceIds(nextIds),
               serviceId: undefined,
               date: selectedDate ?? undefined,
-              time: search.time,
+              time: undefined,
             },
             replace: true,
             resetScroll: false,

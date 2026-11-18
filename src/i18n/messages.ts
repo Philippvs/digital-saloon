@@ -197,6 +197,7 @@ export type Messages = {
   'admin.timeFreeLabel': string
   'admin.nextFreeSlotHint': string
   'admin.nextFreeSlotTag': string
+  'admin.currentSlotKept': string
   'admin.customer': string
   'admin.status': string
   'admin.open': string
@@ -229,8 +230,11 @@ export type Messages = {
   'admin.reschedule': string
   'admin.cancelConfirmTitle': string
   'admin.cancelConfirmBody': string
+  'admin.cancelConfirmAction': string
   'admin.declineConfirmTitle': string
   'admin.declineConfirmBody': string
+  'admin.declineConfirmAction': string
+  'admin.dialogDismiss': string
   'admin.editReservationTitle': string
   'admin.editReservationSubtitle': string
   'admin.saveReservation': string
@@ -608,6 +612,8 @@ export const de: Messages = {
   'admin.timeFreeLabel': 'Freie Zeiten',
   'admin.nextFreeSlotHint': 'Nächster freier Termin ist vorausgewählt — andere Zeit einfach antippen.',
   'admin.nextFreeSlotTag': 'Nächster',
+  'admin.currentSlotKept':
+    'Bisherige Uhrzeit {time} bleibt erhalten, bis Sie eine neue freie Zeit wählen.',
   'admin.customer': 'Kunde',
   'admin.status': 'Status',
   'admin.open': 'Öffnen',
@@ -642,9 +648,12 @@ export const de: Messages = {
   'admin.cancelConfirmTitle': 'Termin stornieren?',
   'admin.cancelConfirmBody':
     'Der Termin wird storniert und der Slot wieder freigegeben. Das lässt sich nicht rückgängig machen.',
+  'admin.cancelConfirmAction': 'Ja, stornieren',
   'admin.declineConfirmTitle': 'Anfrage ablehnen?',
   'admin.declineConfirmBody':
     'Die Anfrage wird abgelehnt und der Slot freigegeben. Der Kunde kann online nicht mehr darüber verfügen.',
+  'admin.declineConfirmAction': 'Ja, ablehnen',
+  'admin.dialogDismiss': 'Abbrechen',
   'admin.editReservationTitle': 'Termin bearbeiten',
   'admin.editReservationSubtitle':
     'Leistungen, Zeit und Kundendaten ändern. Der Termin behält seinen Status.',
@@ -1026,6 +1035,8 @@ export const it: Messages = {
   'admin.nextFreeSlotHint':
     'Il prossimo appuntamento libero è preselezionato — tocca un altro orario per cambiarlo.',
   'admin.nextFreeSlotTag': 'Prossimo',
+  'admin.currentSlotKept':
+    'L’orario attuale {time} resta finché non scegli un nuovo slot libero.',
   'admin.customer': 'Cliente',
   'admin.status': 'Stato',
   'admin.open': 'Apri',
@@ -1060,9 +1071,12 @@ export const it: Messages = {
   'admin.cancelConfirmTitle': 'Annullare l’appuntamento?',
   'admin.cancelConfirmBody':
     'L’appuntamento verrà annullato e lo slot liberato. Non si può annullare questa azione.',
+  'admin.cancelConfirmAction': 'Sì, annulla',
   'admin.declineConfirmTitle': 'Rifiutare la richiesta?',
   'admin.declineConfirmBody':
     'La richiesta verrà rifiutata e lo slot liberato. Il cliente non potrà più gestirla online.',
+  'admin.declineConfirmAction': 'Sì, rifiuta',
+  'admin.dialogDismiss': 'Chiudi',
   'admin.editReservationTitle': 'Modifica appuntamento',
   'admin.editReservationSubtitle':
     'Modifica servizi, orario e dati del cliente. Lo stato dell’appuntamento resta invariato.',
