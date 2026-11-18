@@ -1,5 +1,19 @@
 import type * as React from 'react'
-import { Alert, Button, Chip, CircularProgress, Paper, Stack, Typography } from '@mui/material'
+import { useState } from 'react'
+import {
+  Alert,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material'
 
 import { formatViennaDateTime } from '../../data/dateFormat'
 import { reservationStatusColor } from '../../data/reservationStatus'
@@ -17,6 +31,7 @@ export type AdminReservationDetailPageProps = {
   onDecline: () => void
   onCancel: () => void
   onComplete: () => void
+  onEditClick: () => void
 }
 
 export const AdminReservationDetailPage: React.FunctionComponent<
@@ -31,8 +46,11 @@ export const AdminReservationDetailPage: React.FunctionComponent<
   onDecline,
   onCancel,
   onComplete,
+  onEditClick,
 }) => {
   const { t, intlLocale } = useLocale()
+  const [confirmAction, setConfirmAction] = useState<'cancel' | 'decline' | null>(null)
+
   return (
     <Stack spacing={3}>
       <Paper sx={{ p: 3 }}>
@@ -83,12 +101,22 @@ export const AdminReservationDetailPage: React.FunctionComponent<
           ) : null}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 3 }}>
+            {reservation.status === 'PENDING' || reservation.status === 'CONFIRMED' ? (
+              <Button variant="outlined" disabled={busy} onClick={onEditClick}>
+                {t('admin.reschedule')}
+              </Button>
+            ) : null}
             {reservation.status === 'PENDING' ? (
               <>
                 <Button variant="contained" disabled={busy} onClick={onConfirm}>
                   {t('admin.confirm')}
                 </Button>
-                <Button color="error" variant="outlined" disabled={busy} onClick={onDecline}>
+                <Button
+                  color="error"
+                  variant="outlined"
+                  disabled={busy}
+                  onClick={() => setConfirmAction('decline')}
+                >
                   {t('admin.decline')}
                 </Button>
               </>
@@ -99,13 +127,56 @@ export const AdminReservationDetailPage: React.FunctionComponent<
               </Button>
             ) : null}
             {reservation.status === 'PENDING' || reservation.status === 'CONFIRMED' ? (
-              <Button color="error" disabled={busy} onClick={onCancel}>
+              <Button color="error" disabled={busy} onClick={() => setConfirmAction('cancel')}>
                 {t('admin.cancel')}
               </Button>
             ) : null}
           </Stack>
         </Paper>
       ) : null}
+
+      <Dialog
+        open={confirmAction !== null}
+        onClose={() => {
+          if (!busy) setConfirmAction(null)
+        }}
+        aria-labelledby="admin-confirm-dialog-title"
+      >
+        <DialogTitle id="admin-confirm-dialog-title">
+          {confirmAction === 'decline'
+            ? t('admin.declineConfirmTitle')
+            : t('admin.cancelConfirmTitle')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {confirmAction === 'decline'
+              ? t('admin.declineConfirmBody')
+              : t('admin.cancelConfirmBody')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            disabled={busy}
+            onClick={() => {
+              setConfirmAction(null)
+            }}
+          >
+            {t('admin.cancelEdit')}
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            disabled={busy}
+            onClick={() => {
+              if (confirmAction === 'decline') onDecline()
+              if (confirmAction === 'cancel') onCancel()
+              setConfirmAction(null)
+            }}
+          >
+            {confirmAction === 'decline' ? t('admin.decline') : t('admin.cancel')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }

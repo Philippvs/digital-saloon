@@ -74,7 +74,7 @@ test.describe('admin week planner @smoke', () => {
     ).toBeVisible()
   })
 
-  test('shows open requests in the grid and opens an appointment', async ({ page }) => {
+  test('shows open requests in the grid and opens details via quick menu', async ({ page }) => {
     const pending = await findFutureDemoReservation('PENDING')
     await page.goto(`/admin?week=${pending.startAt.slice(0, 10)}`)
 
@@ -84,9 +84,63 @@ test.describe('admin week planner @smoke', () => {
     await expect(entry.first()).toBeVisible()
     await entry.first().click()
 
+    const menu = page.getByRole('menu')
+    await expect(menu.getByRole('menuitem', { name: 'Details anzeigen' })).toBeVisible()
+    await expect(menu.getByRole('menuitem', { name: 'Umbuchen' })).toBeVisible()
+    await expect(menu.getByRole('menuitem', { name: /Stornieren/ })).toHaveCount(0)
+
+    await menu.getByRole('menuitem', { name: 'Details anzeigen' }).click()
     await expect(page).toHaveURL(/\/admin\/reservations\//)
     await expect(page.getByRole('heading', { name: 'Termin-Details' })).toBeVisible()
     await expect(page.getByText('Ausstehend')).toBeVisible()
+  })
+
+  test('opens edit form from calendar quick menu and saves customer changes', async ({ page }) => {
+    const confirmed = await findFutureDemoReservation('CONFIRMED')
+    const newLastName = `Umbuch${Date.now().toString().slice(-5)}`
+    await page.goto(`/admin?week=${confirmed.startAt.slice(0, 10)}`)
+
+    const entry = planner(page).getByRole('button', {
+      name: new RegExp(`${confirmed.firstName} ${confirmed.lastName}, .*, Bestätigt$`),
+    })
+    await expect(entry.first()).toBeVisible()
+    await entry.first().click()
+    await page.getByRole('menuitem', { name: 'Umbuchen' }).click()
+
+    await expect(page).toHaveURL(new RegExp(`/admin/manual\\?.*reservationId=${confirmed.id}`))
+    await expect(page.getByRole('heading', { name: 'Termin bearbeiten' })).toBeVisible()
+    await expect(page.getByLabel('Vorname')).toHaveValue(confirmed.firstName)
+    await expect(page.getByLabel('Nachname')).toHaveValue(confirmed.lastName)
+
+    await page.getByLabel('Nachname').fill(newLastName)
+    await page.getByRole('button', { name: 'Änderungen speichern' }).click()
+
+    await expect(page).toHaveURL(new RegExp(`/admin/reservations/${confirmed.id}`))
+    await expect(page.getByText(`${confirmed.firstName} ${newLastName}`)).toBeVisible()
+    await expect(page.getByText('Bestätigt')).toBeVisible()
+  })
+
+  test('cancel from details requires MUI dialog confirmation', async ({ page }) => {
+    const confirmed = await findFutureDemoReservation('CONFIRMED')
+    await page.goto(`/admin/reservations/${confirmed.id}`)
+    await expect(page.getByRole('heading', { name: 'Termin-Details' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Stornieren' }).click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog.getByRole('heading', { name: 'Termin stornieren?' })).toBeVisible()
+
+    await dialog.getByRole('button', { name: 'Abbrechen' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect
+      .poll(async () => getReservationStatus(confirmed.id), { timeout: 10_000 })
+      .toBe('CONFIRMED')
+
+    await page.getByRole('button', { name: 'Stornieren' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Stornieren' }).click()
+    await expect
+      .poll(async () => getReservationStatus(confirmed.id), { timeout: 15_000 })
+      .toBe('CANCELLED')
+    await expect(page.getByText('Storniert')).toBeVisible()
   })
 
   test('enters an appointment by clicking a free time', async ({ page }) => {
@@ -102,9 +156,8 @@ test.describe('admin week planner @smoke', () => {
     await slot.click()
 
     await expect(page).toHaveURL(new RegExp(`/admin/manual\\?.*time=${time?.replace(':', '%3A')}`))
-    await page.getByLabel('Leistung').click()
-    await page.getByRole('option', { name: /^Herrenhaarschnitt/ }).click()
-    await expect(page.getByRole('button', { name: time, exact: true })).toHaveClass(
+    await page.getByRole('button', { name: /^Herrenhaarschnitt/ }).click()
+    await expect(page.getByRole('button', { name: new RegExp(`^${time}`) })).toHaveClass(
       /MuiButton-contained/,
     )
 

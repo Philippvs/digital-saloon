@@ -5,7 +5,7 @@ import { assertAdmin } from '../authz'
 import { functionsRegion, getSalonId } from '../config'
 import { isObject } from '../schemas'
 import { toPublicReservationView } from './findByToken'
-import { lockIdForStart } from './reservationWrite'
+import { lockIdForStart, updateReservationTransactional } from './reservationWrite'
 
 const ACTIVE = new Set(['PENDING', 'CONFIRMED'])
 
@@ -132,6 +132,85 @@ export const completeReservation = onCall({ region: functionsRegion }, async (re
   }
   const updatedAt = new Date().toISOString()
   await ref.update({ status: 'COMPLETED', updatedAt })
+  const after = await ref.get()
+  return { reservation: viewOf(after) }
+})
+
+function requireNonEmptyString(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new HttpsError('invalid-argument', `${field} is required.`)
+  }
+  return value.trim()
+}
+
+function resolveAdminServiceIds(data: Record<string, unknown>): {
+  serviceId: string
+  serviceIds: string[]
+} {
+  if (data.serviceIds !== undefined) {
+    if (!Array.isArray(data.serviceIds)) {
+      throw new HttpsError('invalid-argument', 'serviceIds must be an array of service ids.')
+    }
+    const ids = Array.from(
+      new Set(
+        data.serviceIds
+          .filter((item): item is string => typeof item === 'string')
+          .map((item) => item.trim())
+          .filter(Boolean),
+      ),
+    )
+    if (ids.length === 0) {
+      throw new HttpsError('invalid-argument', 'serviceIds must not be empty.')
+    }
+    if (ids.length > 15) {
+      throw new HttpsError('invalid-argument', 'At most 15 services can be booked at once.')
+    }
+    return { serviceId: ids[0], serviceIds: ids }
+  }
+  const serviceId = requireNonEmptyString(data.serviceId, 'serviceId')
+  return { serviceId, serviceIds: [serviceId] }
+}
+
+export const adminUpdateReservation = onCall({ region: functionsRegion }, async (request) => {
+  await assertAdmin(request)
+  if (!isObject(request.data)) throw new HttpsError('invalid-argument', 'Invalid payload.')
+
+  const reservationId = requireReservationId(request.data)
+  const startAtRaw = requireNonEmptyString(request.data.startAt, 'startAt')
+  const startAt = new Date(startAtRaw)
+  if (Number.isNaN(startAt.getTime())) {
+    throw new HttpsError('invalid-argument', 'startAt must be an ISO timestamp.')
+  }
+
+  const { serviceId, serviceIds } = resolveAdminServiceIds(request.data)
+  const result = await updateReservationTransactional(
+    {
+      reservationId,
+      firstName: requireNonEmptyString(request.data.firstName, 'firstName'),
+      lastName: requireNonEmptyString(request.data.lastName, 'lastName'),
+      phone: requireNonEmptyString(request.data.phone, 'phone'),
+      email:
+        typeof request.data.email === 'string' && request.data.email.trim().length > 0
+          ? request.data.email.trim()
+          : null,
+      serviceId,
+      serviceIds,
+      startAt,
+      internalNote:
+        typeof request.data.internalNote === 'string' && request.data.internalNote.trim().length > 0
+          ? request.data.internalNote.trim()
+          : null,
+      enforceAdvanceRestrictions: false,
+    },
+    undefined,
+    getSalonId(),
+  )
+
+  if (!result.ok) {
+    throw new HttpsError('failed-precondition', result.message, { reason: result.code })
+  }
+
+  const { ref } = await loadReservation(reservationId)
   const after = await ref.get()
   return { reservation: viewOf(after) }
 })

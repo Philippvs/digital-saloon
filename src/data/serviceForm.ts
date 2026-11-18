@@ -120,43 +120,6 @@ export function localizedServiceDescription(service: ServiceDraft, locale: Local
   return text.trim()
 }
 
-export function localizedServiceCategory(
-  service: Pick<Service, 'categoryDe' | 'categoryIt'>,
-  locale: Locale,
-  fallback: string,
-): string {
-  const text = locale === 'it' ? (service.categoryIt ?? service.categoryDe) : service.categoryDe
-  const trimmed = text?.trim()
-  return trimmed && trimmed.length > 0 ? trimmed : fallback
-}
-
-export type ServiceCategoryGroup<T extends Pick<Service, 'categoryDe' | 'categoryIt'>> = {
-  category: string
-  services: T[]
-}
-
-/** Groups services by localized category while preserving category encounter order. */
-export function groupServicesByCategory<T extends Pick<Service, 'categoryDe' | 'categoryIt'>>(
-  services: readonly T[],
-  locale: Locale,
-  fallbackCategory: string,
-): ServiceCategoryGroup<T>[] {
-  const groups = new Map<string, T[]>()
-  for (const service of services) {
-    const category = localizedServiceCategory(service, locale, fallbackCategory)
-    const list = groups.get(category)
-    if (list) {
-      list.push(service)
-    } else {
-      groups.set(category, [service])
-    }
-  }
-  return Array.from(groups.entries()).map(([category, items]) => ({
-    category,
-    services: items,
-  }))
-}
-
 export function formatEuroAmount(cents: number): string {
   return cents % 100 === 0 ? `${cents / 100}€` : `${(cents / 100).toFixed(2).replace('.', ',')}€`
 }

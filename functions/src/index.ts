@@ -4,6 +4,7 @@ import { onCall } from 'firebase-functions/v2/https'
 import { assertSignedIn } from './authz'
 import {
   adminCancelReservation,
+  adminUpdateReservation,
   completeReservation,
   confirmReservation,
   declineReservation,
@@ -33,6 +34,7 @@ export {
   confirmReservation,
   declineReservation,
   adminCancelReservation,
+  adminUpdateReservation,
   completeReservation,
   processPendingReservations,
   processPendingReservationsSchedule,

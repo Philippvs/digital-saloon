@@ -39,6 +39,8 @@ export async function fetchAvailableSlots(input: {
   enforceAdvanceRestrictions?: boolean
   /** When moving a booking: slots use that booking's own duration. */
   managementToken?: string
+  /** Admin edit: keep this reservation's slot free while picking a new time. */
+  excludeReservationId?: string
 }): Promise<AvailableSlotDto[]> {
   const callable = httpsCallable<
     {
@@ -48,6 +50,7 @@ export async function fetchAvailableSlots(input: {
       toDateYmd: string
       enforceAdvanceRestrictions?: boolean
       managementToken?: string
+      excludeReservationId?: string
     },
     { slots: AvailableSlotDto[] }
   >(firebaseFunctions, 'getAvailableSlots')
@@ -58,6 +61,7 @@ export async function fetchAvailableSlots(input: {
     toDateYmd: input.toDateYmd,
     ...(input.enforceAdvanceRestrictions === false ? { enforceAdvanceRestrictions: false } : {}),
     ...(input.managementToken ? { managementToken: input.managementToken } : {}),
+    ...(input.excludeReservationId ? { excludeReservationId: input.excludeReservationId } : {}),
   })
   return result.data.slots
 }
