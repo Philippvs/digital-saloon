@@ -44,10 +44,7 @@ export async function loadSalonContext(
 ): Promise<SalonContext> {
   const salonRef = db.collection('salons').doc(salonId)
   const salonSnap = await salonRef.get()
-  if (!salonSnap.exists) {
-    throw new Error(`Salon ${salonId} not found`)
-  }
-  const salonData = salonSnap.data() ?? {}
+  const salonData = salonSnap.exists ? (salonSnap.data() ?? {}) : {}
   const timeZone = String(salonData.timezone ?? 'Europe/Vienna')
   const salonName = String(salonData.name ?? 'SalonFlow')
   const salonAddress = String(salonData.address ?? '')

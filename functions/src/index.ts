@@ -1,6 +1,8 @@
 import { initializeApp } from 'firebase-admin/app'
 import { onCall } from 'firebase-functions/v2/https'
 
+import { getDemoModeStatus, operatorLogin, setDemoMode } from './admin/operator'
+import { createEmployeeAccount, createFirstSalonAdmin, getStaffOverview } from './admin/users'
 import { assertSignedIn } from './authz'
 import {
   adminCancelReservation,
@@ -36,6 +38,12 @@ export {
   completeReservation,
   processPendingReservations,
   processPendingReservationsSchedule,
+  operatorLogin,
+  getDemoModeStatus,
+  setDemoMode,
+  getStaffOverview,
+  createFirstSalonAdmin,
+  createEmployeeAccount,
 }
 
 /**

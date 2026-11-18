@@ -9,6 +9,7 @@ import { listRange, startOfWeekYmd } from '../data/calendarRange'
 import { addCalendarDays, todayYmdInTimeZone } from '../data/calendarMath'
 import { upcomingViennaDates } from '../data/dateFormat'
 import { optionalSearchParam } from '../data/schemas'
+import { uploadHomepageImage } from '../data/homepageConfig'
 import { reservationQueryRange, upcomingAbsences } from '../data/openingHoursForm'
 import { defaultWeekStartYmd, isoWeekNumber, planWeek, weekQueryRange } from '../data/weekPlanner'
 import { useAdminOps } from '../hooks/useAdminOps'
@@ -17,6 +18,9 @@ import { useAdminReservationActions, useAdminReservations } from '../hooks/useAd
 import { useAllServices } from '../hooks/useAllServices'
 import { useAvailableSlots } from '../hooks/useAvailableSlots'
 import { useClosures } from '../hooks/useClosures'
+import { useDemoModeStatus, useSetDemoMode } from '../hooks/useDemoMode'
+import { useHomepageConfig } from '../hooks/useHomepageConfig'
+import { useSaveHomepageConfig } from '../hooks/useSaveHomepageConfig'
 import { useBookingSettings } from '../hooks/useBookingSettings'
 import { useOpeningHours } from '../hooks/useOpeningHours'
 import { useOpeningHoursAdmin } from '../hooks/useOpeningHoursAdmin'
@@ -24,9 +28,15 @@ import { useSalon } from '../hooks/useSalon'
 import { useSaveBookingSettings } from '../hooks/useSaveBookingSettings'
 import { useSaveSalonDetails } from '../hooks/useSaveSalonDetails'
 import { useSaveService } from '../hooks/useSaveService'
+import {
+  useCreateEmployeeAccount,
+  useCreateFirstSalonAdmin,
+  useStaffOverview,
+} from '../hooks/useStaffOverview'
 import { useUserProfile } from '../hooks/useUserProfile'
 import { useLocale } from '../i18n'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
+import { AdminHomepagePage } from '../pages/admin/AdminHomepagePage'
 import { AdminManualBookingPage } from '../pages/admin/AdminManualBookingPage'
 import { AdminOpeningHoursPage } from '../pages/admin/AdminOpeningHoursPage'
 import { AdminPlaceholderPage } from '../pages/admin/AdminPlaceholderPage'
@@ -37,8 +47,8 @@ import { AdminSettingsPage } from '../pages/admin/AdminSettingsPage'
 import { rootRoute } from './root'
 
 const AdminLayoutRoute: React.FunctionComponent = () => {
-  const { user, isLoading: authLoading } = useAuth()
-  const profile = useUserProfile(user?.uid ?? null)
+  const { user, isOperator, isLoading: authLoading } = useAuth()
+  const profile = useUserProfile(!isOperator && user ? user.uid : null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -49,7 +59,7 @@ const AdminLayoutRoute: React.FunctionComponent = () => {
 
   const { t } = useLocale()
 
-  if (authLoading || (user !== null && profile.isLoading)) {
+  if (authLoading || (!isOperator && user !== null && profile.isLoading)) {
     return <AdminPlaceholderPage title={t('admin.title')} description={t('admin.loading')} />
   }
 
@@ -57,7 +67,7 @@ const AdminLayoutRoute: React.FunctionComponent = () => {
     return <AdminPlaceholderPage title={t('admin.title')} description={t('admin.signInRequired')} />
   }
 
-  if (profile.data?.role !== 'admin') {
+  if (!isOperator && profile.data?.role !== 'admin') {
     return <AdminPlaceholderPage title={t('admin.title')} description={t('admin.forbidden')} />
   }
 
@@ -183,6 +193,9 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       }}
       onSettingsClick={() => {
         void navigate({ to: '/admin/settings' })
+      }}
+      onHomepageClick={() => {
+        void navigate({ to: '/admin/homepage' })
       }}
       onOpeningHoursClick={() => {
         void navigate({ to: '/admin/opening-hours' })
@@ -474,10 +487,18 @@ export const adminSettingsRoute = createRoute({
   path: '/settings',
   component: function AdminSettingsRoute() {
     const navigate = useNavigate()
+    const { user, isOperator } = useAuth()
+    const profile = useUserProfile(!isOperator && user ? user.uid : null)
+    const isPrimaryAdmin = !isOperator && profile.data?.isPrimaryAdmin === true
     const settings = useBookingSettings(true)
     const salon = useSalon()
     const saveSettings = useSaveBookingSettings()
     const saveSalon = useSaveSalonDetails()
+    const demoStatus = useDemoModeStatus(isOperator)
+    const setDemoMode = useSetDemoMode()
+    const staffOverview = useStaffOverview(isOperator || isPrimaryAdmin)
+    const createFirstAdmin = useCreateFirstSalonAdmin()
+    const createEmployee = useCreateEmployeeAccount()
     const errorText = (error: unknown): string | null =>
       error instanceof Error ? error.message : error ? String(error) : null
 
@@ -504,9 +525,59 @@ export const adminSettingsRoute = createRoute({
         onSaveSalon={(details) => {
           saveSalon.mutate(details)
         }}
+        isOperator={isOperator}
+        isPrimaryAdmin={isPrimaryAdmin}
+        demoMode={{
+          enabled: demoStatus.data?.enabled ?? false,
+          loading: demoStatus.isLoading,
+          saving: setDemoMode.isPending,
+          error: errorText(setDemoMode.error),
+          onToggle: (enabled) => {
+            setDemoMode.mutate(enabled)
+          },
+        }}
+        staffOverview={staffOverview.data}
+        onCreateFirstAdmin={async (input) => {
+          await createFirstAdmin.mutateAsync(input)
+        }}
+        onCreateEmployee={async (input) => {
+          await createEmployee.mutateAsync(input)
+        }}
         onOpeningHoursClick={() => {
           void navigate({ to: '/admin/opening-hours' })
         }}
+        onBackClick={() => {
+          void navigate({ to: '/admin' })
+        }}
+      />
+    )
+  },
+})
+
+export const adminHomepageRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '/homepage',
+  component: function AdminHomepageRoute() {
+    const navigate = useNavigate()
+    const config = useHomepageConfig()
+    const saveConfig = useSaveHomepageConfig()
+    const errorText = (error: unknown): string | null =>
+      error instanceof Error ? error.message : error ? String(error) : null
+
+    return (
+      <AdminHomepagePage
+        config={config.data}
+        isLoading={config.isLoading}
+        isError={config.isError}
+        save={{
+          saving: saveConfig.isPending,
+          saved: saveConfig.isSuccess,
+          error: errorText(saveConfig.error),
+        }}
+        onSave={(next) => {
+          saveConfig.mutate(next)
+        }}
+        onUploadImage={uploadHomepageImage}
         onBackClick={() => {
           void navigate({ to: '/admin' })
         }}

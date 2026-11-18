@@ -43,6 +43,7 @@ export type AdminHomePageProps = {
   onReservationsClick: () => void
   onServicesClick: () => void
   onSettingsClick: () => void
+  onHomepageClick: () => void
   onOpeningHoursClick: () => void
   onProcessPendingClick: () => void
 }
@@ -70,6 +71,7 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
   onReservationsClick,
   onServicesClick,
   onSettingsClick,
+  onHomepageClick,
   onOpeningHoursClick,
   onProcessPendingClick,
 }) => {
@@ -237,6 +239,7 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
             <Button onClick={onServicesClick}>{t('admin.services')}</Button>
             <Button onClick={onOpeningHoursClick}>{t('hours.title')}</Button>
             <Button onClick={onSettingsClick}>{t('admin.settings')}</Button>
+            <Button onClick={onHomepageClick}>{t('admin.homepage')}</Button>
           </Stack>
         </Paper>
 

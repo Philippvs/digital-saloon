@@ -22,7 +22,9 @@ const validInput: ServiceFormInput = {
   descriptionDe: ' Waschen, Schneiden, Finish ',
   descriptionIt: ' Lavaggio, taglio, finish ',
   duration: '30',
+  durationMax: '',
   price: '26',
+  priceMax: '',
   active: true,
 }
 
@@ -149,7 +151,9 @@ describe('validateServiceForm', () => {
         descriptionDe: 'x'.repeat(1001),
         descriptionIt: '',
         duration: '4',
+        durationMax: '',
         price: 'gratis',
+        priceMax: '',
         active: true,
       }),
     ).toEqual({
@@ -164,6 +168,59 @@ describe('validateServiceForm', () => {
     })
   })
 
+  it('supports optional from/to duration and price ranges', () => {
+    const both = validateServiceForm({
+      ...validInput,
+      duration: '30',
+      durationMax: '45',
+      price: '26',
+      priceMax: '35,50',
+    })
+    expect(both).toEqual({
+      ok: true,
+      value: {
+        nameDe: 'Herrenschnitt',
+        nameIt: 'Taglio uomo',
+        descriptionDe: 'Waschen, Schneiden, Finish',
+        descriptionIt: 'Lavaggio, taglio, finish',
+        durationMinutes: 30,
+        durationMaxMinutes: 45,
+        priceCents: 2600,
+        priceMaxCents: 3550,
+        active: true,
+      },
+    })
+
+    const onlyTo = validateServiceForm({
+      ...validInput,
+      duration: '',
+      durationMax: '45',
+      price: '',
+      priceMax: '40',
+    })
+    expect(onlyTo.ok).toBe(true)
+    if (onlyTo.ok) {
+      expect(onlyTo.value.durationMinutes).toBe(45)
+      expect(onlyTo.value.durationMaxMinutes).toBeUndefined()
+      expect(onlyTo.value.priceCents).toBe(4000)
+      expect(onlyTo.value.priceMaxCents).toBeUndefined()
+    }
+
+    const inverted = validateServiceForm({
+      ...validInput,
+      duration: '45',
+      durationMax: '30',
+      price: '40',
+      priceMax: '30',
+    })
+    expect(inverted).toEqual({
+      ok: false,
+      issues: {
+        durationMax: { kind: 'range', min: 45, max: 480 },
+        priceMax: { kind: 'price' },
+      },
+    })
+  })
   it('starts new services as bookable 30-minute entries', () => {
     expect(validateServiceForm(emptyServiceFormInput)).toEqual({
       ok: false,
@@ -191,6 +248,12 @@ describe('serviceFormInputOf', () => {
     expect(input.price).toBe('85,05')
     expect(serviceFormInputOf({ ...service, priceCents: 8500 }).price).toBe('85')
     expect(validateServiceForm(input)).toEqual({ ok: true, value: service })
+
+    const ranged = { ...service, durationMaxMinutes: 150, priceMaxCents: 11000 }
+    const rangedInput = serviceFormInputOf(ranged)
+    expect(rangedInput.durationMax).toBe('150')
+    expect(rangedInput.priceMax).toBe('110')
+    expect(validateServiceForm(rangedInput)).toEqual({ ok: true, value: ranged })
   })
 })
 
