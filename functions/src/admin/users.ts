@@ -54,14 +54,18 @@ export const createFirstSalonAdmin = onCall({ region: functionsRegion }, async (
   const { email, password, displayName } = validateNewAccountInput(request.data)
   const db = getFirestore()
 
-  const existingPrimary = await db
-    .collection('users')
-    .where('role', '==', 'admin')
-    .where('isPrimaryAdmin', '==', true)
-    .limit(1)
-    .get()
+  const lockRef = db.collection('system').doc('primaryAdmin')
+  const [lockSnap, existingPrimary] = await Promise.all([
+    lockRef.get(),
+    db
+      .collection('users')
+      .where('role', '==', 'admin')
+      .where('isPrimaryAdmin', '==', true)
+      .limit(1)
+      .get(),
+  ])
 
-  if (!existingPrimary.empty) {
+  if (lockSnap.exists || !existingPrimary.empty) {
     throw new HttpsError('failed-precondition', 'Primary salon admin already exists.')
   }
 
@@ -79,13 +83,27 @@ export const createFirstSalonAdmin = onCall({ region: functionsRegion }, async (
   }
 
   const createdAt = new Date().toISOString()
-  await db.collection('users').doc(uid).set({
-    email,
-    displayName,
-    role: 'admin',
-    isPrimaryAdmin: true,
-    createdAt,
-  })
+  try {
+    await db.runTransaction(async (tx) => {
+      const currentLock = await tx.get(lockRef)
+      if (currentLock.exists) {
+        throw new HttpsError('failed-precondition', 'Primary salon admin already exists.')
+      }
+      tx.set(lockRef, { uid, createdAt })
+      tx.set(db.collection('users').doc(uid), {
+        email,
+        displayName,
+        role: 'admin',
+        isPrimaryAdmin: true,
+        createdAt,
+      })
+    })
+  } catch (error: unknown) {
+    await getAuth()
+      .deleteUser(uid)
+      .catch(() => undefined)
+    throw error
+  }
 
   return { uid, email, displayName, isPrimaryAdmin: true, createdAt }
 })

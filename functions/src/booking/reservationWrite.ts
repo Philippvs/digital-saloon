@@ -99,7 +99,9 @@ async function loadActiveServicesForBooking(
     if (!data.active) {
       return { ok: false, code: 'SERVICE_INACTIVE', message: 'Service is not active.' }
     }
-    durationMinutes += Number(data.durationMinutes)
+    const minDuration = Number(data.durationMinutes)
+    const maxDuration = Number(data.durationMaxMinutes ?? minDuration)
+    durationMinutes += Math.max(minDuration, maxDuration)
     priceCents += Number(data.priceCents)
     labels.push(bilingualLabel(data))
   }

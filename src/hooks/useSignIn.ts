@@ -1,3 +1,4 @@
+import { FirebaseError } from 'firebase/app'
 import { useMutation, type UseMutationResult } from '@tanstack/react-query'
 import {
   signInWithCustomToken,
@@ -13,18 +14,26 @@ export type SignInInput = {
   password: string
 }
 
+const OPERATOR_FALLBACK_CODES = new Set(['auth/user-not-found', 'auth/invalid-credential'])
+
 export function useSignIn(): UseMutationResult<UserCredential, Error, SignInInput> {
   return useMutation({
     mutationFn: async ({ email, password }) => {
       try {
         return await signInWithEmailAndPassword(firebaseAuth, email, password)
       } catch (originalError: unknown) {
-        try {
-          const token = await callOperatorLogin(email, password)
-          return await signInWithCustomToken(firebaseAuth, token)
-        } catch {
-          throw originalError
+        if (
+          originalError instanceof FirebaseError &&
+          OPERATOR_FALLBACK_CODES.has(originalError.code)
+        ) {
+          try {
+            const token = await callOperatorLogin(email, password)
+            return await signInWithCustomToken(firebaseAuth, token)
+          } catch {
+            throw originalError
+          }
         }
+        throw originalError
       }
     },
   })

@@ -99,9 +99,9 @@ service cloud.firestore {
     function isValidHomepageConfig(data) {
       return data.keys().hasOnly(['hiddenSections', 'galleryImages', 'customSections'])
         && data.keys().hasAll(['hiddenSections', 'customSections'])
-        && data.hiddenSections is list
-        && data.customSections is list
-        && (!('galleryImages' in data) || data.galleryImages is list);
+        && data.hiddenSections is list && data.hiddenSections.size() <= 10
+        && data.customSections is list && data.customSections.size() <= 20
+        && (!('galleryImages' in data) || (data.galleryImages is list && data.galleryImages.size() <= 60));
     }
 
     match /salons/{salonId} {

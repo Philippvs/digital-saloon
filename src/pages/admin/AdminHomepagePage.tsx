@@ -555,6 +555,7 @@ export const AdminHomepagePage: React.FunctionComponent<AdminHomepagePageProps> 
 
       {config !== undefined ? (
         <HomepageEditor
+          key={JSON.stringify(config ?? emptyHomepageConfig)}
           initial={config ?? emptyHomepageConfig}
           save={save}
           onSave={onSave}
