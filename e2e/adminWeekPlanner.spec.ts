@@ -68,7 +68,35 @@ test.describe('admin week planner @smoke', () => {
     ).toBeVisible()
 
     await page.getByRole('button', { name: 'Diese Woche' }).click()
-    await expect(page).not.toHaveURL(/week=/)
+    await expect(page).toHaveURL(new RegExp(`week=${weekStart}`))
+    await expect(
+      page.getByRole('heading', { level: 1, name: weekHeading(weekStart) }),
+    ).toBeVisible()
+  })
+
+  test('keeps the selected week in the URL across reload and back from details', async ({
+    page,
+  }) => {
+    const weekStart = addCalendarDays(plannerDefaultWeek(), 7)
+    await page.goto(`/admin?week=${weekStart}`)
+    await expect(
+      page.getByRole('heading', { level: 1, name: weekHeading(weekStart) }),
+    ).toBeVisible()
+
+    await page.reload()
+    await expect(page).toHaveURL(new RegExp(`week=${weekStart}`))
+    await expect(
+      page.getByRole('heading', { level: 1, name: weekHeading(weekStart) }),
+    ).toBeVisible()
+
+    const entry = plannerEntries(page).first()
+    await expect(entry).toBeVisible()
+    await entry.click()
+    await page.getByRole('menuitem', { name: 'Details anzeigen' }).click()
+    await expect(page).toHaveURL(new RegExp(`/admin/reservations/.*week=${weekStart}`))
+
+    await page.getByRole('button', { name: 'Zurück zum Kalender' }).click()
+    await expect(page).toHaveURL(new RegExp(`week=${weekStart}`))
     await expect(
       page.getByRole('heading', { level: 1, name: weekHeading(weekStart) }),
     ).toBeVisible()

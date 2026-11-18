@@ -88,6 +88,10 @@ const adminIndexSearchSchema = v.object({
   week: ymdSearchParam,
 })
 
+const adminReturnWeekSearchSchema = v.object({
+  week: ymdSearchParam,
+})
+
 const AdminIndexRoute: React.FunctionComponent = () => {
   const salon = useSalon()
   const navigate = useNavigate()
@@ -101,6 +105,17 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const today = todayYmdInTimeZone(timeZone, now)
   const currentWeekStart = defaultWeekStartYmd(today, openingHours.data)
   const weekStart = search.week ? startOfWeekYmd(search.week) : currentWeekStart
+
+  // Keep the visible week in the URL so reload and browser-back restore it.
+  useEffect(() => {
+    if (openingHours.isLoading) return
+    if (search.week === weekStart) return
+    void navigate({
+      to: '/admin',
+      search: { week: weekStart },
+      replace: true,
+    })
+  }, [navigate, openingHours.isLoading, search.week, weekStart])
 
   const weekRange = weekQueryRange(weekStart)
   const weekReservations = useAdminReservations(weekRange.startIso, weekRange.endIso, true)
@@ -135,9 +150,11 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const goToWeek = (weekStartYmd: string) => {
     void navigate({
       to: '/admin',
-      search: { week: weekStartYmd === currentWeekStart ? undefined : weekStartYmd },
+      search: { week: startOfWeekYmd(weekStartYmd) },
     })
   }
+
+  const weekSearch = { week: weekStart }
 
   return (
     <AdminHomePage
@@ -162,22 +179,29 @@ const AdminIndexRoute: React.FunctionComponent = () => {
         goToWeek(currentWeekStart)
       }}
       onOpenReservationDetails={(reservationId) => {
-        void navigate({ to: '/admin/reservations/$reservationId', params: { reservationId } })
+        void navigate({
+          to: '/admin/reservations/$reservationId',
+          params: { reservationId },
+          search: weekSearch,
+        })
       }}
       onEditReservation={(reservationId) => {
         void navigate({
           to: '/admin/manual',
-          search: { reservationId },
+          search: { reservationId, ...weekSearch },
         })
       }}
       onConfirmReservation={(reservationId) => {
         actions.confirm.mutate(reservationId)
       }}
       onAddReservationClick={() => {
-        void navigate({ to: '/admin/manual' })
+        void navigate({ to: '/admin/manual', search: weekSearch })
       }}
       onAddReservationAt={(dateYmd, startTime) => {
-        void navigate({ to: '/admin/manual', search: { date: dateYmd, time: startTime } })
+        void navigate({
+          to: '/admin/manual',
+          search: { date: dateYmd, time: startTime, ...weekSearch },
+        })
       }}
       onListViewClick={() => {
         void navigate({ to: '/admin/reservations' })
@@ -233,7 +257,7 @@ export const adminReservationsRoute = createRoute({
           })
         }}
         onCalendarClick={() => {
-          void navigate({ to: '/admin', search: { week: undefined } })
+          void navigate({ to: '/admin' })
         }}
       />
     )
@@ -243,9 +267,12 @@ export const adminReservationsRoute = createRoute({
 export const adminReservationDetailRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/reservations/$reservationId',
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminReturnWeekSearchSchema, search),
   component: function AdminReservationDetailRoute() {
     const navigate = useNavigate()
     const { reservationId } = adminReservationDetailRoute.useParams()
+    const search = adminReservationDetailRoute.useSearch()
+    const returnWeek = search.week ? startOfWeekYmd(search.week) : undefined
     const reservation = useAdminReservation(reservationId)
     const actions = useAdminReservationActions()
 
@@ -269,7 +296,10 @@ export const adminReservationDetailRoute = createRoute({
           actions.complete.isPending
         }
         onBackClick={() => {
-          void navigate({ to: '/admin', search: { week: undefined } })
+          void navigate({
+            to: '/admin',
+            search: returnWeek ? { week: returnWeek } : {},
+          })
         }}
         onConfirm={() => {
           actions.confirm.mutate(reservationId)
@@ -286,7 +316,10 @@ export const adminReservationDetailRoute = createRoute({
         onEditClick={() => {
           void navigate({
             to: '/admin/manual',
-            search: { reservationId },
+            search: {
+              reservationId,
+              week: returnWeek,
+            },
           })
         }}
       />
@@ -300,6 +333,7 @@ const manualSearchSchema = v.object({
   serviceIds: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
   date: ymdSearchParam,
   time: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/))),
+  week: ymdSearchParam,
 })
 
 const viennaYmdOfIso = (iso: string): string =>
@@ -349,14 +383,16 @@ export const adminManualRoute = createRoute({
           serviceIds: serializeServiceIds(serviceIds),
           date: viennaYmdOfIso(reservation.startAt),
           time,
+          week: search.week ? startOfWeekYmd(search.week) : undefined,
         },
         replace: true,
         resetScroll: false,
       })
-    }, [editingReservationId, editing.data, navigate])
+    }, [editingReservationId, editing.data, navigate, search.week])
 
     const selectedServiceIds = parseSelectedServiceIds(search)
     const selectedDate = search.date ?? null
+    const returnWeek = search.week ? startOfWeekYmd(search.week) : undefined
     const baseDates = upcomingViennaDates(14)
     const dates =
       selectedDate && !baseDates.includes(selectedDate)
@@ -387,6 +423,7 @@ export const adminManualRoute = createRoute({
 
     const manualSearchBase = {
       reservationId: editingReservationId ?? undefined,
+      week: returnWeek,
     }
 
     if (isEdit && editing.isLoading) {
@@ -428,7 +465,10 @@ export const adminManualRoute = createRoute({
         isSubmitting={submitPending}
         submitError={submitError}
         onBackClick={() => {
-          void navigate({ to: '/admin', search: { week: undefined } })
+          void navigate({
+            to: '/admin',
+            search: returnWeek ? { week: returnWeek } : {},
+          })
         }}
         onToggleService={(serviceId) => {
           const exists = selectedServiceIds.includes(serviceId)
@@ -471,6 +511,7 @@ export const adminManualRoute = createRoute({
                   void navigate({
                     to: '/admin/reservations/$reservationId',
                     params: { reservationId: reservation.reservationId },
+                    search: returnWeek ? { week: returnWeek } : {},
                   })
                 },
               },
@@ -490,6 +531,7 @@ export const adminManualRoute = createRoute({
                 void navigate({
                   to: '/admin/reservations/$reservationId',
                   params: { reservationId: result.reservationId },
+                  search: returnWeek ? { week: returnWeek } : {},
                 })
               },
             },
