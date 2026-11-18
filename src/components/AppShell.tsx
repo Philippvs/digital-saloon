@@ -211,7 +211,10 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
           {contentWidth === 'full' ? (
             children
           ) : (
-            <Container maxWidth={contentWidth === 'wide' ? 'lg' : 'md'} sx={{ py: { xs: 4, sm: 6 } }}>
+            <Container
+              maxWidth={contentWidth === 'wide' ? 'lg' : 'md'}
+              sx={{ py: { xs: 4, sm: 6 } }}
+            >
               {children}
             </Container>
           )}

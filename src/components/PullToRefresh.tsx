@@ -1,5 +1,4 @@
 import type * as React from 'react'
-import { useRef } from 'react'
 import { Box, CircularProgress } from '@mui/material'
 
 import { usePullToRefresh } from '../hooks/usePullToRefresh'
@@ -20,17 +19,20 @@ export const PullToRefresh: React.FunctionComponent<PullToRefreshProps> = ({
   children,
 }) => {
   const { t } = useLocale()
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const { pullDistance, refreshing } = usePullToRefresh({
-    containerRef,
-    onRefresh,
-  })
+  const { pullDistance, refreshing, handlers } = usePullToRefresh({ onRefresh })
   const visible = pullDistance > 4 || refreshing
 
   return (
     <Box
-      ref={containerRef}
-      sx={{ position: 'relative', flexGrow: 1, display: 'flex', flexDirection: 'column' }}
+      {...handlers}
+      sx={{
+        position: 'relative',
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        // While pulling, block native scroll so the gesture owns the page.
+        touchAction: pullDistance > 0 || refreshing ? 'none' : 'pan-y',
+      }}
     >
       <Box
         aria-live="polite"

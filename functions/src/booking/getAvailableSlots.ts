@@ -61,7 +61,10 @@ export const getAvailableSlots = onCall({ region: functionsRegion }, async (requ
   }
 
   let excludeReservationId: string | undefined
-  if (typeof data.excludeReservationId === 'string' && data.excludeReservationId.trim().length > 0) {
+  if (
+    typeof data.excludeReservationId === 'string' &&
+    data.excludeReservationId.trim().length > 0
+  ) {
     await assertAdmin(request)
     excludeReservationId = data.excludeReservationId.trim()
   }

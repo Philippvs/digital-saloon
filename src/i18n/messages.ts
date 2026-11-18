@@ -664,7 +664,8 @@ export const de: Messages = {
   'admin.reservations': 'Termine',
   'admin.time': 'Zeit',
   'admin.timeFreeLabel': 'Freie Zeiten',
-  'admin.nextFreeSlotHint': 'Nächster freier Termin ist vorausgewählt — andere Zeit einfach antippen.',
+  'admin.nextFreeSlotHint':
+    'Nächster freier Termin ist vorausgewählt — andere Zeit einfach antippen.',
   'admin.nextFreeSlotTag': 'Nächster',
   'admin.currentSlotKept':
     'Bisherige Uhrzeit {time} bleibt erhalten, bis Sie eine neue freie Zeit wählen.',
@@ -1145,8 +1146,7 @@ export const it: Messages = {
   'admin.nextFreeSlotHint':
     'Il prossimo appuntamento libero è preselezionato — tocca un altro orario per cambiarlo.',
   'admin.nextFreeSlotTag': 'Prossimo',
-  'admin.currentSlotKept':
-    'L’orario attuale {time} resta finché non scegli un nuovo slot libero.',
+  'admin.currentSlotKept': 'L’orario attuale {time} resta finché non scegli un nuovo slot libero.',
   'admin.customer': 'Cliente',
   'admin.status': 'Stato',
   'admin.open': 'Apri',

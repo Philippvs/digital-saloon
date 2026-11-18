@@ -30,6 +30,7 @@
 ### Task 1: Backend update + slot exclude
 
 **Files:**
+
 - Modify: `functions/src/booking/reservationWrite.ts` (add `updateReservationTransactional` or similar)
 - Modify: `functions/src/booking/adminActions.ts` (export `adminUpdateReservation`)
 - Modify: `functions/src/booking/getAvailableSlots.ts` (admin `excludeReservationId`)
@@ -43,6 +44,7 @@
 ### Task 2: Client API + hooks + slots
 
 **Files:**
+
 - Modify: `src/data/adminBookingApi.ts`, `src/hooks/useAdminReservations.ts`
 - Modify: `src/data/bookingApi.ts`, `src/hooks/useAvailableSlots.ts`
 
@@ -52,6 +54,7 @@
 ### Task 3: Quick menu + cancel Dialog
 
 **Files:**
+
 - Modify: `src/components/WeekPlanner.tsx`, `src/pages/admin/AdminHomePage.tsx`, `src/routes/admin.tsx`
 - Modify: `src/pages/admin/AdminReservationDetailPage.tsx`
 - Modify: `src/i18n/messages.ts`
@@ -63,6 +66,7 @@
 ### Task 4: Manual form edit mode
 
 **Files:**
+
 - Modify: `src/pages/admin/AdminManualBookingPage.tsx`, `src/routes/admin.tsx`
 - Modify: `e2e/admin.spec.ts` if calendar click path breaks
 

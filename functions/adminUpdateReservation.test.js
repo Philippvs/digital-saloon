@@ -126,9 +126,8 @@ test('admin update rejects completed reservations', async (t) => {
     return
   }
 
-  const { createReservationTransactional, updateReservationTransactional } = await import(
-    './lib/booking/reservationWrite.js'
-  )
+  const { createReservationTransactional, updateReservationTransactional } =
+    await import('./lib/booking/reservationWrite.js')
   const { seedSalonData, salonSeedConfig } = await import('../scripts/seed-salon-data.mjs')
   const { zonedLocalToUtc } = await import('./lib/domain/timezone.js')
 

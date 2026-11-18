@@ -381,10 +381,7 @@ export async function updateReservationTransactional(
       if (freshStatus !== 'PENDING' && freshStatus !== 'CONFIRMED') throw new Error('INACTIVE')
 
       const newLockSnap = await tx.get(newLockRef)
-      if (
-        newLockSnap.exists &&
-        newLockSnap.data()?.reservationId !== input.reservationId
-      ) {
+      if (newLockSnap.exists && newLockSnap.data()?.reservationId !== input.reservationId) {
         throw new Error('UNAVAILABLE')
       }
 

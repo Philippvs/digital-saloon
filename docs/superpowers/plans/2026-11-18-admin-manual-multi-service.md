@@ -31,10 +31,12 @@
 ### Task 1: Backend `createManualReservation` accepts `serviceIds`
 
 **Files:**
+
 - Modify: `functions/src/booking/createReservation.ts`
 - Test: `functions/resolveServiceIds.test.js` (or extend an existing functions test)
 
 **Interfaces:**
+
 - Produces: `createManualReservation` uses `resolveServiceIds(data)` → `{ serviceId, serviceIds }` passed into `createReservationTransactional`.
 
 - [x] **Step 1:** Add failing test: `resolveServiceIds({ serviceIds: ['a','b'] })` → `{ serviceId: 'a', serviceIds: ['a','b'] }`; `{ serviceId: 'x' }` → single-element list. Export `resolveServiceIds` for the test (or move to a tiny shared helper in `functions/src/booking/`).
@@ -46,11 +48,13 @@
 ### Task 2: Shared URL service-id parse/serialize + client API
 
 **Files:**
+
 - Create: `src/data/serviceSelection.ts`, `src/data/serviceSelection.test.ts`
 - Modify: `src/data/adminBookingApi.ts`, `src/hooks/useAdminReservations.ts` (types only if needed)
 - Modify: `src/routes/book.tsx` to import parse/serialize (optional DRY; if book change is noisy, duplicate parse in admin only — prefer extract)
 
 **Interfaces:**
+
 - Produces:
   - `parseSelectedServiceIds(search: { serviceId?: string; serviceIds?: string }): string[]`
   - `serializeServiceIds(ids: string[]): string | undefined`
@@ -64,11 +68,13 @@
 ### Task 3: Admin route + page UI
 
 **Files:**
+
 - Modify: `src/routes/admin.tsx` (`manualSearchSchema`, `AdminManualRoute`)
 - Modify: `src/pages/admin/AdminManualBookingPage.tsx`
 - Modify: `src/i18n/messages.ts` only if book keys are wrong for admin
 
 **Interfaces:**
+
 - Page props: `selectedServiceIds: string[]`, `onToggleService: (id: string) => void`, `onSubmit` with `serviceIds: string[]`.
 - Route: `useAvailableSlots({ serviceIds: selectedServiceIds, … })`; navigate with `serviceIds: serializeServiceIds(...)`.
 
@@ -80,6 +86,7 @@
 ### Task 4: E2E + verify
 
 **Files:**
+
 - Modify: `e2e/admin.spec.ts` (`admin can create a manual reservation`)
 
 - [x] **Step 1:** Replace `getByLabel('Leistung')` + option click with checkbox/button press for at least one service (ideally two if seed has ≥2 active).
