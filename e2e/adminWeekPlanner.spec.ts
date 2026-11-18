@@ -168,7 +168,8 @@ test.describe('admin week planner @smoke', () => {
     await expect
       .poll(async () => getReservationStatus(confirmed.id), { timeout: 15_000 })
       .toBe('CANCELLED')
-    await expect(page.getByText('Storniert')).toBeVisible()
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(page.getByText('Storniert', { exact: true })).toBeVisible()
   })
 
   test('enters an appointment by clicking a free time', async ({ page }) => {
