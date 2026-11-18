@@ -8,6 +8,8 @@ export type Messages = {
   'nav.language': string
   'nav.book': string
   'nav.home': string
+  'app.pullToRefresh': string
+  'app.refreshing': string
 
   'home.place': string
   'home.intro': string
@@ -402,6 +404,8 @@ export const de: Messages = {
   'nav.language': 'Sprache',
   'nav.book': 'Termin buchen',
   'nav.home': 'KIMM Hair, zur Startseite',
+  'app.pullToRefresh': 'Zum Aktualisieren nach unten ziehen',
+  'app.refreshing': 'Wird aktualisiert…',
 
   'home.place': 'Friseur in Meran',
   'home.intro':
@@ -827,6 +831,8 @@ export const it: Messages = {
   'nav.language': 'Lingua',
   'nav.book': 'Prenota',
   'nav.home': 'KIMM Hair, vai alla home',
+  'app.pullToRefresh': 'Trascina verso il basso per aggiornare',
+  'app.refreshing': 'Aggiornamento…',
 
   'home.place': 'Parrucchiere a Merano',
   'home.intro':

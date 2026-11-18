@@ -16,6 +16,7 @@ import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import MenuIcon from '@mui/icons-material/Menu'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { getActiveBrand } from '../data/brands'
 import { telHref } from '../data/phone'
@@ -24,6 +25,7 @@ import { useLocale } from '../i18n'
 import { localeLabels, locales } from '../i18n'
 import { brand } from '../theme'
 import { FooterLink, Header, LanguageSwitch, NavIconButton, NavLink } from './AppShell.styles'
+import { PullToRefresh } from './PullToRefresh'
 import { HeaderWordmark } from './Wordmark'
 
 /** Staff header entry matching the current page; `null` outside the admin area. */
@@ -62,6 +64,7 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
   children,
 }) => {
   const { locale, setLocale, t } = useLocale()
+  const queryClient = useQueryClient()
   const activeBrand = getActiveBrand()
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState<HTMLElement | null>(null)
 
@@ -199,14 +202,20 @@ export const AppShell: React.FunctionComponent<AppShellProps> = ({
         </Container>
       </Header>
 
-      <Box component="main" sx={{ flexGrow: 1 }}>
-        {contentWidth === 'full' ? (
-          children
-        ) : (
-          <Container maxWidth={contentWidth === 'wide' ? 'lg' : 'md'} sx={{ py: { xs: 4, sm: 6 } }}>
-            {children}
-          </Container>
-        )}
+      <Box component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <PullToRefresh
+          onRefresh={async () => {
+            await queryClient.invalidateQueries()
+          }}
+        >
+          {contentWidth === 'full' ? (
+            children
+          ) : (
+            <Container maxWidth={contentWidth === 'wide' ? 'lg' : 'md'} sx={{ py: { xs: 4, sm: 6 } }}>
+              {children}
+            </Container>
+          )}
+        </PullToRefresh>
       </Box>
 
       <Box component="footer" sx={{ bgcolor: brand.espresso, color: brand.paper, py: 5 }}>
