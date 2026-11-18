@@ -94,11 +94,23 @@ jobs:
           SERVICE_ACCOUNT_JSON: ${{ secrets[matrix.serviceAccountSecret] }}
           BRAND: ${{ matrix.brand }}
           SALON_ID: ${{ matrix.salonId }}
+          OPERATOR_EMAIL: ${{ secrets.OPERATOR_EMAIL }}
+          OPERATOR_PASSWORD: ${{ secrets.OPERATOR_PASSWORD }}
         run: |
           if [ -z "$SERVICE_ACCOUNT_JSON" ]; then
             echo "Skipping deploy for ${{ matrix.brand }}: secret ${{ matrix.serviceAccountSecret }} is not set."
             exit 0
           fi
+          {
+            echo "BRAND=$BRAND"
+            echo "SALON_ID=$SALON_ID"
+            if [ -n "$OPERATOR_EMAIL" ]; then
+              echo "OPERATOR_EMAIL=$OPERATOR_EMAIL"
+            fi
+            if [ -n "$OPERATOR_PASSWORD" ]; then
+              echo "OPERATOR_PASSWORD=$OPERATOR_PASSWORD"
+            fi
+          } > "functions/.env.${{ matrix.projectId }}"
           printf '%s' "$SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/sa.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
-          npx -y firebase-tools deploy --only hosting,firestore:rules,firestore:indexes,storage --project "${{ matrix.projectId }}" --non-interactive
+          npx -y firebase-tools deploy --only hosting,firestore:rules,firestore:indexes,storage,functions --project "${{ matrix.projectId }}" --non-interactive
