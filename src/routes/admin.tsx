@@ -84,7 +84,7 @@ export const adminRoute = createRoute({
 
 const ymdSearchParam = optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/)))
 
-const adminIndexSearchSchema = v.object({
+const adminWeekSearchSchema = v.object({
   week: ymdSearchParam,
 })
 
@@ -99,13 +99,27 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const timeZone = salon.data?.timezone ?? 'Europe/Vienna'
   const now = new Date()
   const today = todayYmdInTimeZone(timeZone, now)
+  const weekFromSearch = search.week ? startOfWeekYmd(search.week) : null
+  // Wait for opening hours before choosing the default week to avoid a first-paint flip.
+  const weekReady = weekFromSearch != null || !openingHours.isLoading
   const currentWeekStart = defaultWeekStartYmd(today, openingHours.data)
-  const weekStart = search.week ? startOfWeekYmd(search.week) : currentWeekStart
+  const weekStart = weekFromSearch ?? currentWeekStart
+
+  // Keep the visible week in the URL so reload and browser-back restore it.
+  useEffect(() => {
+    if (!weekReady) return
+    if (search.week === weekStart) return
+    void navigate({
+      to: '/admin',
+      search: { week: weekStart },
+      replace: true,
+    })
+  }, [navigate, search.week, weekReady, weekStart])
 
   const weekRange = weekQueryRange(weekStart)
-  const weekReservations = useAdminReservations(weekRange.startIso, weekRange.endIso, true)
+  const weekReservations = useAdminReservations(weekRange.startIso, weekRange.endIso, weekReady)
   const plan =
-    weekReservations.data && !openingHours.isLoading && !closures.isLoading
+    weekReady && weekReservations.data && !openingHours.isLoading && !closures.isLoading
       ? planWeek({
           reservations: weekReservations.data,
           weekStartYmd: weekStart,
@@ -135,9 +149,11 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const goToWeek = (weekStartYmd: string) => {
     void navigate({
       to: '/admin',
-      search: { week: weekStartYmd === currentWeekStart ? undefined : weekStartYmd },
+      search: { week: startOfWeekYmd(weekStartYmd) },
     })
   }
+
+  const weekSearch = { week: weekStart }
 
   return (
     <AdminHomePage
@@ -145,7 +161,9 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       weekRangeLabel={weekRangeLabel}
       isCurrentWeek={weekStart === currentWeekStart}
       plan={plan}
-      planLoading={weekReservations.isLoading || openingHours.isLoading || closures.isLoading}
+      planLoading={
+        !weekReady || weekReservations.isLoading || openingHours.isLoading || closures.isLoading
+      }
       planError={weekReservations.isError}
       pending={pending}
       confirmingReservationId={
@@ -162,25 +180,32 @@ const AdminIndexRoute: React.FunctionComponent = () => {
         goToWeek(currentWeekStart)
       }}
       onOpenReservationDetails={(reservationId) => {
-        void navigate({ to: '/admin/reservations/$reservationId', params: { reservationId } })
+        void navigate({
+          to: '/admin/reservations/$reservationId',
+          params: { reservationId },
+          search: weekSearch,
+        })
       }}
       onEditReservation={(reservationId) => {
         void navigate({
           to: '/admin/manual',
-          search: { reservationId },
+          search: { reservationId, ...weekSearch },
         })
       }}
       onConfirmReservation={(reservationId) => {
         actions.confirm.mutate(reservationId)
       }}
       onAddReservationClick={() => {
-        void navigate({ to: '/admin/manual' })
+        void navigate({ to: '/admin/manual', search: weekSearch })
       }}
       onAddReservationAt={(dateYmd, startTime) => {
-        void navigate({ to: '/admin/manual', search: { date: dateYmd, time: startTime } })
+        void navigate({
+          to: '/admin/manual',
+          search: { date: dateYmd, time: startTime, ...weekSearch },
+        })
       }}
       onListViewClick={() => {
-        void navigate({ to: '/admin/reservations' })
+        void navigate({ to: '/admin/reservations', search: weekSearch })
       }}
     />
   )
@@ -189,7 +214,7 @@ const AdminIndexRoute: React.FunctionComponent = () => {
 export const adminIndexRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/',
-  validateSearch: (search: Record<string, unknown>) => v.parse(adminIndexSearchSchema, search),
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminWeekSearchSchema, search),
   component: AdminIndexRoute,
 })
 
@@ -214,8 +239,11 @@ export const adminCalendarRoute = createRoute({
 export const adminReservationsRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/reservations',
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminWeekSearchSchema, search),
   component: function AdminReservationsRoute() {
     const navigate = useNavigate()
+    const search = adminReservationsRoute.useSearch()
+    const returnWeek = search.week ? startOfWeekYmd(search.week) : undefined
     const salon = useSalon()
     const today = todayYmdInTimeZone(salon.data?.timezone ?? 'Europe/Vienna')
     const range = listRange(today)
@@ -230,10 +258,14 @@ export const adminReservationsRoute = createRoute({
           void navigate({
             to: '/admin/reservations/$reservationId',
             params: { reservationId },
+            search: returnWeek ? { week: returnWeek } : {},
           })
         }}
         onCalendarClick={() => {
-          void navigate({ to: '/admin', search: { week: undefined } })
+          void navigate({
+            to: '/admin',
+            search: returnWeek ? { week: returnWeek } : {},
+          })
         }}
       />
     )
@@ -243,9 +275,12 @@ export const adminReservationsRoute = createRoute({
 export const adminReservationDetailRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/reservations/$reservationId',
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminWeekSearchSchema, search),
   component: function AdminReservationDetailRoute() {
     const navigate = useNavigate()
     const { reservationId } = adminReservationDetailRoute.useParams()
+    const search = adminReservationDetailRoute.useSearch()
+    const returnWeek = search.week ? startOfWeekYmd(search.week) : undefined
     const reservation = useAdminReservation(reservationId)
     const actions = useAdminReservationActions()
 
@@ -269,7 +304,10 @@ export const adminReservationDetailRoute = createRoute({
           actions.complete.isPending
         }
         onBackClick={() => {
-          void navigate({ to: '/admin', search: { week: undefined } })
+          void navigate({
+            to: '/admin',
+            search: returnWeek ? { week: returnWeek } : {},
+          })
         }}
         onConfirm={() => {
           actions.confirm.mutate(reservationId)
@@ -286,7 +324,10 @@ export const adminReservationDetailRoute = createRoute({
         onEditClick={() => {
           void navigate({
             to: '/admin/manual',
-            search: { reservationId },
+            search: {
+              reservationId,
+              week: returnWeek,
+            },
           })
         }}
       />
@@ -300,6 +341,7 @@ const manualSearchSchema = v.object({
   serviceIds: optionalSearchParam(v.pipe(v.string(), v.minLength(1))),
   date: ymdSearchParam,
   time: optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/))),
+  week: ymdSearchParam,
 })
 
 const viennaYmdOfIso = (iso: string): string =>
@@ -349,14 +391,16 @@ export const adminManualRoute = createRoute({
           serviceIds: serializeServiceIds(serviceIds),
           date: viennaYmdOfIso(reservation.startAt),
           time,
+          week: search.week ? startOfWeekYmd(search.week) : undefined,
         },
         replace: true,
         resetScroll: false,
       })
-    }, [editingReservationId, editing.data, navigate])
+    }, [editingReservationId, editing.data, navigate, search.week])
 
     const selectedServiceIds = parseSelectedServiceIds(search)
     const selectedDate = search.date ?? null
+    const returnWeek = search.week ? startOfWeekYmd(search.week) : undefined
     const baseDates = upcomingViennaDates(14)
     const dates =
       selectedDate && !baseDates.includes(selectedDate)
@@ -387,6 +431,7 @@ export const adminManualRoute = createRoute({
 
     const manualSearchBase = {
       reservationId: editingReservationId ?? undefined,
+      week: returnWeek,
     }
 
     if (isEdit && editing.isLoading) {
@@ -428,7 +473,10 @@ export const adminManualRoute = createRoute({
         isSubmitting={submitPending}
         submitError={submitError}
         onBackClick={() => {
-          void navigate({ to: '/admin', search: { week: undefined } })
+          void navigate({
+            to: '/admin',
+            search: returnWeek ? { week: returnWeek } : {},
+          })
         }}
         onToggleService={(serviceId) => {
           const exists = selectedServiceIds.includes(serviceId)
@@ -471,6 +519,7 @@ export const adminManualRoute = createRoute({
                   void navigate({
                     to: '/admin/reservations/$reservationId',
                     params: { reservationId: reservation.reservationId },
+                    search: returnWeek ? { week: returnWeek } : {},
                   })
                 },
               },
@@ -490,6 +539,7 @@ export const adminManualRoute = createRoute({
                 void navigate({
                   to: '/admin/reservations/$reservationId',
                   params: { reservationId: result.reservationId },
+                  search: returnWeek ? { week: returnWeek } : {},
                 })
               },
             },

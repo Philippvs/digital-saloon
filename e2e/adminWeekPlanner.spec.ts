@@ -68,7 +68,35 @@ test.describe('admin week planner @smoke', () => {
     ).toBeVisible()
 
     await page.getByRole('button', { name: 'Diese Woche' }).click()
-    await expect(page).not.toHaveURL(/week=/)
+    await expect(page).toHaveURL(new RegExp(`week=${weekStart}`))
+    await expect(
+      page.getByRole('heading', { level: 1, name: weekHeading(weekStart) }),
+    ).toBeVisible()
+  })
+
+  test('keeps the selected week in the URL across reload and back from details', async ({
+    page,
+  }) => {
+    const weekStart = addCalendarDays(plannerDefaultWeek(), 7)
+    await page.goto(`/admin?week=${weekStart}`)
+    await expect(
+      page.getByRole('heading', { level: 1, name: weekHeading(weekStart) }),
+    ).toBeVisible()
+
+    await page.reload()
+    await expect(page).toHaveURL(new RegExp(`week=${weekStart}`))
+    await expect(
+      page.getByRole('heading', { level: 1, name: weekHeading(weekStart) }),
+    ).toBeVisible()
+
+    const entry = plannerEntries(page).first()
+    await expect(entry).toBeVisible()
+    await entry.click()
+    await page.getByRole('menuitem', { name: 'Details anzeigen' }).click()
+    await expect(page).toHaveURL(new RegExp(`/admin/reservations/.*week=${weekStart}`))
+
+    await page.getByRole('button', { name: 'Zurück zum Kalender' }).click()
+    await expect(page).toHaveURL(new RegExp(`week=${weekStart}`))
     await expect(
       page.getByRole('heading', { level: 1, name: weekHeading(weekStart) }),
     ).toBeVisible()
@@ -140,7 +168,8 @@ test.describe('admin week planner @smoke', () => {
     await expect
       .poll(async () => getReservationStatus(confirmed.id), { timeout: 15_000 })
       .toBe('CANCELLED')
-    await expect(page.getByText('Storniert')).toBeVisible()
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(page.getByText('Storniert', { exact: true })).toBeVisible()
   })
 
   test('enters an appointment by clicking a free time', async ({ page }) => {
@@ -204,9 +233,9 @@ test.describe('admin week planner @smoke', () => {
     await page.goto('/admin')
     const views = page.getByRole('group', { name: 'Ansicht' })
     await views.getByRole('button', { name: 'Liste' }).click()
-    await expect(page).toHaveURL(/\/admin\/reservations$/)
+    await expect(page).toHaveURL(/\/admin\/reservations\?week=/)
     await views.getByRole('button', { name: 'Woche' }).click()
-    await expect(page).toHaveURL(/\/admin$/)
+    await expect(page).toHaveURL(/\/admin\?week=/)
 
     await page.getByRole('banner').getByRole('button', { name: 'Einstellungen' }).click()
     await expect(page).toHaveURL(/\/admin\/settings$/)
