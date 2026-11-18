@@ -1,10 +1,18 @@
-import { deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { deleteField, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 import * as v from 'valibot'
 
 import { firestore } from '../firebase'
 import { getSalonId } from './salonConfig'
 import { salonDocPath } from './salonPaths'
 import { salonDetailsSchema, salonSchema, type Salon, type SalonDetails } from './schemas'
+
+export const emptySalon: Salon = {
+  name: '',
+  address: '',
+  phone: '',
+  email: '',
+  timezone: 'Europe/Vienna',
+}
 
 export async function fetchSalon(): Promise<Salon | null> {
   const snapshot = await getDoc(doc(firestore, salonDocPath(getSalonId())))
@@ -14,9 +22,19 @@ export async function fetchSalon(): Promise<Salon | null> {
 
 export async function saveSalonDetails(details: SalonDetails): Promise<void> {
   const { vatId, ...required } = v.parse(salonDetailsSchema, details)
-  await updateDoc(doc(firestore, salonDocPath(getSalonId())), {
+  const ref = doc(firestore, salonDocPath(getSalonId()))
+  const existing = await getDoc(ref)
+  if (existing.exists()) {
+    await updateDoc(ref, {
+      ...required,
+      vatId: vatId ?? deleteField(),
+    })
+    return
+  }
+  await setDoc(ref, {
     ...required,
-    vatId: vatId ?? deleteField(),
+    timezone: 'Europe/Vienna',
+    ...(vatId ? { vatId } : {}),
   })
 }
 

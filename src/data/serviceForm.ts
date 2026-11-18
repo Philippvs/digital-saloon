@@ -18,12 +18,21 @@ export type ServiceDraft = Pick<
   | 'descriptionDe'
   | 'descriptionIt'
   | 'durationMinutes'
+  | 'durationMaxMinutes'
   | 'priceCents'
+  | 'priceMaxCents'
   | 'active'
 >
 
 export type ServiceFormField =
-  'nameDe' | 'nameIt' | 'descriptionDe' | 'descriptionIt' | 'duration' | 'price'
+  | 'nameDe'
+  | 'nameIt'
+  | 'descriptionDe'
+  | 'descriptionIt'
+  | 'duration'
+  | 'durationMax'
+  | 'price'
+  | 'priceMax'
 
 export type ServiceFormInput = {
   nameDe: string
@@ -31,8 +40,10 @@ export type ServiceFormInput = {
   descriptionDe: string
   descriptionIt: string
   duration: string
+  durationMax: string
   /** Euro amount as typed, e.g. `26`, `26,50`, or `26.5`. */
   price: string
+  priceMax: string
   active: boolean
 }
 
@@ -42,7 +53,9 @@ export const emptyServiceFormInput: ServiceFormInput = {
   descriptionDe: '',
   descriptionIt: '',
   duration: '30',
+  durationMax: '',
   price: '',
+  priceMax: '',
   active: true,
 }
 
@@ -131,6 +144,13 @@ export function formatServicePriceRange(minCents: number, maxCents?: number): st
   return formatEuroAmount(minCents)
 }
 
+export function formatServiceDurationRange(minMinutes: number, maxMinutes?: number): string {
+  if (maxMinutes !== undefined && maxMinutes > minMinutes) {
+    return `${minMinutes}–${maxMinutes}`
+  }
+  return String(minMinutes)
+}
+
 /** Compact bilingual label for reservations and the admin list (both languages at once). */
 export function bilingualServiceName(service: ServiceDraft): string {
   const de = service.nameDe.trim()
@@ -140,16 +160,29 @@ export function bilingualServiceName(service: ServiceDraft): string {
   return `${de} / ${it}`
 }
 
+function formatInputPrice(priceCents: number): string {
+  const euros = Math.floor(priceCents / 100)
+  const cents = priceCents % 100
+  return cents === 0 ? String(euros) : `${euros},${String(cents).padStart(2, '0')}`
+}
+
 export function serviceFormInputOf(service: ServiceDraft): ServiceFormInput {
-  const euros = Math.floor(service.priceCents / 100)
-  const cents = service.priceCents % 100
   return {
     nameDe: service.nameDe,
     nameIt: service.nameIt,
     descriptionDe: service.descriptionDe,
     descriptionIt: service.descriptionIt,
     duration: String(service.durationMinutes),
-    price: cents === 0 ? String(euros) : `${euros},${String(cents).padStart(2, '0')}`,
+    durationMax:
+      service.durationMaxMinutes !== undefined &&
+      service.durationMaxMinutes > service.durationMinutes
+        ? String(service.durationMaxMinutes)
+        : '',
+    price: formatInputPrice(service.priceCents),
+    priceMax:
+      service.priceMaxCents !== undefined && service.priceMaxCents > service.priceCents
+        ? formatInputPrice(service.priceMaxCents)
+        : '',
     active: service.active,
   }
 }
@@ -186,25 +219,74 @@ export function validateServiceForm(
     issues.descriptionIt = { kind: 'tooLong', max: serviceLimits.descriptionMaxLength }
   }
 
+  const parseDuration = (raw: string): number | null => {
+    if (!/^\d+$/.test(raw)) return null
+    const val = Number(raw)
+    return val >= serviceLimits.minDurationMinutes && val <= serviceLimits.maxDurationMinutes
+      ? val
+      : null
+  }
+
   const durationRaw = input.duration.trim()
-  const durationMinutes = Number(durationRaw)
-  if (
-    !/^\d+$/.test(durationRaw) ||
-    durationMinutes < serviceLimits.minDurationMinutes ||
-    durationMinutes > serviceLimits.maxDurationMinutes
-  ) {
+  const durationMaxRaw = input.durationMax.trim()
+  const durationFrom = durationRaw.length > 0 ? parseDuration(durationRaw) : null
+  const durationTo = durationMaxRaw.length > 0 ? parseDuration(durationMaxRaw) : null
+
+  if (durationRaw.length === 0 && durationMaxRaw.length === 0) {
     issues.duration = {
       kind: 'range',
       min: serviceLimits.minDurationMinutes,
       max: serviceLimits.maxDurationMinutes,
     }
+  } else {
+    if (durationRaw.length > 0 && durationFrom === null) {
+      issues.duration = {
+        kind: 'range',
+        min: serviceLimits.minDurationMinutes,
+        max: serviceLimits.maxDurationMinutes,
+      }
+    }
+    if (durationMaxRaw.length > 0 && durationTo === null) {
+      issues.durationMax = {
+        kind: 'range',
+        min: serviceLimits.minDurationMinutes,
+        max: serviceLimits.maxDurationMinutes,
+      }
+    }
+    if (durationFrom !== null && durationTo !== null && durationTo < durationFrom) {
+      issues.durationMax = {
+        kind: 'range',
+        min: durationFrom,
+        max: serviceLimits.maxDurationMinutes,
+      }
+    }
   }
 
-  const priceCents = parsePriceCents(input.price)
-  if (input.price.trim().length === 0) issues.price = { kind: 'required' }
-  else if (priceCents === null) issues.price = { kind: 'price' }
+  const priceRaw = input.price.trim()
+  const priceMaxRaw = input.priceMax.trim()
+  const priceFrom = priceRaw.length > 0 ? parsePriceCents(priceRaw) : null
+  const priceTo = priceMaxRaw.length > 0 ? parsePriceCents(priceMaxRaw) : null
 
-  if (Object.keys(issues).length > 0 || priceCents === null) {
+  if (priceRaw.length === 0 && priceMaxRaw.length === 0) {
+    issues.price = { kind: 'required' }
+  } else {
+    if (priceRaw.length > 0 && priceFrom === null) issues.price = { kind: 'price' }
+    if (priceMaxRaw.length > 0 && priceTo === null) issues.priceMax = { kind: 'price' }
+    if (priceFrom !== null && priceTo !== null && priceTo < priceFrom) {
+      issues.priceMax = { kind: 'price' }
+    }
+  }
+
+  const durationMinutes = durationFrom ?? durationTo
+  const durationMaxMinutes =
+    durationFrom !== null && durationTo !== null && durationTo > durationFrom
+      ? durationTo
+      : undefined
+  const priceCents = priceFrom ?? priceTo
+  const priceMaxCents =
+    priceFrom !== null && priceTo !== null && priceTo > priceFrom ? priceTo : undefined
+
+  if (Object.keys(issues).length > 0 || durationMinutes === null || priceCents === null) {
     return { ok: false, issues }
   }
   return {
@@ -215,7 +297,9 @@ export function validateServiceForm(
       descriptionDe,
       descriptionIt,
       durationMinutes,
+      ...(durationMaxMinutes !== undefined ? { durationMaxMinutes } : {}),
       priceCents,
+      ...(priceMaxCents !== undefined ? { priceMaxCents } : {}),
       active: input.active,
     },
   }

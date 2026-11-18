@@ -4,6 +4,7 @@ export type QueryVisibility = 'public' | 'private'
 
 export const queryRootVisibility = {
   salon: 'public',
+  homepageConfig: 'public',
   services: 'public',
   availableSlots: 'public',
   managedReservation: 'public',
@@ -13,6 +14,8 @@ export const queryRootVisibility = {
   adminReservations: 'private',
   adminReservation: 'private',
   userProfile: 'private',
+  demoMode: 'private',
+  staffOverview: 'private',
 } as const
 
 export type QueryRoot = keyof typeof queryRootVisibility

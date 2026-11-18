@@ -8,12 +8,17 @@ import {
   Chip,
   CircularProgress,
   FormControlLabel,
+  IconButton,
   Paper,
   Stack,
   TextField,
   Typography,
   Link,
 } from '@mui/material'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import * as v from 'valibot'
 
 import type { AvailableSlotDto, BookingFailure } from '../data/bookingApi'
@@ -27,7 +32,7 @@ import {
   viennaTodayYmd,
   weekDays,
 } from '../data/bookingCalendar'
-import { formatViennaDate, formatViennaDateTime, formatViennaTime } from '../data/dateFormat'
+import { formatViennaDateTime, formatViennaTime } from '../data/dateFormat'
 import {
   bookingContactIssueOf,
   bookingContactSchema,
@@ -35,6 +40,7 @@ import {
 } from '../data/phone'
 import { arePricesVisible } from '../data/salonConfig'
 import {
+  formatServiceDurationRange,
   formatServicePriceRange,
   localizedServiceDescription,
   localizedServiceName,
@@ -168,6 +174,14 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
     () => selectedServices.reduce((sum, item) => sum + item.durationMinutes, 0),
     [selectedServices],
   )
+  const totalMaxDurationMinutes = useMemo(
+    () =>
+      selectedServices.reduce(
+        (sum, item) => sum + (item.durationMaxMinutes ?? item.durationMinutes),
+        0,
+      ),
+    [selectedServices],
+  )
   const totalMinPriceCents = useMemo(
     () => selectedServices.reduce((sum, item) => sum + item.priceCents, 0),
     [selectedServices],
@@ -184,9 +198,13 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
   const weeks = monthMatrix(year, monthIndex)
   const monthLabel = new Intl.DateTimeFormat(intlLocale, {
     month: 'long',
-    year: 'numeric',
     timeZone: 'UTC',
   }).format(new Date(Date.UTC(year, monthIndex, 1)))
+  const weekParts = parseYmd(weekAnchorYmd)
+  const collapsedMonthLabel = new Intl.DateTimeFormat(intlLocale, {
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(weekParts.year, weekParts.monthIndex, 1)))
 
   useEffect(() => {
     if (step !== 2 || rangeLoading || rangeSlots === undefined) return
@@ -307,7 +325,13 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                           fontVariantNumeric: 'tabular-nums',
                         }}
                       >
-                        {t('book.durationMinutes', { minutes: service.durationMinutes })} ·{' '}
+                        {t('book.durationMinutes', {
+                          minutes: formatServiceDurationRange(
+                            service.durationMinutes,
+                            service.durationMaxMinutes,
+                          ),
+                        })}{' '}
+                        ·{' '}
                         {pricesVisible
                           ? formatServicePriceRange(service.priceCents, service.priceMaxCents)
                           : t('price.onRequest')}
@@ -348,7 +372,12 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
               <Box>
                 <Typography sx={{ fontWeight: 600 }}>
                   {t('book.selectedServicesCount', { count: selectedServices.length })} ·{' '}
-                  {t('book.totalDuration', { minutes: totalDurationMinutes })}
+                  {t('book.totalDuration', {
+                    minutes: formatServiceDurationRange(
+                      totalDurationMinutes,
+                      totalMaxDurationMinutes,
+                    ),
+                  })}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {priceSummaryText}
@@ -379,7 +408,13 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                   {selectedServices.map((s) => localizedServiceName(s, locale)).join(' + ')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {t('book.totalDuration', { minutes: totalDurationMinutes })} · {priceSummaryText}
+                  {t('book.totalDuration', {
+                    minutes: formatServiceDurationRange(
+                      totalDurationMinutes,
+                      totalMaxDurationMinutes,
+                    ),
+                  })}{' '}
+                  · {priceSummaryText}
                 </Typography>
               </Box>
               <Button variant="outlined" size="small" onClick={onBackToServices}>
@@ -389,29 +424,53 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
           </Paper>
 
           <Paper sx={{ p: { xs: 2, sm: 3 } }} component="section" aria-labelledby="step-date">
+            <Typography id="step-date" variant="h2" sx={{ fontSize: '1.15rem', mb: 1.5 }}>
+              {t('book.step.date')}
+            </Typography>
             <Stack
               direction="row"
-              sx={{
-                mb: 2,
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 1,
-              }}
+              sx={{ mb: 2, alignItems: 'center', justifyContent: 'space-between' }}
             >
-              <Typography id="step-date" variant="h2" sx={{ fontSize: '1.15rem' }}>
-                {t('book.step.date')}
-              </Typography>
-              <Button size="small" onClick={() => setCalendarExpanded((prev) => !prev)}>
-                {calendarExpanded ? t('book.collapseCalendar') : t('book.expandCalendar')}
+              <IconButton
+                size="small"
+                aria-label={calendarExpanded ? t('book.monthPrev') : t('book.weekPrev')}
+                onClick={() =>
+                  calendarExpanded
+                    ? onMonthAnchorChange(addMonths(monthAnchorYmd, -1))
+                    : onWeekAnchorChange(addDays(weekAnchorYmd, -7))
+                }
+              >
+                <ChevronLeftIcon />
+              </IconButton>
+              <Button
+                color="inherit"
+                onClick={() => setCalendarExpanded((prev) => !prev)}
+                endIcon={calendarExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                aria-label={
+                  calendarExpanded ? t('book.collapseCalendar') : t('book.expandCalendar')
+                }
+                sx={{ fontWeight: 600, fontSize: '1.05rem', textTransform: 'capitalize' }}
+              >
+                {calendarExpanded ? monthLabel : collapsedMonthLabel}
               </Button>
+              <IconButton
+                size="small"
+                aria-label={calendarExpanded ? t('book.monthNext') : t('book.weekNext')}
+                onClick={() =>
+                  calendarExpanded
+                    ? onMonthAnchorChange(addMonths(monthAnchorYmd, 1))
+                    : onWeekAnchorChange(addDays(weekAnchorYmd, 7))
+                }
+              >
+                <ChevronRightIcon />
+              </IconButton>
             </Stack>
 
             {rangeLoading ? (
               <CircularProgress
                 aria-label={t('book.availabilityLoading')}
-                size={28}
-                sx={{ mb: 2 }}
+                size={24}
+                sx={{ mb: 2, display: 'block', mx: 'auto' }}
               />
             ) : null}
             {rangeError ? (
@@ -420,56 +479,12 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
               </Alert>
             ) : null}
 
-            <Stack
-              direction="row"
-              sx={{ mb: 1.5, alignItems: 'center', justifyContent: 'space-between' }}
-            >
-              {calendarExpanded ? (
-                <>
-                  <Button
-                    size="small"
-                    onClick={() => onMonthAnchorChange(addMonths(monthAnchorYmd, -1))}
-                  >
-                    {t('book.monthPrev')}
-                  </Button>
-                  <Typography sx={{ fontWeight: 600, textTransform: 'capitalize' }}>
-                    {monthLabel}
-                  </Typography>
-                  <Button
-                    size="small"
-                    onClick={() => onMonthAnchorChange(addMonths(monthAnchorYmd, 1))}
-                  >
-                    {t('book.monthNext')}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    size="small"
-                    onClick={() => onWeekAnchorChange(addDays(weekAnchorYmd, -7))}
-                  >
-                    {t('book.weekPrev')}
-                  </Button>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {formatViennaDate(currentWeekDays[0]!, intlLocale)} –{' '}
-                    {formatViennaDate(currentWeekDays[6]!, intlLocale)}
-                  </Typography>
-                  <Button
-                    size="small"
-                    onClick={() => onWeekAnchorChange(addDays(weekAnchorYmd, 7))}
-                  >
-                    {t('book.weekNext')}
-                  </Button>
-                </>
-              )}
-            </Stack>
-
             <Box
               sx={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(7, 1fr)',
                 gap: 0.5,
-                mb: 0.5,
+                mb: 1,
               }}
             >
               {weekdays.map((label) => (
@@ -502,18 +517,26 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                           key={ymd}
                           size="small"
                           disabled={disabled}
-                          variant={selected ? 'contained' : 'text'}
+                          variant="text"
                           onClick={() => onSelectDate(ymd)}
                           sx={{
-                            minWidth: 0,
-                            px: 0,
-                            aspectRatio: '1',
-                            borderRadius: 2,
+                            minWidth: 36,
+                            width: 36,
+                            height: 36,
+                            mx: 'auto',
+                            p: 0,
+                            borderRadius: '50%',
+                            fontWeight: selected ? 700 : 400,
+                            bgcolor: selected ? 'text.primary' : 'transparent',
+                            color: selected ? 'background.paper' : 'text.primary',
+                            '&:hover': {
+                              bgcolor: selected ? 'text.primary' : 'action.hover',
+                            },
                             opacity: disabled ? 0.35 : 1,
                             textDecoration: disabled ? 'line-through' : 'none',
                           }}
                         >
-                          {parseYmd(ymd).day}
+                          {String(parseYmd(ymd).day).padStart(2, '0')}
                         </Button>
                       )
                     })}
@@ -532,18 +555,26 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                       key={ymd}
                       size="small"
                       disabled={disabled}
-                      variant={selected ? 'contained' : 'outlined'}
+                      variant="text"
                       onClick={() => onSelectDate(ymd)}
                       sx={{
-                        minWidth: 0,
-                        px: 0,
-                        py: 1,
-                        borderRadius: 2,
-                        opacity: disabled ? 0.4 : 1,
+                        minWidth: 36,
+                        width: 36,
+                        height: 36,
+                        mx: 'auto',
+                        p: 0,
+                        borderRadius: '50%',
+                        fontWeight: selected ? 700 : 400,
+                        bgcolor: selected ? 'text.primary' : 'transparent',
+                        color: selected ? 'background.paper' : 'text.primary',
+                        '&:hover': {
+                          bgcolor: selected ? 'text.primary' : 'action.hover',
+                        },
+                        opacity: disabled ? 0.35 : 1,
                         textDecoration: disabled ? 'line-through' : 'none',
                       }}
                     >
-                      {parseYmd(ymd).day}
+                      {String(parseYmd(ymd).day).padStart(2, '0')}
                     </Button>
                   )
                 })}
@@ -669,8 +700,13 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                     {formatViennaDateTime(selectedStartAt, intlLocale)}
                   </Typography>
                   <Typography color="text.secondary">
-                    {t('book.totalDuration', { minutes: totalDurationMinutes })} ·{' '}
-                    {priceSummaryText}
+                    {t('book.totalDuration', {
+                      minutes: formatServiceDurationRange(
+                        totalDurationMinutes,
+                        totalMaxDurationMinutes,
+                      ),
+                    })}{' '}
+                    · {priceSummaryText}
                   </Typography>
                 </Stack>
                 <FormControlLabel

@@ -41,9 +41,14 @@ export async function fetchAllServices(): Promise<ServiceWithId[]> {
 const serviceDraftSchema = v.omit(serviceSchema, ['createdAt', 'updatedAt'])
 
 /** Creates a service and returns its id. */
+function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
+  const entries = Object.entries(obj).filter(([, value]) => value !== undefined)
+  return Object.fromEntries(entries) as T
+}
+
 export async function createService(draft: ServiceDraft): Promise<string> {
   const now = new Date().toISOString()
-  const data = v.parse(serviceSchema, { ...draft, createdAt: now, updatedAt: now })
+  const data = stripUndefined(v.parse(serviceSchema, { ...draft, createdAt: now, updatedAt: now }))
   const ref = await addDoc(collection(firestore, servicesCollectionPath(getSalonId())), data)
   return ref.id
 }
@@ -54,9 +59,12 @@ export async function createService(draft: ServiceDraft): Promise<string> {
  * Drops legacy single-language fields if they are still present.
  */
 export async function updateService(serviceId: string, draft: ServiceDraft): Promise<void> {
-  const fields = v.parse(serviceDraftSchema, draft)
+  const parsed = v.parse(serviceDraftSchema, draft)
+  const fields = stripUndefined(parsed)
   await updateDoc(doc(firestore, servicesCollectionPath(getSalonId()), serviceId), {
     ...fields,
+    ...(parsed.durationMaxMinutes === undefined ? { durationMaxMinutes: deleteField() } : {}),
+    ...(parsed.priceMaxCents === undefined ? { priceMaxCents: deleteField() } : {}),
     name: deleteField(),
     description: deleteField(),
     updatedAt: new Date().toISOString(),

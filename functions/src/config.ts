@@ -21,3 +21,18 @@ export function getBrandKey(): 'kimm' | 'salon1500' {
   if (getSalonId() === 'salon1500') return 'salon1500'
   return 'kimm'
 }
+
+export function getOperatorCredentials(): { email: string; password: string } | null {
+  const envEmail = process.env.OPERATOR_EMAIL?.trim().toLowerCase()
+  const envPassword = process.env.OPERATOR_PASSWORD
+  if (envEmail && envPassword) {
+    return { email: envEmail, password: envPassword }
+  }
+  if (process.env.FUNCTIONS_EMULATOR === 'true') {
+    return {
+      email: envEmail || 'operator@salonflow.local',
+      password: envPassword || 'SalonFlowOperator!2026',
+    }
+  }
+  return null
+}

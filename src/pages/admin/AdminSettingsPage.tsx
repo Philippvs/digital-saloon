@@ -12,8 +12,10 @@ import {
   FormLabel,
   InputAdornment,
   MenuItem,
+  Chip,
   Paper,
   Radio,
+  Switch,
   RadioGroup,
   Stack,
   TextField,
@@ -21,7 +23,10 @@ import {
 } from '@mui/material'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ContentCutOutlinedIcon from '@mui/icons-material/ContentCutOutlined'
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined'
+import type { NewAccountInput, StaffOverview } from '../../data/adminAccessApi'
+import { emptySalon } from '../../data/salon'
 import type { BookingSettings, ConfirmationMode, Salon, SalonDetails } from '../../data/schemas'
 import {
   bookingNumbersOf,
@@ -52,7 +57,20 @@ export type AdminSettingsPageProps = {
   salonLoading: boolean
   salonSave: SaveState
   onSaveSalon: (details: SalonDetails) => void
+  isOperator?: boolean
+  isPrimaryAdmin?: boolean
+  demoMode?: {
+    enabled: boolean
+    loading: boolean
+    saving: boolean
+    error: string | null
+    onToggle: (enabled: boolean) => void
+  }
+  staffOverview?: StaffOverview
+  onCreateFirstAdmin?: (input: NewAccountInput) => Promise<void>
+  onCreateEmployee?: (input: NewAccountInput) => Promise<void>
   onServicesClick: () => void
+  onHomepageClick: () => void
   onOpeningHoursClick: () => void
   expireBusy: boolean
   expireMessage: string | null
@@ -333,6 +351,89 @@ const SalonDetailsForm: React.FunctionComponent<SalonDetailsFormProps> = ({
   )
 }
 
+type NewAccountFormProps = {
+  buttonLabel: string
+  successMessage: string
+  onCreate: (input: NewAccountInput) => Promise<void>
+}
+
+const NewAccountForm: React.FunctionComponent<NewAccountFormProps> = ({
+  buttonLabel,
+  successMessage,
+  onCreate,
+}) => {
+  const { t } = useLocale()
+  const [displayName, setDisplayName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [created, setCreated] = useState(false)
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+    setCreated(false)
+    setSubmitting(true)
+    try {
+      await onCreate({ displayName, email, password })
+      setDisplayName('')
+      setEmail('')
+      setPassword('')
+      setCreated(true)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Box component="form" onSubmit={(event) => void handleSubmit(event)} sx={{ maxWidth: 420 }}>
+      <Stack spacing={2}>
+        <TextField
+          label={t('admin.accountDisplayName')}
+          value={displayName}
+          onChange={(event) => setDisplayName(event.target.value)}
+          required
+          fullWidth
+          size="small"
+        />
+        <TextField
+          label={t('admin.accountEmail')}
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+          fullWidth
+          size="small"
+        />
+        <TextField
+          label={t('admin.accountPassword')}
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+          fullWidth
+          size="small"
+          slotProps={{ htmlInput: { minLength: 8 } }}
+        />
+        {error ? <Alert severity="error">{error}</Alert> : null}
+        {created ? (
+          <Typography role="status" sx={{ color: 'success.main', fontWeight: 600 }}>
+            {successMessage}
+          </Typography>
+        ) : null}
+        <Box>
+          <Button type="submit" variant="contained" disabled={submitting}>
+            {submitting ? t('admin.saving') : buttonLabel}
+          </Button>
+        </Box>
+      </Stack>
+    </Box>
+  )
+}
+
 export const AdminSettingsPage: React.FunctionComponent<AdminSettingsPageProps> = ({
   settings,
   settingsLoading,
@@ -343,7 +444,14 @@ export const AdminSettingsPage: React.FunctionComponent<AdminSettingsPageProps> 
   salonLoading,
   salonSave,
   onSaveSalon,
+  isOperator,
+  isPrimaryAdmin,
+  demoMode,
+  staffOverview,
+  onCreateFirstAdmin,
+  onCreateEmployee,
   onServicesClick,
+  onHomepageClick,
   onOpeningHoursClick,
   expireBusy,
   expireMessage,
@@ -374,6 +482,13 @@ export const AdminSettingsPage: React.FunctionComponent<AdminSettingsPageProps> 
           title={t('hours.title')}
           hint={t('hours.absencesHint')}
           onClick={onOpeningHoursClick}
+        />
+        <Divider />
+        <SettingsLink
+          icon={<HomeOutlinedIcon />}
+          title={t('admin.homepage')}
+          hint={t('admin.homepageSubtitle')}
+          onClick={onHomepageClick}
         />
       </Paper>
 
@@ -423,8 +538,114 @@ export const AdminSettingsPage: React.FunctionComponent<AdminSettingsPageProps> 
           {t('admin.salonDetailsHint')}
         </Typography>
         {salonLoading ? <CircularProgress aria-label={t('admin.loading')} /> : null}
-        {salon ? <SalonDetailsForm initial={salon} save={salonSave} onSave={onSaveSalon} /> : null}
+        {!salonLoading ? (
+          <SalonDetailsForm
+            key={salon ? 'loaded' : 'empty'}
+            initial={salon ?? emptySalon}
+            save={salonSave}
+            onSave={onSaveSalon}
+          />
+        ) : null}
       </Paper>
+
+      {isOperator && demoMode ? (
+        <Paper component="section" aria-labelledby="settings-demo" sx={{ p: { xs: 2, sm: 3 } }}>
+          <Typography id="settings-demo" variant="h2" sx={{ mb: 0.5 }}>
+            {t('admin.demoModeTitle')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {t('admin.demoModeHint')}
+          </Typography>
+          {demoMode.loading ? (
+            <CircularProgress size={24} />
+          ) : (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={demoMode.enabled}
+                  disabled={demoMode.saving}
+                  onChange={(event) => demoMode.onToggle(event.target.checked)}
+                />
+              }
+              label={t('admin.demoModeSwitch')}
+            />
+          )}
+          {demoMode.error ? (
+            <Alert severity="error" sx={{ mt: 1.5 }}>
+              {demoMode.error}
+            </Alert>
+          ) : null}
+        </Paper>
+      ) : null}
+
+      {isOperator && onCreateFirstAdmin ? (
+        <Paper
+          component="section"
+          aria-labelledby="settings-first-admin"
+          sx={{ p: { xs: 2, sm: 3 } }}
+        >
+          <Typography id="settings-first-admin" variant="h2" sx={{ mb: 0.5 }}>
+            {t('admin.firstAdminTitle')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {t('admin.firstAdminHint')}
+          </Typography>
+          {staffOverview?.hasPrimaryAdmin ? (
+            <Alert severity="info">{t('admin.firstAdminAlreadyExists')}</Alert>
+          ) : (
+            <NewAccountForm
+              buttonLabel={t('admin.firstAdminCreateButton')}
+              successMessage={t('admin.firstAdminCreated')}
+              onCreate={onCreateFirstAdmin}
+            />
+          )}
+        </Paper>
+      ) : null}
+
+      {isPrimaryAdmin && onCreateEmployee ? (
+        <Paper
+          component="section"
+          aria-labelledby="settings-employees"
+          sx={{ p: { xs: 2, sm: 3 } }}
+        >
+          <Typography id="settings-employees" variant="h2" sx={{ mb: 0.5 }}>
+            {t('admin.employeesTitle')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {t('admin.employeesHint')}
+          </Typography>
+          {staffOverview && staffOverview.staff.length > 0 ? (
+            <Stack spacing={1} sx={{ mb: 2.5 }}>
+              {staffOverview.staff.map((member) => (
+                <Box
+                  key={member.uid}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    py: 0.75,
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600 }}>{member.displayName}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {member.email}
+                  </Typography>
+                  {member.isPrimaryAdmin ? (
+                    <Chip size="small" label={t('admin.primaryAdminBadge')} />
+                  ) : null}
+                </Box>
+              ))}
+            </Stack>
+          ) : null}
+          <NewAccountForm
+            buttonLabel={t('admin.employeeCreateButton')}
+            successMessage={t('admin.employeeCreated')}
+            onCreate={onCreateEmployee}
+          />
+        </Paper>
+      ) : null}
     </Stack>
   )
 }

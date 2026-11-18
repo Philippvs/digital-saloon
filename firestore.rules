@@ -13,9 +13,13 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
+    function isOperator() {
+      return isSignedIn() && request.auth.token.operator == true;
+    }
+
     function isAdmin() {
-      return isSignedIn()
-        && userDoc().data.role == 'admin';
+      return isOperator()
+        || (isSignedIn() && userDoc().data.role == 'admin');
     }
 
     match /users/{userId} {
@@ -49,7 +53,7 @@ service cloud.firestore {
       return data.keys().hasOnly([
           'nameDe', 'nameIt', 'descriptionDe', 'descriptionIt',
           'categoryDe', 'categoryIt',
-          'durationMinutes', 'priceCents', 'priceMaxCents', 'active', 'createdAt', 'updatedAt'
+          'durationMinutes', 'durationMaxMinutes', 'priceCents', 'priceMaxCents', 'active', 'createdAt', 'updatedAt'
         ])
         && data.keys().hasAll([
           'nameDe', 'nameIt', 'descriptionDe', 'descriptionIt',
@@ -62,6 +66,7 @@ service cloud.firestore {
         && (!('categoryDe' in data) || (data.categoryDe is string && data.categoryDe.size() <= 80))
         && (!('categoryIt' in data) || (data.categoryIt is string && data.categoryIt.size() <= 80))
         && isIntInRange(data.durationMinutes, 5, 480)
+        && (!('durationMaxMinutes' in data) || isIntInRange(data.durationMaxMinutes, 5, 480))
         && isIntInRange(data.priceCents, 0, 999999)
         && (!('priceMaxCents' in data) || isIntInRange(data.priceMaxCents, 0, 999999))
         && data.active is bool
@@ -91,6 +96,14 @@ service cloud.firestore {
         && isIntInRange(data.pendingExpirationHours, 1, 168);
     }
 
+    function isValidHomepageConfig(data) {
+      return data.keys().hasOnly(['hiddenSections', 'galleryImages', 'customSections'])
+        && data.keys().hasAll(['hiddenSections', 'customSections'])
+        && data.hiddenSections is list && data.hiddenSections.size() <= 10
+        && data.customSections is list && data.customSections.size() <= 20
+        && (!('galleryImages' in data) || (data.galleryImages is list && data.galleryImages.size() <= 60));
+    }
+
     match /salons/{salonId} {
       allow read: if true;
       allow create, update: if isAdmin() && isValidSalon(request.resource.data)
@@ -98,9 +111,10 @@ service cloud.firestore {
       allow delete: if isAdmin();
 
       match /settings/{docId} {
-        allow read: if isAdmin();
+        allow read: if docId == 'homepage' || isAdmin();
         allow create, update: if isAdmin()
-          && (docId != 'booking' || isValidBookingSettings(request.resource.data));
+          && (docId != 'booking' || isValidBookingSettings(request.resource.data))
+          && (docId != 'homepage' || isValidHomepageConfig(request.resource.data));
         allow delete: if isAdmin();
       }
 

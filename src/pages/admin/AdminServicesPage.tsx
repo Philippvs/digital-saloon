@@ -19,6 +19,7 @@ import { fieldIssueMessages } from '../../components/fieldIssueMessages'
 import {
   bilingualServiceName,
   emptyServiceFormInput,
+  formatServiceDurationRange,
   serviceFormInputOf,
   sortServicesForAdmin,
   validateServiceForm,
@@ -137,12 +138,11 @@ const ServiceEditorForm: React.FunctionComponent<ServiceEditorFormProps> = ({
       />
       <div className="editor-numbers">
         <TextField
-          label={t('admin.duration')}
+          label={t('admin.durationFrom')}
           value={values.duration}
           onChange={(event) => update('duration', event.target.value)}
           error={Boolean(errors.duration)}
           helperText={errors.duration ?? t('admin.fieldDurationHint')}
-          required
           slotProps={{
             htmlInput: { inputMode: 'numeric' },
             input: {
@@ -153,12 +153,39 @@ const ServiceEditorForm: React.FunctionComponent<ServiceEditorFormProps> = ({
           }}
         />
         <TextField
-          label={t('admin.price')}
+          label={t('admin.durationTo')}
+          value={values.durationMax}
+          onChange={(event) => update('durationMax', event.target.value)}
+          error={Boolean(errors.durationMax)}
+          helperText={errors.durationMax}
+          slotProps={{
+            htmlInput: { inputMode: 'numeric' },
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">{t('admin.unitMinutes')}</InputAdornment>
+              ),
+            },
+          }}
+        />
+      </div>
+      <div className="editor-numbers">
+        <TextField
+          label={t('admin.priceFrom')}
           value={values.price}
           onChange={(event) => update('price', event.target.value)}
           error={Boolean(errors.price)}
           helperText={errors.price}
-          required
+          slotProps={{
+            htmlInput: { inputMode: 'decimal' },
+            input: { startAdornment: <InputAdornment position="start">€</InputAdornment> },
+          }}
+        />
+        <TextField
+          label={t('admin.priceTo')}
+          value={values.priceMax}
+          onChange={(event) => update('priceMax', event.target.value)}
+          error={Boolean(errors.priceMax)}
+          helperText={errors.priceMax}
           slotProps={{
             htmlInput: { inputMode: 'decimal' },
             input: { startAdornment: <InputAdornment position="start">€</InputAdornment> },
@@ -213,6 +240,11 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
       currency: 'EUR',
       minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
     }).format(cents / 100)
+
+  const formatPriceRange = (minCents: number, maxCents?: number): string =>
+    maxCents !== undefined && maxCents > minCents
+      ? `${formatPrice(minCents)}–${formatPrice(maxCents)}`
+      : formatPrice(minCents)
 
   const save = async (serviceId: string | null, draft: ServiceDraft): Promise<void> => {
     const savedId = await onSave(serviceId, draft)
@@ -289,9 +321,16 @@ export const AdminServicesPage: React.FunctionComponent<AdminServicesPageProps> 
                     ) : null}
                   </div>
                   <span className="service-duration">
-                    {t('admin.minutes', { minutes: service.durationMinutes })}
+                    {t('admin.minutes', {
+                      minutes: formatServiceDurationRange(
+                        service.durationMinutes,
+                        service.durationMaxMinutes,
+                      ),
+                    })}
                   </span>
-                  <span className="service-price">{formatPrice(service.priceCents)}</span>
+                  <span className="service-price">
+                    {formatPriceRange(service.priceCents, service.priceMaxCents)}
+                  </span>
                   <Button
                     size="small"
                     aria-label={t('admin.editServiceLabel', {
