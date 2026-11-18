@@ -27,6 +27,9 @@ export const operatorLogin = onCall({ region: functionsRegion }, async (request)
   const email = typeof data.email === 'string' ? data.email.trim().toLowerCase() : ''
   const password = typeof data.password === 'string' ? data.password : ''
   const expected = getOperatorCredentials()
+  if (!expected) {
+    throw new HttpsError('failed-precondition', 'Operator login is not configured.')
+  }
 
   if (
     !email ||
