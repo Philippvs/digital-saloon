@@ -20,7 +20,10 @@ test.describe('my bookings @smoke', () => {
     ).toBeVisible()
     await expect(page.getByRole('button', { name: 'Termin verwalten' })).toBeVisible()
 
-    await page.getByRole('banner').getByRole('button', { name: 'Meine Termine' }).click()
+    await expect(
+      page.getByRole('banner').getByRole('button', { name: 'Meine Termine' }),
+    ).toHaveCount(0)
+    await page.getByRole('main').getByRole('button', { name: 'Meine Termine' }).click()
     await expect(page).toHaveURL(/\/my-bookings/)
     await expect(page.getByRole('heading', { name: 'Meine Termine' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Termin öffnen' }).first()).toBeVisible({

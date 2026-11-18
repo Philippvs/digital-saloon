@@ -4,7 +4,9 @@ import {
   Alert,
   Box,
   Button,
+  ButtonBase,
   CircularProgress,
+  Divider,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -20,6 +22,8 @@ import {
   Typography,
 } from '@mui/material'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ContentCutOutlinedIcon from '@mui/icons-material/ContentCutOutlined'
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined'
 import type { NewAccountInput, StaffOverview } from '../../data/adminAccessApi'
 import { emptySalon } from '../../data/salon'
@@ -65,9 +69,55 @@ export type AdminSettingsPageProps = {
   staffOverview?: StaffOverview
   onCreateFirstAdmin?: (input: NewAccountInput) => Promise<void>
   onCreateEmployee?: (input: NewAccountInput) => Promise<void>
+  onServicesClick: () => void
+  onHomepageClick: () => void
   onOpeningHoursClick: () => void
-  onBackClick: () => void
+  expireBusy: boolean
+  expireMessage: string | null
+  expireError: string | null
+  onExpirePendingClick: () => void
 }
+
+type SettingsLinkProps = {
+  icon: React.ReactNode
+  title: string
+  hint: string
+  onClick: () => void
+}
+
+/** One row of the "Salon" index: a sub-page with its own editor. */
+const SettingsLink: React.FunctionComponent<SettingsLinkProps> = ({
+  icon,
+  title,
+  hint,
+  onClick,
+}) => (
+  <ButtonBase
+    onClick={onClick}
+    sx={{
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 2,
+      px: { xs: 2, sm: 3 },
+      py: 2,
+      textAlign: 'left',
+      justifyContent: 'flex-start',
+      '&:hover, &.Mui-focusVisible': { bgcolor: 'action.hover' },
+      '& .settings-link-chevron': { transition: 'transform 120ms ease' },
+      '&:hover .settings-link-chevron': { transform: 'translateX(2px)' },
+    }}
+  >
+    <Box sx={{ color: 'primary.main', display: 'flex' }}>{icon}</Box>
+    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+      <Typography sx={{ fontWeight: 600, fontSize: '1.0625rem' }}>{title}</Typography>
+      <Typography variant="body2" color="text.secondary">
+        {hint}
+      </Typography>
+    </Box>
+    <ChevronRightIcon className="settings-link-chevron" color="action" />
+  </ButtonBase>
+)
 
 type SaveFeedbackProps = {
   save: SaveState
@@ -400,48 +450,46 @@ export const AdminSettingsPage: React.FunctionComponent<AdminSettingsPageProps> 
   staffOverview,
   onCreateFirstAdmin,
   onCreateEmployee,
+  onServicesClick,
+  onHomepageClick,
   onOpeningHoursClick,
-  onBackClick,
+  expireBusy,
+  expireMessage,
+  expireError,
+  onExpirePendingClick,
 }) => {
   const { t } = useLocale()
 
   return (
     <Stack spacing={4} sx={{ maxWidth: 760 }}>
       <Box>
-        <Button onClick={onBackClick} sx={{ ml: -1, mb: 1 }}>
-          {t('admin.backToDashboard')}
-        </Button>
         <Typography variant="h1">{t('admin.settings')}</Typography>
         <Typography color="text.secondary" sx={{ mt: 0.5 }}>
           {t('admin.settingsSubtitle')}
         </Typography>
       </Box>
 
-      <Paper
-        component="button"
-        type="button"
-        onClick={onOpeningHoursClick}
-        sx={{
-          p: { xs: 2, sm: 3 },
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          textAlign: 'left',
-          font: 'inherit',
-          color: 'inherit',
-          bgcolor: 'background.paper',
-          cursor: 'pointer',
-          '&:hover, &:focus-visible': { borderColor: 'primary.main' },
-        }}
-      >
-        <ScheduleOutlinedIcon color="primary" />
-        <Box sx={{ flexGrow: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: '1.125rem' }}>{t('hours.title')}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t('hours.absencesHint')}
-          </Typography>
-        </Box>
-        <ChevronRightIcon color="action" />
+      <Paper component="nav" aria-label={t('admin.salonAreas')} sx={{ overflow: 'hidden' }}>
+        <SettingsLink
+          icon={<ContentCutOutlinedIcon />}
+          title={t('admin.services')}
+          hint={t('admin.servicesHint')}
+          onClick={onServicesClick}
+        />
+        <Divider />
+        <SettingsLink
+          icon={<ScheduleOutlinedIcon />}
+          title={t('hours.title')}
+          hint={t('hours.absencesHint')}
+          onClick={onOpeningHoursClick}
+        />
+        <Divider />
+        <SettingsLink
+          icon={<HomeOutlinedIcon />}
+          title={t('admin.homepage')}
+          hint={t('admin.homepageSubtitle')}
+          onClick={onHomepageClick}
+        />
       </Paper>
 
       <Paper component="section" aria-labelledby="settings-booking" sx={{ p: { xs: 2, sm: 3 } }}>
@@ -457,6 +505,29 @@ export const AdminSettingsPage: React.FunctionComponent<AdminSettingsPageProps> 
             onSave={onSaveSettings}
           />
         ) : null}
+
+        <Divider sx={{ my: 3 }} />
+        <Box component="section" aria-labelledby="settings-expire">
+          <Typography id="settings-expire" sx={{ fontWeight: 600 }}>
+            {t('admin.maintenance')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
+            {t('admin.maintenanceHint')}
+          </Typography>
+          <Button variant="outlined" disabled={expireBusy} onClick={onExpirePendingClick}>
+            {t('admin.expirePending')}
+          </Button>
+          {expireMessage ? (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              {expireMessage}
+            </Alert>
+          ) : null}
+          {expireError ? (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {expireError}
+            </Alert>
+          ) : null}
+        </Box>
       </Paper>
 
       <Paper component="section" aria-labelledby="settings-salon" sx={{ p: { xs: 2, sm: 3 } }}>

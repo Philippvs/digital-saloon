@@ -20,6 +20,7 @@ import { homeRoute } from './routes/home'
 import { loginRoute } from './routes/login'
 import { manageRoute } from './routes/manage'
 import { myBookingsRoute } from './routes/myBookings'
+import { privacyRoute } from './routes/privacy'
 import { rootRoute } from './routes/root'
 import { RouteError } from './routes/routeError'
 
@@ -34,6 +35,7 @@ export const router = createRouter({
     myBookingsRoute,
     manageRoute,
     loginRoute,
+    privacyRoute,
     adminRoute.addChildren([
       adminIndexRoute,
       adminCalendarRoute,

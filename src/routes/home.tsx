@@ -7,12 +7,13 @@ import { useOpeningHours } from '../hooks/useOpeningHours'
 import { useSalon } from '../hooks/useSalon'
 import { useUserProfile } from '../hooks/useUserProfile'
 import { HomePage } from '../pages/HomePage'
+import { customerOnly } from './customerOnly'
 import { rootRoute } from './root'
 
 export const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: function HomeRoute() {
+  component: customerOnly(function HomeRoute() {
     const navigate = useNavigate()
     const { user, isOperator } = useAuth()
     const profile = useUserProfile(!isOperator && user ? user.uid : null)
@@ -47,5 +48,5 @@ export const homeRoute = createRoute({
         }}
       />
     )
-  },
+  }),
 })

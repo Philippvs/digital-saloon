@@ -1,5 +1,4 @@
 export type Messages = {
-  'nav.myBookings': string
   'nav.staffCalendar': string
   'nav.staffSettings': string
   'nav.staffLogin': string
@@ -28,6 +27,28 @@ export type Messages = {
   'home.stylesHint': string
   'home.directions': string
   'footer.vatId': string
+  'footer.privacy': string
+  'privacy.title': string
+  'privacy.updated': string
+  'privacy.intro': string
+  'privacy.controllerTitle': string
+  'privacy.controllerContact': string
+  'privacy.bookingTitle': string
+  'privacy.bookingBody': string
+  'privacy.emailTitle': string
+  'privacy.emailBody': string
+  'privacy.hostingTitle': string
+  'privacy.hostingBody': string
+  'privacy.storageTitle': string
+  'privacy.storageBody': string
+  'privacy.fontsTitle': string
+  'privacy.fontsBody': string
+  'privacy.retentionTitle': string
+  'privacy.retentionBody': string
+  'privacy.rightsTitle': string
+  'privacy.rightsBody': string
+  'privacy.authorityTitle': string
+  'privacy.authorityBody': string
 
   'book.title': string
   'book.subtitle': string
@@ -48,7 +69,24 @@ export type Messages = {
   'book.lastName': string
   'book.phone': string
   'book.phoneHelp': string
-  'book.privacy': string
+  'book.privacyBefore': string
+  'book.privacyLink': string
+  'book.privacyAfter': string
+  'book.opensInNewTab': string
+  'book.error.firstNameRequired': string
+  'book.error.firstNameTooLong': string
+  'book.error.lastNameRequired': string
+  'book.error.lastNameTooLong': string
+  'book.error.phoneInvalid': string
+  'book.error.emailRequired': string
+  'book.error.emailTooLong': string
+  'book.error.emailInvalid': string
+  'book.error.notesTooLong': string
+  'book.error.privacyRequired': string
+  'book.error.invalid': string
+  'book.error.slotTaken': string
+  'book.error.serviceUnavailable': string
+  'book.error.submitFailed': string
   'book.submit': string
   'book.submitting': string
   'book.otherTime': string
@@ -160,7 +198,6 @@ export type Messages = {
   'admin.customer': string
   'admin.status': string
   'admin.open': string
-  'admin.toCalendar': string
   'admin.noReservations': string
   'admin.reservationsError': string
   'admin.services': string
@@ -174,7 +211,6 @@ export type Messages = {
   'admin.signInRequired': string
   'admin.forbidden': string
   'admin.today': string
-  'admin.allReservations': string
   'admin.calendarLoading': string
   'admin.detailTitle': string
   'admin.backToCalendar': string
@@ -339,7 +375,6 @@ export type Messages = {
 
   'admin.statPending': string
   'admin.pendingEmpty': string
-  'admin.manageTitle': string
   'admin.addReservation': string
   'admin.bookingRulesTitle': string
   'admin.modeAutomatic': string
@@ -367,7 +402,6 @@ export type Messages = {
   'admin.requiredError': string
   'admin.emailError': string
   'admin.tooLongError': string
-  'admin.backToDashboard': string
   'admin.weekNumber': string
   'admin.prevWeek': string
   'admin.nextWeek': string
@@ -383,12 +417,17 @@ export type Messages = {
   'admin.plannerDayFree': string
   'admin.plannerCount': string
   'admin.plannerCountOne': string
+  'admin.viewLabel': string
+  'admin.viewWeek': string
+  'admin.viewList': string
+  'admin.salonAreas': string
+  'admin.servicesHint': string
+  'admin.backToSettings': string
 }
 
 export type MessageKey = keyof Messages
 
 export const de: Messages = {
-  'nav.myBookings': 'Meine Termine',
   'nav.staffCalendar': 'Kalender',
   'nav.staffSettings': 'Einstellungen',
   'nav.staffLogin': 'Login für das Team',
@@ -418,6 +457,37 @@ export const de: Messages = {
   'home.stylesHint': 'Ausgewählte Schnitte, Balayage-Techniken und Colorationen aus unserem Salon.',
   'home.directions': 'Route in Google Maps öffnen',
   'footer.vatId': 'MwSt.-Nr.',
+  'footer.privacy': 'Datenschutz',
+  'privacy.title': 'Datenschutzerklärung',
+  'privacy.updated': 'Stand: November 2026',
+  'privacy.intro':
+    'Wir freuen uns über Ihr Interesse an unserem Salon. Hier erfahren Sie, welche personenbezogenen Daten wir verarbeiten, wenn Sie diese Website nutzen oder online einen Termin buchen, und welche Rechte Sie nach der Datenschutz-Grundverordnung (DSGVO) haben.',
+  'privacy.controllerTitle': 'Verantwortlicher',
+  'privacy.controllerContact': 'Telefon: {phone} · E-Mail: {email}',
+  'privacy.bookingTitle': 'Online-Terminbuchung',
+  'privacy.bookingBody':
+    'Wenn Sie online einen Termin anfragen, verarbeiten wir Vorname, Nachname, Telefonnummer, E-Mail-Adresse, die gewählten Leistungen, den Wunschtermin und Ihre optionalen Anmerkungen. Wir nutzen diese Daten ausschließlich, um Ihren Termin zu planen, zu bestätigen und Sie bei Änderungen zu kontaktieren. Ein Kundenkonto ist nicht nötig.\n\nRechtsgrundlage ist die Durchführung vorvertraglicher Maßnahmen bzw. die Erfüllung des Vertrags (Art. 6 Abs. 1 lit. b DSGVO).',
+  'privacy.emailTitle': 'E-Mail-Benachrichtigungen',
+  'privacy.emailBody':
+    'Nach einer Buchung senden wir Ihnen eine Bestätigung mit einem persönlichen Link, über den Sie Ihren Termin ansehen oder absagen können. Für den Versand nutzen wir einen E-Mail-Dienstleister, der Ihre E-Mail-Adresse und den Inhalt der Nachricht nur in unserem Auftrag verarbeitet (Art. 28 DSGVO).',
+  'privacy.hostingTitle': 'Hosting und Datenbank',
+  'privacy.hostingBody':
+    'Diese Website und die Buchungsdaten werden bei Google Firebase (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland) betrieben. Beim Aufruf der Seite werden technisch notwendige Daten wie IP-Adresse, Zeitpunkt und Browsertyp verarbeitet, um die Website sicher und stabil auszuliefern (Art. 6 Abs. 1 lit. f DSGVO).\n\nEine Übermittlung an Google LLC in den USA kann nicht ausgeschlossen werden. Sie ist durch das EU-US Data Privacy Framework sowie durch EU-Standardvertragsklauseln abgesichert.',
+  'privacy.storageTitle': 'Speicherung in Ihrem Browser',
+  'privacy.storageBody':
+    'Wir setzen keine Tracking- oder Werbe-Cookies und keine Analyse-Tools ein. Im lokalen Speicher Ihres Browsers merken wir uns nur Ihre Sprachwahl und die Links zu Ihren gebuchten Terminen, damit Sie diese unter „Meine Termine“ wiederfinden. Diese Daten verlassen Ihr Gerät nicht und lassen sich jederzeit über die Browsereinstellungen löschen.',
+  'privacy.fontsTitle': 'Schriftarten',
+  'privacy.fontsBody':
+    'Für eine einheitliche Darstellung lädt diese Website Schriftarten von Google Fonts (Google Ireland Limited). Dabei wird Ihre IP-Adresse an Google übermittelt. Rechtsgrundlage ist unser berechtigtes Interesse an einer ansprechenden Darstellung (Art. 6 Abs. 1 lit. f DSGVO).',
+  'privacy.retentionTitle': 'Speicherdauer',
+  'privacy.retentionBody':
+    'Wir speichern Ihre Buchungsdaten nur so lange, wie es für die Terminabwicklung nötig ist, und löschen sie danach, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.',
+  'privacy.rightsTitle': 'Ihre Rechte',
+  'privacy.rightsBody':
+    'Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer Daten, auf Datenübertragbarkeit sowie das Recht, einer Verarbeitung auf Grundlage berechtigter Interessen zu widersprechen (Art. 15–21 DSGVO). Schreiben Sie uns dazu einfach eine E-Mail.',
+  'privacy.authorityTitle': 'Beschwerderecht',
+  'privacy.authorityBody':
+    'Sie können sich bei einer Datenschutz-Aufsichtsbehörde beschweren, in Italien beim Garante per la protezione dei dati personali (www.garanteprivacy.it).',
 
   'book.title': 'Termin buchen',
   'book.subtitle': 'Ohne Kundenkonto — Schritt für Schritt zum Wunschtermin.',
@@ -438,7 +508,28 @@ export const de: Messages = {
   'book.lastName': 'Nachname',
   'book.phone': 'Telefon',
   'book.phoneHelp': 'z. B. 0660 1234567 — wird international gespeichert',
-  'book.privacy': 'Ich habe die Datenschutzhinweise zur Kenntnis genommen.',
+  'book.privacyBefore': 'Ich habe die ',
+  'book.privacyLink': 'Datenschutzhinweise',
+  'book.privacyAfter': ' zur Kenntnis genommen.',
+  'book.opensInNewTab': ' (öffnet in neuem Tab)',
+  'book.error.firstNameRequired': 'Bitte geben Sie Ihren Vornamen ein.',
+  'book.error.firstNameTooLong': 'Der Vorname darf höchstens 80 Zeichen lang sein.',
+  'book.error.lastNameRequired': 'Bitte geben Sie Ihren Nachnamen ein.',
+  'book.error.lastNameTooLong': 'Der Nachname darf höchstens 80 Zeichen lang sein.',
+  'book.error.phoneInvalid': 'Bitte geben Sie eine gültige Telefonnummer ein, z. B. 0473 123456.',
+  'book.error.emailRequired': 'Bitte geben Sie Ihre E-Mail-Adresse ein.',
+  'book.error.emailTooLong': 'Die E-Mail-Adresse ist zu lang.',
+  'book.error.emailInvalid': 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
+  'book.error.notesTooLong': 'Die Anmerkungen dürfen höchstens 1000 Zeichen lang sein.',
+  'book.error.privacyRequired':
+    'Bitte bestätigen Sie, dass Sie die Datenschutzhinweise gelesen haben.',
+  'book.error.invalid': 'Bitte prüfen Sie Ihre Angaben.',
+  'book.error.slotTaken':
+    'Dieser Termin wurde gerade vergeben. Bitte wählen Sie eine andere Uhrzeit.',
+  'book.error.serviceUnavailable':
+    'Diese Leistung ist gerade nicht online buchbar. Bitte rufen Sie uns an.',
+  'book.error.submitFailed':
+    'Die Buchung hat nicht geklappt. Bitte versuchen Sie es erneut oder rufen Sie uns an.',
   'book.submit': 'Termin verbindlich anfragen',
   'book.submitting': 'Wird gebucht…',
   'book.otherTime': 'Andere Zeit',
@@ -540,7 +631,7 @@ export const de: Messages = {
   'login.password': 'Passwort',
   'login.submit': 'Als Admin anmelden',
   'login.submitting': 'Wird angemeldet…',
-  'login.hint': 'Lokal nach Seed: admin@salonflow.local / password123',
+  'login.hint': 'Lokal nach Seed: {email} / {password}',
   'login.staffOnly':
     'Nur für Salon-Mitarbeiter. Kunden buchen Termine ohne Login — zurück zur Startseite.',
   'login.customerNote': 'Kunden buchen Termine ohne Login über die Startseite.',
@@ -557,21 +648,20 @@ export const de: Messages = {
   'admin.customer': 'Kunde',
   'admin.status': 'Status',
   'admin.open': 'Öffnen',
-  'admin.toCalendar': 'Zum Kalender',
   'admin.noReservations': 'Keine Termine im Zeitraum.',
   'admin.reservationsError': 'Termine konnten nicht geladen werden.',
   'admin.services': 'Leistungen',
   'admin.service': 'Leistung',
   'admin.settings': 'Einstellungen',
-  'admin.maintenance': 'Wartung',
-  'admin.maintenanceHint': 'Abgelaufene ausstehende Anfragen manuell prüfen (auch per Zeitplan).',
+  'admin.maintenance': 'Abgelaufene Anfragen',
+  'admin.maintenanceHint':
+    'Unbestätigte Anfragen verfallen automatisch nach der oben eingestellten Frist. Hier lösen Sie die Prüfung sofort aus.',
   'admin.expirePending': 'Ausstehende Anfragen ablaufen lassen',
   'admin.expireResult': 'Ablauf: {expired} von {scanned} ausstehenden Anfragen abgelaufen.',
   'admin.loading': 'Laden…',
   'admin.signInRequired': 'Anmeldung erforderlich.',
   'admin.forbidden': 'Dieser Bereich ist nur für Salon-Administratoren.',
   'admin.today': 'Heute',
-  'admin.allReservations': 'Alle Termine',
   'admin.calendarLoading': 'Kalender laden',
   'admin.detailTitle': 'Termin-Details',
   'admin.backToCalendar': 'Zurück zum Kalender',
@@ -679,7 +769,8 @@ export const de: Messages = {
   'admin.accountDisplayName': 'Name',
   'admin.accountEmail': 'E-Mail',
   'admin.accountPassword': 'Passwort (mind. 8 Zeichen)',
-  'admin.settingsSubtitle': 'Regeln für Online-Buchungen und die Kontaktdaten auf der Website.',
+  'admin.settingsSubtitle':
+    'Leistungen, Öffnungszeiten, Online-Buchung und die Kontaktdaten auf der Website.',
   'admin.settingsLoading': 'Einstellungen laden',
   'admin.settingsError': 'Einstellungen konnten nicht geladen werden.',
   'admin.confirmationMode': 'Neue Buchungen',
@@ -746,7 +837,6 @@ export const de: Messages = {
   'hours.openOnly': 'Nur {hours} geöffnet',
   'admin.statPending': 'Offene Anfragen',
   'admin.pendingEmpty': 'Keine offenen Anfragen.',
-  'admin.manageTitle': 'Verwaltung',
   'admin.addReservation': 'Termin eintragen',
   'admin.bookingRulesTitle': 'Online-Buchung',
   'admin.modeAutomatic': 'Automatisch bestätigen',
@@ -774,7 +864,6 @@ export const de: Messages = {
   'admin.requiredError': 'Bitte ausfüllen.',
   'admin.emailError': 'Bitte eine gültige E-Mail-Adresse eingeben.',
   'admin.tooLongError': 'Höchstens {max} Zeichen.',
-  'admin.backToDashboard': 'Zum Kalender',
   'admin.weekNumber': 'KW {week}',
   'admin.prevWeek': 'Vorherige Woche',
   'admin.nextWeek': 'Nächste Woche',
@@ -790,10 +879,15 @@ export const de: Messages = {
   'admin.plannerDayFree': 'Noch frei',
   'admin.plannerCount': '{count} Termine',
   'admin.plannerCountOne': '1 Termin',
+  'admin.viewLabel': 'Ansicht',
+  'admin.viewWeek': 'Woche',
+  'admin.viewList': 'Liste',
+  'admin.salonAreas': 'Salon',
+  'admin.servicesHint': 'Preise, Dauer und welche Leistungen online buchbar sind.',
+  'admin.backToSettings': 'Zu den Einstellungen',
 }
 
 export const it: Messages = {
-  'nav.myBookings': 'I miei appuntamenti',
   'nav.staffCalendar': 'Calendario',
   'nav.staffSettings': 'Impostazioni',
   'nav.staffLogin': 'Accesso per il team',
@@ -823,6 +917,37 @@ export const it: Messages = {
   'home.stylesHint': 'Tagli selezionati, tecniche balayage e colorazioni dal nostro salone.',
   'home.directions': 'Apri il percorso in Google Maps',
   'footer.vatId': 'P. IVA',
+  'footer.privacy': 'Privacy',
+  'privacy.title': 'Informativa sulla privacy',
+  'privacy.updated': 'Aggiornata a novembre 2026',
+  'privacy.intro':
+    'Grazie per l’interesse nel nostro salone. Qui trova quali dati personali trattiamo quando utilizza questo sito o prenota un appuntamento online, e quali diritti le spettano ai sensi del Regolamento generale sulla protezione dei dati (GDPR).',
+  'privacy.controllerTitle': 'Titolare del trattamento',
+  'privacy.controllerContact': 'Telefono: {phone} · E-mail: {email}',
+  'privacy.bookingTitle': 'Prenotazione online',
+  'privacy.bookingBody':
+    'Quando richiede un appuntamento online trattiamo nome, cognome, numero di telefono, indirizzo e-mail, i servizi scelti, la data desiderata ed eventuali note. Utilizziamo questi dati esclusivamente per pianificare e confermare l’appuntamento e per contattarla in caso di modifiche. Non serve alcun account cliente.\n\nLa base giuridica è l’esecuzione di misure precontrattuali o del contratto (art. 6, par. 1, lett. b GDPR).',
+  'privacy.emailTitle': 'Notifiche via e-mail',
+  'privacy.emailBody':
+    'Dopo la prenotazione le inviamo una conferma con un link personale per visualizzare o annullare l’appuntamento. Per l’invio ci avvaliamo di un fornitore di servizi e-mail che tratta il suo indirizzo e il contenuto del messaggio solo per nostro conto (art. 28 GDPR).',
+  'privacy.hostingTitle': 'Hosting e database',
+  'privacy.hostingBody':
+    'Questo sito e i dati delle prenotazioni sono gestiti tramite Google Firebase (Google Ireland Limited, Gordon House, Barrow Street, Dublino 4, Irlanda). All’apertura del sito vengono trattati dati tecnicamente necessari come indirizzo IP, data e ora e tipo di browser, per fornire il sito in modo sicuro e stabile (art. 6, par. 1, lett. f GDPR).\n\nNon si può escludere un trasferimento a Google LLC negli Stati Uniti. Esso è tutelato dal EU-US Data Privacy Framework e dalle clausole contrattuali standard dell’UE.',
+  'privacy.storageTitle': 'Memorizzazione nel browser',
+  'privacy.storageBody':
+    'Non utilizziamo cookie di tracciamento o pubblicitari né strumenti di analisi. Nella memoria locale del browser salviamo solo la lingua scelta e i link ai suoi appuntamenti, così da ritrovarli in «I miei appuntamenti». Questi dati restano sul suo dispositivo e possono essere eliminati in qualsiasi momento dalle impostazioni del browser.',
+  'privacy.fontsTitle': 'Caratteri tipografici',
+  'privacy.fontsBody':
+    'Per una visualizzazione uniforme questo sito carica i caratteri da Google Fonts (Google Ireland Limited). In tal modo il suo indirizzo IP viene trasmesso a Google. La base giuridica è il nostro legittimo interesse a una presentazione curata (art. 6, par. 1, lett. f GDPR).',
+  'privacy.retentionTitle': 'Durata della conservazione',
+  'privacy.retentionBody':
+    'Conserviamo i dati della prenotazione solo per il tempo necessario a gestire l’appuntamento e li cancelliamo in seguito, salvo obblighi di conservazione previsti dalla legge.',
+  'privacy.rightsTitle': 'I suoi diritti',
+  'privacy.rightsBody':
+    'Ha diritto di accesso, rettifica, cancellazione e limitazione del trattamento dei suoi dati, alla portabilità dei dati e di opporsi a un trattamento basato sul legittimo interesse (artt. 15–21 GDPR). Basta scriverci un’e-mail.',
+  'privacy.authorityTitle': 'Diritto di reclamo',
+  'privacy.authorityBody':
+    'Può proporre reclamo a un’autorità di controllo, in Italia al Garante per la protezione dei dati personali (www.garanteprivacy.it).',
 
   'book.title': 'Prenota un appuntamento',
   'book.subtitle': 'Senza account — passo dopo passo fino all’orario desiderato.',
@@ -843,7 +968,25 @@ export const it: Messages = {
   'book.lastName': 'Cognome',
   'book.phone': 'Telefono',
   'book.phoneHelp': 'es. 0660 1234567 — salvato in formato internazionale',
-  'book.privacy': 'Ho preso visione dell’informativa sulla privacy.',
+  'book.privacyBefore': 'Ho preso visione dell’',
+  'book.privacyLink': 'informativa sulla privacy',
+  'book.privacyAfter': '.',
+  'book.opensInNewTab': ' (si apre in una nuova scheda)',
+  'book.error.firstNameRequired': 'Inserisca il suo nome.',
+  'book.error.firstNameTooLong': 'Il nome può contenere al massimo 80 caratteri.',
+  'book.error.lastNameRequired': 'Inserisca il suo cognome.',
+  'book.error.lastNameTooLong': 'Il cognome può contenere al massimo 80 caratteri.',
+  'book.error.phoneInvalid': 'Inserisca un numero di telefono valido, ad es. 0473 123456.',
+  'book.error.emailRequired': 'Inserisca il suo indirizzo e-mail.',
+  'book.error.emailTooLong': 'L’indirizzo e-mail è troppo lungo.',
+  'book.error.emailInvalid': 'Inserisca un indirizzo e-mail valido.',
+  'book.error.notesTooLong': 'Le note possono contenere al massimo 1000 caratteri.',
+  'book.error.privacyRequired': 'Confermi di aver letto l’informativa sulla privacy.',
+  'book.error.invalid': 'Controlli i dati inseriti.',
+  'book.error.slotTaken': 'Questo orario è appena stato prenotato. Scelga un altro orario.',
+  'book.error.serviceUnavailable':
+    'Questo servizio al momento non è prenotabile online. Ci chiami.',
+  'book.error.submitFailed': 'La prenotazione non è andata a buon fine. Riprovi o ci chiami.',
   'book.submit': 'Richiedi appuntamento',
   'book.submitting': 'Prenotazione in corso…',
   'book.otherTime': 'Altro orario',
@@ -945,7 +1088,7 @@ export const it: Messages = {
   'login.password': 'Password',
   'login.submit': 'Accedi come admin',
   'login.submitting': 'Accesso in corso…',
-  'login.hint': 'Locale dopo seed: admin@salonflow.local / password123',
+  'login.hint': 'Locale dopo seed: {email} / {password}',
   'login.staffOnly':
     'Solo per lo staff del salone. I clienti prenotano senza login — torna alla home.',
   'login.customerNote': 'I clienti prenotano senza login dalla home.',
@@ -962,22 +1105,20 @@ export const it: Messages = {
   'admin.customer': 'Cliente',
   'admin.status': 'Stato',
   'admin.open': 'Apri',
-  'admin.toCalendar': 'Vai al calendario',
   'admin.noReservations': 'Nessun appuntamento nel periodo.',
   'admin.reservationsError': 'Impossibile caricare gli appuntamenti.',
   'admin.services': 'Servizi',
   'admin.service': 'Servizio',
   'admin.settings': 'Impostazioni',
-  'admin.maintenance': 'Manutenzione',
+  'admin.maintenance': 'Richieste scadute',
   'admin.maintenanceHint':
-    'Controlla manualmente le richieste in attesa scadute (anche tramite pianificazione).',
+    'Le richieste non confermate scadono automaticamente dopo il termine impostato sopra. Qui può avviare subito il controllo.',
   'admin.expirePending': 'Fai scadere le richieste in attesa',
   'admin.expireResult': 'Scadenza: {expired} di {scanned} richieste in attesa scadute.',
   'admin.loading': 'Caricamento…',
   'admin.signInRequired': 'Accesso richiesto.',
   'admin.forbidden': 'Area riservata agli amministratori del salone.',
   'admin.today': 'Oggi',
-  'admin.allReservations': 'Tutti gli appuntamenti',
   'admin.calendarLoading': 'Caricamento calendario',
   'admin.detailTitle': 'Dettagli appuntamento',
   'admin.backToCalendar': 'Torna al calendario',
@@ -1084,7 +1225,7 @@ export const it: Messages = {
   'admin.accountDisplayName': 'Nome',
   'admin.accountEmail': 'E-mail',
   'admin.accountPassword': 'Password (min. 8 caratteri)',
-  'admin.settingsSubtitle': 'Regole per le prenotazioni online e i contatti mostrati sul sito.',
+  'admin.settingsSubtitle': 'Servizi, orari, prenotazione online e i contatti mostrati sul sito.',
   'admin.settingsLoading': 'Caricamento impostazioni',
   'admin.settingsError': 'Impossibile caricare le impostazioni.',
   'admin.confirmationMode': 'Nuove prenotazioni',
@@ -1150,7 +1291,6 @@ export const it: Messages = {
   'hours.openOnly': 'Aperto solo {hours}',
   'admin.statPending': 'Richieste aperte',
   'admin.pendingEmpty': 'Nessuna richiesta aperta.',
-  'admin.manageTitle': 'Gestione',
   'admin.addReservation': 'Inserisci appuntamento',
   'admin.bookingRulesTitle': 'Prenotazione online',
   'admin.modeAutomatic': 'Conferma automatica',
@@ -1178,7 +1318,6 @@ export const it: Messages = {
   'admin.requiredError': 'Campo obbligatorio.',
   'admin.emailError': 'Inserite un indirizzo e-mail valido.',
   'admin.tooLongError': 'Al massimo {max} caratteri.',
-  'admin.backToDashboard': 'Al calendario',
   'admin.weekNumber': 'Settimana {week}',
   'admin.prevWeek': 'Settimana precedente',
   'admin.nextWeek': 'Settimana successiva',
@@ -1194,6 +1333,12 @@ export const it: Messages = {
   'admin.plannerDayFree': 'Ancora libero',
   'admin.plannerCount': '{count} appuntamenti',
   'admin.plannerCountOne': '1 appuntamento',
+  'admin.viewLabel': 'Vista',
+  'admin.viewWeek': 'Settimana',
+  'admin.viewList': 'Elenco',
+  'admin.salonAreas': 'Salone',
+  'admin.servicesHint': 'Prezzi, durata e quali servizi si possono prenotare online.',
+  'admin.backToSettings': 'Alle impostazioni',
 }
 
 export const catalogs: Record<'de' | 'it', Messages> = { de, it }

@@ -547,7 +547,7 @@ export const AdminHomepagePage: React.FunctionComponent<AdminHomepagePageProps> 
             {t('admin.homepageSubtitle')}
           </Typography>
         </Box>
-        <Button onClick={onBackClick}>{t('admin.backToDashboard')}</Button>
+        <Button onClick={onBackClick}>{t('admin.backToSettings')}</Button>
       </Box>
 
       {isLoading ? <CircularProgress aria-label={t('admin.loading')} /> : null}

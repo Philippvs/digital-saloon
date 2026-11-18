@@ -1,4 +1,5 @@
 import { httpsCallable } from 'firebase/functions'
+import * as v from 'valibot'
 
 import { firebaseFunctions } from '../firebase'
 
@@ -110,4 +111,26 @@ export async function rescheduleManagedReservation(input: {
   )
   const result = await callable(input)
   return result.data.reservation
+}
+
+/** Why an online booking was rejected, in terms the customer can act on. */
+export type BookingFailure = 'slotTaken' | 'serviceUnavailable' | 'failed'
+
+const bookingFailureDetailsSchema = v.object({ reason: v.string() })
+
+/** Reads the `reason` the `createReservation` function attaches to its errors. */
+export function bookingFailureOf(error: unknown): BookingFailure {
+  const details =
+    typeof error === 'object' && error !== null && 'details' in error ? error.details : undefined
+  const parsed = v.safeParse(bookingFailureDetailsSchema, details)
+  if (!parsed.success) return 'failed'
+  switch (parsed.output.reason) {
+    case 'UNAVAILABLE':
+      return 'slotTaken'
+    case 'SERVICE_INACTIVE':
+    case 'NOT_FOUND':
+      return 'serviceUnavailable'
+    default:
+      return 'failed'
+  }
 }

@@ -8,7 +8,7 @@ import {
   seededBookingSettings,
   seededSalonDetails,
 } from './firestoreAdmin'
-import { signInAsDemo } from './helpers'
+import { signInAsDemo, signOutAsDemo } from './helpers'
 
 async function openSettings(page: Page): Promise<void> {
   await page.goto('/admin/settings')
@@ -83,6 +83,7 @@ test.describe('admin settings @smoke', () => {
     await expect.poll(async () => (await getBookingSettings()).confirmationMode).toBe('MANUAL')
 
     const lastName = `Anfrage${Date.now().toString().slice(-5)}`
+    await signOutAsDemo(page)
     await page.goto('/book')
     await selectServiceDateAndTime(page)
     await page.getByLabel('Vorname').fill('Manuell')
@@ -93,7 +94,7 @@ test.describe('admin settings @smoke', () => {
     await page.getByRole('button', { name: 'Termin verbindlich anfragen' }).click()
     await expect(page.getByRole('heading', { name: /Anfrage eingegangen/ })).toBeVisible()
 
-    await page.goto('/admin')
+    await signInAsDemo(page)
     await expect(
       page.getByRole('region', { name: 'Offene Anfragen' }).getByText(`Manuell ${lastName}`),
     ).toBeVisible()
@@ -109,6 +110,7 @@ test.describe('admin settings @smoke', () => {
     await expect.poll(async () => (await getSalonDetails()).phone).toBe(newPhone)
     expect((await getSalonDetails()).timezone).toBe('Europe/Vienna')
 
+    await signOutAsDemo(page)
     await page.goto('/')
     await expect(page.getByRole('contentinfo')).toContainText(newPhone)
     await expect(

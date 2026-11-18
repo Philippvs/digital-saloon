@@ -1,3 +1,4 @@
+import { IconButton } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
 import { brand } from '../theme'
@@ -33,21 +34,31 @@ export const Header = styled('header')(({ theme }) => ({
   },
 }))
 
+/**
+ * Every underlined header item (links, phone icons, language switch) shares this box,
+ * so their underlines sit on one line at every width.
+ */
+const navItemHeight = 40
+const navUnderline = {
+  boxSizing: 'border-box',
+  height: navItemHeight,
+  borderBottom: '2px solid transparent',
+} as const
+
 export const NavLink = styled('button')(({ theme }) => ({
-  padding: theme.spacing(1, 0),
   border: 0,
+  ...navUnderline,
+  alignItems: 'center',
+  padding: theme.spacing(0, 0.25),
   background: 'none',
   color: brand.espresso,
   font: 'inherit',
   fontSize: '0.9375rem',
   fontWeight: 500,
   cursor: 'pointer',
-  textDecoration: 'underline',
-  textDecorationColor: 'transparent',
-  textDecorationThickness: 2,
-  textUnderlineOffset: 6,
-  transition: 'text-decoration-color 120ms ease',
-  '&:hover': { textDecorationColor: brand.orange },
+  transition: 'border-color 120ms ease',
+  '&:hover': { borderBottomColor: brand.orange },
+  '&[aria-current="page"]': { borderBottomColor: brand.orange },
   '&:focus-visible': {
     outline: `2px solid ${brand.orange}`,
     outlineOffset: 2,
@@ -61,9 +72,10 @@ export const LanguageSwitch = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   '& button': {
-    minWidth: 32,
-    padding: '6px 6px',
     border: 0,
+    ...navUnderline,
+    minWidth: 32,
+    padding: '0 6px',
     background: 'none',
     color: brand.espressoMuted,
     font: 'inherit',
@@ -71,7 +83,6 @@ export const LanguageSwitch = styled('div')(({ theme }) => ({
     fontWeight: 500,
     letterSpacing: '0.04em',
     cursor: 'pointer',
-    borderBottom: '2px solid transparent',
   },
   '& button + button': {
     borderLeft: `1px solid rgba(74, 54, 49, 0.2)`,
@@ -90,3 +101,27 @@ export const LanguageSwitch = styled('div')(({ theme }) => ({
     '& button': { minWidth: 28, paddingInline: 4 },
   },
 }))
+
+/** Phone-width header icon; the current page gets the same orange underline as `NavLink`. */
+export const NavIconButton = styled(IconButton)(({ theme }) => ({
+  ...navUnderline,
+  width: navItemHeight,
+  padding: 0,
+  color: theme.palette.primary.main,
+  borderRadius: 0,
+  '&[aria-current="page"]': { borderBottomColor: brand.orange },
+}))
+
+export const FooterLink = styled('button')({
+  padding: 0,
+  border: 0,
+  background: 'none',
+  color: 'inherit',
+  font: 'inherit',
+  fontSize: '0.875rem',
+  opacity: 0.7,
+  cursor: 'pointer',
+  textDecoration: 'underline',
+  textUnderlineOffset: 4,
+  '&:hover, &:focus-visible': { opacity: 1 },
+})

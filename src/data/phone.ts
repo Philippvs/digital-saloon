@@ -41,36 +41,70 @@ export function normalizePhoneToE164(raw: string, defaultCountry = 'AT'): string
   return `+${digits}`
 }
 
+/**
+ * Validation problems in the booking contact form. The schemas below use these codes as
+ * their messages; the UI translates them, so customers see their own language.
+ */
+export const bookingContactIssues = [
+  'firstNameRequired',
+  'firstNameTooLong',
+  'lastNameRequired',
+  'lastNameTooLong',
+  'phoneInvalid',
+  'emailRequired',
+  'emailTooLong',
+  'emailInvalid',
+  'notesTooLong',
+  'privacyRequired',
+  'invalid',
+] as const
+export type BookingContactIssue = (typeof bookingContactIssues)[number]
+
+/** First problem of a failed `bookingContactSchema` parse as a translatable code. */
+export function bookingContactIssueOf(
+  issues: readonly v.BaseIssue<unknown>[],
+): BookingContactIssue {
+  const message = issues[0]?.message
+  return bookingContactIssues.find((code) => code === message) ?? 'invalid'
+}
+
+const issue = (code: BookingContactIssue): BookingContactIssue => code
+
 export const phoneE164Schema = v.pipe(
   v.string(),
-  v.minLength(1),
-  v.maxLength(40),
-  v.check(
-    (value) => normalizePhoneToE164(value) !== null,
-    'Telefonnummer muss gültig sein (z. B. 0660 1234567).',
-  ),
+  v.minLength(1, issue('phoneInvalid')),
+  v.maxLength(40, issue('phoneInvalid')),
+  v.check((value) => normalizePhoneToE164(value) !== null, issue('phoneInvalid')),
   v.transform((value) => normalizePhoneToE164(value)!),
 )
 
 export const emailSchema = v.pipe(
   v.string(),
   v.trim(),
-  v.minLength(1, 'E-Mail-Adresse ist erforderlich.'),
-  v.maxLength(254, 'E-Mail-Adresse ist zu lang.'),
-  v.email('Bitte eine gültige E-Mail-Adresse eingeben.'),
+  v.minLength(1, issue('emailRequired')),
+  v.maxLength(254, issue('emailTooLong')),
+  v.email(issue('emailInvalid')),
 )
 
 export const notesSchema = v.optional(
-  v.pipe(v.string(), v.trim(), v.maxLength(1000, 'Notizen dürfen maximal 1000 Zeichen lang sein.')),
+  v.pipe(v.string(), v.trim(), v.maxLength(1000, issue('notesTooLong'))),
 )
 
 export const bookingContactSchema = v.object({
-  firstName: v.pipe(v.string(), v.minLength(1, 'Vorname ist erforderlich.'), v.maxLength(80)),
-  lastName: v.pipe(v.string(), v.minLength(1, 'Nachname ist erforderlich.'), v.maxLength(80)),
+  firstName: v.pipe(
+    v.string(),
+    v.minLength(1, issue('firstNameRequired')),
+    v.maxLength(80, issue('firstNameTooLong')),
+  ),
+  lastName: v.pipe(
+    v.string(),
+    v.minLength(1, issue('lastNameRequired')),
+    v.maxLength(80, issue('lastNameTooLong')),
+  ),
   phone: phoneE164Schema,
   email: emailSchema,
   notes: notesSchema,
-  privacyAccepted: v.literal(true, 'Bitte akzeptieren Sie die Datenschutzhinweise.'),
+  privacyAccepted: v.literal(true, issue('privacyRequired')),
 })
 
 export type BookingContact = v.InferOutput<typeof bookingContactSchema>

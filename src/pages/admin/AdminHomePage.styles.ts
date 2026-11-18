@@ -1,4 +1,4 @@
-import { styled } from '@mui/material/styles'
+import { alpha, styled } from '@mui/material/styles'
 
 import { brand } from '../../theme'
 
@@ -17,7 +17,9 @@ export const WeekTotals = styled('dl')(({ theme }) => ({
   },
   '& dd': {
     margin: 0,
+    whiteSpace: 'nowrap',
     fontSize: '1.25rem',
+    [theme.breakpoints.down('sm')]: { fontSize: '1.125rem' },
     fontWeight: 700,
     letterSpacing: '-0.01em',
     fontVariantNumeric: 'tabular-nums',
@@ -35,4 +37,53 @@ export const WeekTitle = styled('h1')(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     fontSize: '1.75rem',
   },
+}))
+
+/**
+ * Week header. Phone: title, totals, week controls, then a full-width "add" button.
+ * Desktop: one row, totals pushed right next to the primary action.
+ */
+export const Toolbar = styled('div')(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  gridTemplateAreas: '"title" "totals" "controls" "cta"',
+  rowGap: theme.spacing(2),
+  alignItems: 'end',
+  '& .toolbar-title': { gridArea: 'title', minWidth: 0 },
+  '& .toolbar-controls': {
+    gridArea: 'controls',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing(2),
+  },
+  '& .toolbar-totals': { gridArea: 'totals' },
+  '& .toolbar-cta': { gridArea: 'cta', whiteSpace: 'nowrap' },
+  [theme.breakpoints.down('md')]: {
+    '& .toolbar-totals': {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      paddingBlock: theme.spacing(1.5),
+      borderBlock: `1px solid ${theme.palette.divider}`,
+    },
+  },
+  [theme.breakpoints.up('md')]: {
+    gridTemplateColumns: 'auto auto 1fr auto',
+    gridTemplateAreas: '"title controls totals cta"',
+    columnGap: theme.spacing(3),
+    '& .toolbar-controls': { paddingBottom: theme.spacing(0.25) },
+    '& .toolbar-totals': { justifySelf: 'end' },
+  },
+}))
+
+/** Pending request; the orange edge matches "Ausstehend" in the week planner legend. */
+export const PendingItem = styled('li')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1.5),
+  minWidth: 0,
+  padding: theme.spacing(1.25, 1.5, 1.25, 2),
+  borderLeft: `3px solid ${brand.orange}`,
+  backgroundColor: alpha(brand.orange, 0.06),
 }))

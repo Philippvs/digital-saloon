@@ -6,9 +6,9 @@ test.describe('admin @smoke', () => {
   test('admin opens the week planner and confirms a pending seed reservation', async ({ page }) => {
     await signInAsDemo(page)
 
-    await page.goto('/')
+    await page.goto('/admin/settings')
     await page.getByRole('button', { name: 'Kalender' }).click()
-    await expect(page).toHaveURL(/\/admin/)
+    await expect(page).toHaveURL(/\/admin$/)
     await expect(page.getByRole('region', { name: 'Wochenkalender' })).toBeVisible()
 
     await page.goto('/admin?week=2026-04-06')
