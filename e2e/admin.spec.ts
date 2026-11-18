@@ -8,7 +8,7 @@ test.describe('admin @smoke', () => {
 
     await page.goto('/admin/settings')
     await page.getByRole('button', { name: 'Kalender' }).click()
-    await expect(page).toHaveURL(/\/admin$/)
+    await expect(page).toHaveURL(/\/admin\?week=/)
     await expect(page.getByRole('region', { name: 'Wochenkalender' })).toBeVisible()
 
     await page.goto('/admin?week=2026-04-06')

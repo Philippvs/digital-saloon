@@ -232,9 +232,9 @@ test.describe('admin week planner @smoke', () => {
     await page.goto('/admin')
     const views = page.getByRole('group', { name: 'Ansicht' })
     await views.getByRole('button', { name: 'Liste' }).click()
-    await expect(page).toHaveURL(/\/admin\/reservations$/)
+    await expect(page).toHaveURL(/\/admin\/reservations\?week=/)
     await views.getByRole('button', { name: 'Woche' }).click()
-    await expect(page).toHaveURL(/\/admin$/)
+    await expect(page).toHaveURL(/\/admin\?week=/)
 
     await page.getByRole('banner').getByRole('button', { name: 'Einstellungen' }).click()
     await expect(page).toHaveURL(/\/admin\/settings$/)

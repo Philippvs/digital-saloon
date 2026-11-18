@@ -24,17 +24,17 @@ test.describe('navigation @smoke', () => {
     await signInAsDemo(page)
 
     await page.goto('/')
-    await expect(page).toHaveURL(/\/admin$/)
+    await expect(page).toHaveURL(/\/admin(\?week=|$)/)
 
     await page.goto('/book')
-    await expect(page).toHaveURL(/\/admin$/)
+    await expect(page).toHaveURL(/\/admin(\?week=|$)/)
 
     await page.goto('/admin/settings')
     await page
       .getByRole('banner')
       .getByRole('button', { name: /KIMM Hair|Salon 1500/ })
       .click()
-    await expect(page).toHaveURL(/\/admin$/)
+    await expect(page).toHaveURL(/\/admin\?week=/)
     await expect(
       page.getByRole('banner').getByRole('button', { name: 'Termin buchen' }),
     ).toHaveCount(0)

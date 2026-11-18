@@ -84,11 +84,7 @@ export const adminRoute = createRoute({
 
 const ymdSearchParam = optionalSearchParam(v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/)))
 
-const adminIndexSearchSchema = v.object({
-  week: ymdSearchParam,
-})
-
-const adminReturnWeekSearchSchema = v.object({
+const adminWeekSearchSchema = v.object({
   week: ymdSearchParam,
 })
 
@@ -103,24 +99,27 @@ const AdminIndexRoute: React.FunctionComponent = () => {
   const timeZone = salon.data?.timezone ?? 'Europe/Vienna'
   const now = new Date()
   const today = todayYmdInTimeZone(timeZone, now)
+  const weekFromSearch = search.week ? startOfWeekYmd(search.week) : null
+  // Wait for opening hours before choosing the default week to avoid a first-paint flip.
+  const weekReady = weekFromSearch != null || !openingHours.isLoading
   const currentWeekStart = defaultWeekStartYmd(today, openingHours.data)
-  const weekStart = search.week ? startOfWeekYmd(search.week) : currentWeekStart
+  const weekStart = weekFromSearch ?? currentWeekStart
 
   // Keep the visible week in the URL so reload and browser-back restore it.
   useEffect(() => {
-    if (openingHours.isLoading) return
+    if (!weekReady) return
     if (search.week === weekStart) return
     void navigate({
       to: '/admin',
       search: { week: weekStart },
       replace: true,
     })
-  }, [navigate, openingHours.isLoading, search.week, weekStart])
+  }, [navigate, search.week, weekReady, weekStart])
 
   const weekRange = weekQueryRange(weekStart)
-  const weekReservations = useAdminReservations(weekRange.startIso, weekRange.endIso, true)
+  const weekReservations = useAdminReservations(weekRange.startIso, weekRange.endIso, weekReady)
   const plan =
-    weekReservations.data && !openingHours.isLoading && !closures.isLoading
+    weekReady && weekReservations.data && !openingHours.isLoading && !closures.isLoading
       ? planWeek({
           reservations: weekReservations.data,
           weekStartYmd: weekStart,
@@ -162,7 +161,9 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       weekRangeLabel={weekRangeLabel}
       isCurrentWeek={weekStart === currentWeekStart}
       plan={plan}
-      planLoading={weekReservations.isLoading || openingHours.isLoading || closures.isLoading}
+      planLoading={
+        !weekReady || weekReservations.isLoading || openingHours.isLoading || closures.isLoading
+      }
       planError={weekReservations.isError}
       pending={pending}
       confirmingReservationId={
@@ -204,7 +205,7 @@ const AdminIndexRoute: React.FunctionComponent = () => {
         })
       }}
       onListViewClick={() => {
-        void navigate({ to: '/admin/reservations' })
+        void navigate({ to: '/admin/reservations', search: weekSearch })
       }}
     />
   )
@@ -213,7 +214,7 @@ const AdminIndexRoute: React.FunctionComponent = () => {
 export const adminIndexRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/',
-  validateSearch: (search: Record<string, unknown>) => v.parse(adminIndexSearchSchema, search),
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminWeekSearchSchema, search),
   component: AdminIndexRoute,
 })
 
@@ -238,8 +239,11 @@ export const adminCalendarRoute = createRoute({
 export const adminReservationsRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/reservations',
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminWeekSearchSchema, search),
   component: function AdminReservationsRoute() {
     const navigate = useNavigate()
+    const search = adminReservationsRoute.useSearch()
+    const returnWeek = search.week ? startOfWeekYmd(search.week) : undefined
     const salon = useSalon()
     const today = todayYmdInTimeZone(salon.data?.timezone ?? 'Europe/Vienna')
     const range = listRange(today)
@@ -254,10 +258,14 @@ export const adminReservationsRoute = createRoute({
           void navigate({
             to: '/admin/reservations/$reservationId',
             params: { reservationId },
+            search: returnWeek ? { week: returnWeek } : {},
           })
         }}
         onCalendarClick={() => {
-          void navigate({ to: '/admin' })
+          void navigate({
+            to: '/admin',
+            search: returnWeek ? { week: returnWeek } : {},
+          })
         }}
       />
     )
@@ -267,7 +275,7 @@ export const adminReservationsRoute = createRoute({
 export const adminReservationDetailRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/reservations/$reservationId',
-  validateSearch: (search: Record<string, unknown>) => v.parse(adminReturnWeekSearchSchema, search),
+  validateSearch: (search: Record<string, unknown>) => v.parse(adminWeekSearchSchema, search),
   component: function AdminReservationDetailRoute() {
     const navigate = useNavigate()
     const { reservationId } = adminReservationDetailRoute.useParams()
