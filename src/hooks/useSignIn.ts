@@ -29,8 +29,14 @@ export function useSignIn(): UseMutationResult<UserCredential, Error, SignInInpu
           try {
             const token = await callOperatorLogin(email, password)
             return await signInWithCustomToken(firebaseAuth, token)
-          } catch {
-            throw originalError
+          } catch (operatorError: unknown) {
+            if (
+              operatorError instanceof FirebaseError &&
+              operatorError.code === 'functions/unauthenticated'
+            ) {
+              throw originalError
+            }
+            throw operatorError
           }
         }
         throw originalError
