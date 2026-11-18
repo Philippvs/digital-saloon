@@ -260,6 +260,56 @@ export type Messages = {
   'admin.yes': string
   'admin.no': string
   'admin.minutes': string
+  'admin.durationFrom': string
+  'admin.durationTo': string
+  'admin.priceFrom': string
+  'admin.priceTo': string
+  'admin.homepage': string
+  'admin.homepageSubtitle': string
+  'admin.homepageEditButton': string
+  'admin.homepageSectionsTitle': string
+  'admin.homepageSectionsHint': string
+  'admin.homepageSectionHero': string
+  'admin.homepageSectionServices': string
+  'admin.homepageSectionStyles': string
+  'admin.homepageSectionStylists': string
+  'admin.homepageSectionVisit': string
+  'admin.homepageGalleryTitle': string
+  'admin.homepageGalleryHint': string
+  'admin.homepageUploadImage': string
+  'admin.homepageUploading': string
+  'admin.homepageImageUrl': string
+  'admin.homepageImageAltDe': string
+  'admin.homepageImageAltIt': string
+  'admin.homepageAddImage': string
+  'admin.homepageRemoveImage': string
+  'admin.homepageResetGallery': string
+  'admin.homepageCustomSectionsTitle': string
+  'admin.homepageAddSection': string
+  'admin.homepageRemoveSection': string
+  'admin.homepageSectionTitleDe': string
+  'admin.homepageSectionTitleIt': string
+  'admin.homepageSectionBodyDe': string
+  'admin.homepageSectionBodyIt': string
+  'admin.homepageSectionImage': string
+  'home.carouselPrev': string
+  'home.carouselNext': string
+  'admin.demoModeTitle': string
+  'admin.demoModeHint': string
+  'admin.demoModeSwitch': string
+  'admin.firstAdminTitle': string
+  'admin.firstAdminHint': string
+  'admin.firstAdminCreated': string
+  'admin.firstAdminCreateButton': string
+  'admin.firstAdminAlreadyExists': string
+  'admin.employeesTitle': string
+  'admin.employeesHint': string
+  'admin.employeeCreateButton': string
+  'admin.employeeCreated': string
+  'admin.primaryAdminBadge': string
+  'admin.accountDisplayName': string
+  'admin.accountEmail': string
+  'admin.accountPassword': string
   'admin.settingsSubtitle': string
   'admin.settingsLoading': string
   'admin.settingsError': string
@@ -665,6 +715,60 @@ export const de: Messages = {
   'admin.yes': 'Ja',
   'admin.no': 'Nein',
   'admin.minutes': '{minutes} Min',
+  'admin.durationFrom': 'Dauer (von)',
+  'admin.durationTo': 'Bis (Min., optional)',
+  'admin.priceFrom': 'Preis (von)',
+  'admin.priceTo': 'Bis (€, optional)',
+  'admin.homepage': 'Startseite',
+  'admin.homepageSubtitle':
+    'Bereiche ein- oder ausblenden, Bilder verwalten und eigene Abschnitte hinzufügen.',
+  'admin.homepageEditButton': 'Startseite bearbeiten',
+  'admin.homepageSectionsTitle': 'Bereiche der Startseite',
+  'admin.homepageSectionsHint': 'Blende Standardbereiche aus oder wieder ein.',
+  'admin.homepageSectionHero': 'Kopfbereich (Intro)',
+  'admin.homepageSectionServices': 'Leistungen & Preise',
+  'admin.homepageSectionStyles': 'Styles / Galerie',
+  'admin.homepageSectionStylists': 'Stylistinnen / Team',
+  'admin.homepageSectionVisit': 'Öffnungszeiten & Kontakt',
+  'admin.homepageGalleryTitle': 'Bilder (Styles / Galerie)',
+  'admin.homepageGalleryHint': 'Lade neue Fotos hoch oder füge Bild-URLs hinzu.',
+  'admin.homepageUploadImage': 'Bild hochladen',
+  'admin.homepageUploading': 'Bild wird hochgeladen…',
+  'admin.homepageImageUrl': 'Bild-URL',
+  'admin.homepageImageAltDe': 'Beschreibung (Deutsch, optional)',
+  'admin.homepageImageAltIt': 'Beschreibung (Italienisch, optional)',
+  'admin.homepageAddImage': 'Bild hinzufügen',
+  'admin.homepageRemoveImage': 'Bild entfernen',
+  'admin.homepageResetGallery': 'Standardbilder wiederherstellen',
+  'admin.homepageCustomSectionsTitle': 'Eigene Abschnitte',
+  'admin.homepageAddSection': 'Abschnitt hinzufügen',
+  'admin.homepageRemoveSection': 'Abschnitt entfernen',
+  'admin.homepageSectionTitleDe': 'Titel (Deutsch)',
+  'admin.homepageSectionTitleIt': 'Titel (Italienisch)',
+  'admin.homepageSectionBodyDe': 'Text (Deutsch)',
+  'admin.homepageSectionBodyIt': 'Text (Italienisch)',
+  'admin.homepageSectionImage': 'Bild-URL (optional)',
+  'home.carouselPrev': 'Vorherige Styles',
+  'home.carouselNext': 'Nächste Styles',
+  'admin.demoModeTitle': 'Demo-Modus',
+  'admin.demoModeHint':
+    'Füllt den Kalender mit Beispielterminen. Bestehende echte Termine bleiben erhalten.',
+  'admin.demoModeSwitch': 'Demo-Termine im Kalender anzeigen',
+  'admin.firstAdminTitle': 'Ersten Salon-Admin erstellen',
+  'admin.firstAdminHint':
+    'Erstellt das Hauptkonto für den Salon. Nur dieses Hauptkonto kann später Mitarbeiter-Konten anlegen.',
+  'admin.firstAdminCreated': 'Erster Salon-Admin wurde erstellt.',
+  'admin.firstAdminCreateButton': 'Salon-Admin erstellen',
+  'admin.firstAdminAlreadyExists': 'Der erste Salon-Admin wurde bereits eingerichtet.',
+  'admin.employeesTitle': 'Mitarbeiter-Konten',
+  'admin.employeesHint':
+    'Nur das Haupt-Admin-Konto kann neue Zugänge für Mitarbeiterinnen und Mitarbeiter erstellen.',
+  'admin.employeeCreateButton': 'Mitarbeiter-Konto erstellen',
+  'admin.employeeCreated': 'Mitarbeiter-Konto wurde erstellt.',
+  'admin.primaryAdminBadge': 'Haupt-Admin',
+  'admin.accountDisplayName': 'Name',
+  'admin.accountEmail': 'E-Mail',
+  'admin.accountPassword': 'Passwort (mind. 8 Zeichen)',
   'admin.settingsSubtitle':
     'Leistungen, Öffnungszeiten, Online-Buchung und die Kontaktdaten auf der Website.',
   'admin.settingsLoading': 'Einstellungen laden',
@@ -1067,6 +1171,60 @@ export const it: Messages = {
   'admin.yes': 'Sì',
   'admin.no': 'No',
   'admin.minutes': '{minutes} min',
+  'admin.durationFrom': 'Durata (da)',
+  'admin.durationTo': 'Fino a (min, fac.)',
+  'admin.priceFrom': 'Prezzo (da)',
+  'admin.priceTo': 'Fino a (€, fac.)',
+  'admin.homepage': 'Home page',
+  'admin.homepageSubtitle':
+    'Mostra o nascondi sezioni, gestisci le immagini e aggiungi sezioni personalizzate.',
+  'admin.homepageEditButton': 'Modifica home',
+  'admin.homepageSectionsTitle': 'Sezioni della home page',
+  'admin.homepageSectionsHint': 'Nascondi o mostra nuovamente le sezioni predefinite.',
+  'admin.homepageSectionHero': 'Intestazione (Intro)',
+  'admin.homepageSectionServices': 'Servizi e prezzi',
+  'admin.homepageSectionStyles': 'Styles / Galleria',
+  'admin.homepageSectionStylists': 'Stiliste / Team',
+  'admin.homepageSectionVisit': 'Orari e contatti',
+  'admin.homepageGalleryTitle': 'Immagini (Styles / Galleria)',
+  'admin.homepageGalleryHint': 'Carica nuove foto o aggiungi URL di immagini.',
+  'admin.homepageUploadImage': 'Carica immagine',
+  'admin.homepageUploading': 'Caricamento immagine…',
+  'admin.homepageImageUrl': 'URL immagine',
+  'admin.homepageImageAltDe': 'Descrizione (tedesco, fac.)',
+  'admin.homepageImageAltIt': 'Descrizione (italiano, fac.)',
+  'admin.homepageAddImage': 'Aggiungi immagine',
+  'admin.homepageRemoveImage': 'Rimuovi immagine',
+  'admin.homepageResetGallery': 'Ripristina immagini predefinite',
+  'admin.homepageCustomSectionsTitle': 'Sezioni personalizzate',
+  'admin.homepageAddSection': 'Aggiungi sezione',
+  'admin.homepageRemoveSection': 'Rimuovi sezione',
+  'admin.homepageSectionTitleDe': 'Titolo (tedesco)',
+  'admin.homepageSectionTitleIt': 'Titolo (italiano)',
+  'admin.homepageSectionBodyDe': 'Testo (tedesco)',
+  'admin.homepageSectionBodyIt': 'Testo (italiano)',
+  'admin.homepageSectionImage': 'URL immagine (facoltativo)',
+  'home.carouselPrev': 'Stili precedenti',
+  'home.carouselNext': 'Stili successivi',
+  'admin.demoModeTitle': 'Modalità demo',
+  'admin.demoModeHint':
+    'Riempie il calendario con appuntamenti di esempio. Gli appuntamenti reali restano invariati.',
+  'admin.demoModeSwitch': 'Mostra appuntamenti demo nel calendario',
+  'admin.firstAdminTitle': 'Crea il primo amministratore del salone',
+  'admin.firstAdminHint':
+    'Crea l’account principale del salone. Solo questo account potrà creare nuovi account per i collaboratori.',
+  'admin.firstAdminCreated': 'Primo amministratore del salone creato.',
+  'admin.firstAdminCreateButton': 'Crea amministratore',
+  'admin.firstAdminAlreadyExists': 'Il primo amministratore del salone è già stato configurato.',
+  'admin.employeesTitle': 'Account collaboratori',
+  'admin.employeesHint':
+    'Solo l’amministratore principale può creare nuovi account per i collaboratori.',
+  'admin.employeeCreateButton': 'Crea account collaboratore',
+  'admin.employeeCreated': 'Account collaboratore creato.',
+  'admin.primaryAdminBadge': 'Admin principale',
+  'admin.accountDisplayName': 'Nome',
+  'admin.accountEmail': 'E-mail',
+  'admin.accountPassword': 'Password (min. 8 caratteri)',
   'admin.settingsSubtitle': 'Servizi, orari, prenotazione online e i contatti mostrati sul sito.',
   'admin.settingsLoading': 'Caricamento impostazioni',
   'admin.settingsError': 'Impossibile caricare le impostazioni.',

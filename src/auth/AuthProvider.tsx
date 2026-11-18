@@ -6,6 +6,7 @@ import { firebaseAuth } from '../firebase'
 
 export type AuthSession = {
   user: User | null
+  isOperator: boolean
   isLoading: boolean
 }
 
@@ -14,11 +15,30 @@ const AuthContext = createContext<AuthSession | null>(null)
 export const AuthProvider: React.FunctionComponent<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [session, setSession] = useState<AuthSession>({ user: null, isLoading: true })
+  const [session, setSession] = useState<AuthSession>({
+    user: null,
+    isOperator: false,
+    isLoading: true,
+  })
 
   useEffect(() => {
     return onAuthStateChanged(firebaseAuth, (user) => {
-      setSession({ user, isLoading: false })
+      if (!user) {
+        setSession({ user: null, isOperator: false, isLoading: false })
+        return
+      }
+      user
+        .getIdTokenResult()
+        .then((result) => {
+          setSession({
+            user,
+            isOperator: result.claims.operator === true,
+            isLoading: false,
+          })
+        })
+        .catch(() => {
+          setSession({ user, isOperator: false, isLoading: false })
+        })
     })
   }, [])
 

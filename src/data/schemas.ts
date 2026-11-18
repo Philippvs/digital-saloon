@@ -12,6 +12,7 @@ export const userProfileSchema = v.object({
   email: v.pipe(v.string(), v.email()),
   displayName: v.pipe(v.string(), v.minLength(1), v.maxLength(80)),
   role: userRoleSchema,
+  isPrimaryAdmin: v.optional(v.boolean()),
   createdAt: v.string(),
 })
 export type UserProfile = v.InferOutput<typeof userProfileSchema>
@@ -50,6 +51,7 @@ export const serviceSchema = v.object({
   categoryDe: v.optional(v.pipe(v.string(), v.maxLength(80))),
   categoryIt: v.optional(v.pipe(v.string(), v.maxLength(80))),
   durationMinutes: v.pipe(v.number(), v.integer(), v.minValue(5), v.maxValue(480)),
+  durationMaxMinutes: v.optional(v.pipe(v.number(), v.integer(), v.minValue(5), v.maxValue(480))),
   priceCents: v.pipe(v.number(), v.integer(), v.minValue(0)),
   priceMaxCents: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
   active: v.boolean(),
@@ -137,3 +139,37 @@ export const blockedSlotSchema = v.object({
   createdAt: v.string(),
 })
 export type BlockedSlot = v.InferOutput<typeof blockedSlotSchema>
+
+export const homepageImageSchema = v.object({
+  id: v.pipe(v.string(), v.minLength(1), v.maxLength(80)),
+  src: v.pipe(v.string(), v.minLength(1), v.maxLength(2000)),
+  altDe: v.pipe(v.string(), v.maxLength(200)),
+  altIt: v.pipe(v.string(), v.maxLength(200)),
+})
+export type HomepageImage = v.InferOutput<typeof homepageImageSchema>
+
+export const homepageCustomSectionSchema = v.object({
+  id: v.pipe(v.string(), v.minLength(1), v.maxLength(80)),
+  titleDe: v.pipe(v.string(), v.minLength(1), v.maxLength(160)),
+  titleIt: v.pipe(v.string(), v.minLength(1), v.maxLength(160)),
+  bodyDe: v.pipe(v.string(), v.maxLength(2000)),
+  bodyIt: v.pipe(v.string(), v.maxLength(2000)),
+  imageUrl: v.optional(v.pipe(v.string(), v.maxLength(2000))),
+})
+export type HomepageCustomSection = v.InferOutput<typeof homepageCustomSectionSchema>
+
+export const homepageBuiltinSectionKeySchema = v.picklist([
+  'hero',
+  'services',
+  'styles',
+  'stylists',
+  'visit',
+] as const)
+export type HomepageBuiltinSectionKey = v.InferOutput<typeof homepageBuiltinSectionKeySchema>
+
+export const homepageConfigSchema = v.object({
+  hiddenSections: v.array(homepageBuiltinSectionKeySchema),
+  galleryImages: v.optional(v.array(homepageImageSchema)),
+  customSections: v.array(homepageCustomSectionSchema),
+})
+export type HomepageConfig = v.InferOutput<typeof homepageConfigSchema>

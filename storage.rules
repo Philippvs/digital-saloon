@@ -1,6 +1,16 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    match /salons/{salonId}/homepage/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && (request.auth.token.operator == true || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        && request.resource.size > 0
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow delete: if request.auth != null
+        && (request.auth.token.operator == true || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
     match /userUploads/{userId}/{allPaths=**} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null

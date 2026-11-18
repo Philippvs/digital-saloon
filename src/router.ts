@@ -3,6 +3,7 @@ import { createRouter } from '@tanstack/react-router'
 import {
   adminCalendarRoute,
   adminHolidaysRoute,
+  adminHomepageRoute,
   adminIndexRoute,
   adminManualRoute,
   adminOpeningHoursRoute,
@@ -45,6 +46,7 @@ export const router = createRouter({
       adminOpeningHoursRoute,
       adminHolidaysRoute,
       adminSettingsRoute,
+      adminHomepageRoute,
     ]),
   ]),
 })

@@ -1,17 +1,21 @@
 import type * as React from 'react'
 import { Box, Button, CircularProgress, Container, Link, Typography } from '@mui/material'
 
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+
 import { parseYmd, viennaTodayYmd } from '../data/bookingCalendar'
+import { isSectionVisible, resolveGalleryImages } from '../data/homepageConfig'
 import { getActiveBrand } from '../data/brands'
 import type { OpeningHoursByWeekday } from '../data/openingHours'
 import { arePricesVisible } from '../data/salonConfig'
 import {
+  formatServiceDurationRange,
   formatServicePriceRange,
   localizedServiceDescription,
   localizedServiceName,
 } from '../data/serviceForm'
 import { telHref } from '../data/phone'
-import type { Salon, Weekday } from '../data/schemas'
+import type { HomepageConfig, Salon, Weekday } from '../data/schemas'
 import type { ServiceWithId } from '../data/services'
 import { HeroWordmark } from '../components/Wordmark'
 import { useLocale } from '../i18n'
@@ -27,6 +31,8 @@ export type HomePageProps = {
   openingHours: OpeningHoursByWeekday | undefined
   openingHoursLoading: boolean
   openingHoursError: boolean
+  homepageConfig?: HomepageConfig
+  onEditHomepageClick?: () => void
   onBookClick: () => void
   onServiceClick: (serviceId: string) => void
 }
@@ -55,6 +61,8 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
   openingHours,
   openingHoursLoading,
   openingHoursError,
+  homepageConfig,
+  onEditHomepageClick,
   onBookClick,
   onServiceClick,
 }) => {
@@ -71,6 +79,8 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
         servicesLoading={servicesLoading}
         servicesError={servicesError}
         openingHours={openingHours}
+        homepageConfig={homepageConfig}
+        onEditHomepageClick={onEditHomepageClick}
         onBookClick={onBookClick}
         onServiceClick={onServiceClick}
       />
@@ -82,126 +92,149 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
   const todayIndex =
     (new Date(Date.UTC(today.year, today.monthIndex, today.day)).getUTCDay() + 6) % 7
   const sortedServices = services ? [...services].sort((a, b) => a.priceCents - b.priceCents) : []
+  const galleryImages = resolveGalleryImages(homepageConfig, activeBrand.gallery)
+  const customSections = homepageConfig?.customSections ?? []
 
   return (
     <>
-      <Container
-        maxWidth="lg"
-        component="section"
-        sx={{ pt: { xs: 6, md: 11 }, pb: { xs: 7, md: 12 } }}
-      >
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' },
-            gap: { xs: 5, md: 6 },
-            alignItems: 'end',
-          }}
+      {onEditHomepageClick ? (
+        <Container maxWidth="lg" sx={{ pt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<EditOutlinedIcon />}
+            onClick={onEditHomepageClick}
+          >
+            {t('admin.homepageEditButton')}
+          </Button>
+        </Container>
+      ) : null}
+      {isSectionVisible(homepageConfig, 'hero') ? (
+        <Container
+          maxWidth="lg"
+          component="section"
+          sx={{ pt: { xs: 6, md: 11 }, pb: { xs: 7, md: 12 } }}
         >
-          <Box component="h1" sx={{ m: 0, font: 'inherit' }}>
-            <HeroWordmark />
-          </Box>
-          <Box sx={{ maxWidth: '44ch', pb: { md: 1.5 } }}>
-            <Typography sx={{ fontSize: '1.375rem', fontWeight: 600, mb: 1.5 }}>
-              {activeBrand.place[locale]}
-            </Typography>
-            <Typography sx={{ fontSize: '1.0625rem', lineHeight: 1.65, mb: 4 }}>
-              {activeBrand.heroIntro[locale]}
-            </Typography>
-            <Button variant="contained" size="large" onClick={onBookClick}>
-              {t('home.book')}
-            </Button>
-            {salon ? (
-              <Typography variant="body2" sx={{ mt: 2 }}>
-                <Link href={telHref(salon.phone)}>{t('home.call', { phone: salon.phone })}</Link>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' },
+              gap: { xs: 5, md: 6 },
+              alignItems: 'end',
+            }}
+          >
+            <Box component="h1" sx={{ m: 0, font: 'inherit' }}>
+              <HeroWordmark />
+            </Box>
+            <Box sx={{ maxWidth: '44ch', pb: { md: 1.5 } }}>
+              <Typography sx={{ fontSize: '1.375rem', fontWeight: 600, mb: 1.5 }}>
+                {activeBrand.place[locale]}
               </Typography>
-            ) : null}
+              <Typography sx={{ fontSize: '1.0625rem', lineHeight: 1.65, mb: 4 }}>
+                {activeBrand.heroIntro[locale]}
+              </Typography>
+              <Button variant="contained" size="large" onClick={onBookClick}>
+                {t('home.book')}
+              </Button>
+              {salon ? (
+                <Typography variant="body2" sx={{ mt: 2 }}>
+                  <Link href={telHref(salon.phone)}>{t('home.call', { phone: salon.phone })}</Link>
+                </Typography>
+              ) : null}
+            </Box>
           </Box>
-        </Box>
-      </Container>
+        </Container>
+      ) : null}
 
-      <Container
-        maxWidth="lg"
-        component="section"
-        aria-labelledby="home-services"
-        sx={{ pb: { xs: 8, md: 12 } }}
-      >
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '4fr 8fr' },
-            gap: { xs: 3, md: 6 },
-          }}
+      {isSectionVisible(homepageConfig, 'services') ? (
+        <Container
+          maxWidth="lg"
+          component="section"
+          aria-labelledby="home-services"
+          sx={{ pb: { xs: 8, md: 12 } }}
         >
-          <Box>
-            <Typography id="home-services" variant="h2" sx={{ mb: 1 }}>
-              {t('home.servicesTitle')}
-            </Typography>
-            <Typography color="text.secondary" sx={{ maxWidth: '32ch' }}>
-              {t('home.servicesHint')}
-            </Typography>
-          </Box>
-          <Box>
-            {servicesLoading ? (
-              <CircularProgress aria-label={t('book.servicesLoading')} size={28} />
-            ) : null}
-            {servicesError ? <Typography>{t('home.servicesError')}</Typography> : null}
-            {!servicesLoading && !servicesError && sortedServices.length === 0 ? (
-              <Typography>{t('home.servicesEmpty')}</Typography>
-            ) : null}
-            {sortedServices.length > 0 ? (
-              <PriceList>
-                {sortedServices.map((service) => (
-                  <li key={service.id}>
-                    <PriceRow type="button" onClick={() => onServiceClick(service.id)}>
-                      <Typography
-                        component="span"
-                        className="price-name"
-                        sx={{ fontWeight: 600, fontSize: '1.125rem' }}
-                      >
-                        {localizedServiceName(service, locale)}
-                      </Typography>
-                      <Typography
-                        component="span"
-                        className="price-duration"
-                        variant="body2"
-                        color="text.secondary"
-                      >
-                        {t('book.durationMinutes', { minutes: service.durationMinutes })}
-                      </Typography>
-                      <Typography
-                        component="span"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: '1.125rem',
-                          fontVariantNumeric: 'tabular-nums',
-                          textAlign: 'right',
-                        }}
-                      >
-                        {pricesVisible
-                          ? formatServicePriceRange(service.priceCents, service.priceMaxCents)
-                          : t('price.onRequest')}
-                      </Typography>
-                      {localizedServiceDescription(service, locale) ? (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '4fr 8fr' },
+              gap: { xs: 3, md: 6 },
+            }}
+          >
+            <Box>
+              <Typography id="home-services" variant="h2" sx={{ mb: 1 }}>
+                {t('home.servicesTitle')}
+              </Typography>
+              <Typography color="text.secondary" sx={{ maxWidth: '32ch' }}>
+                {t('home.servicesHint')}
+              </Typography>
+            </Box>
+            <Box>
+              {servicesLoading ? (
+                <CircularProgress aria-label={t('book.servicesLoading')} size={28} />
+              ) : null}
+              {servicesError ? <Typography>{t('home.servicesError')}</Typography> : null}
+              {!servicesLoading && !servicesError && sortedServices.length === 0 ? (
+                <Typography>{t('home.servicesEmpty')}</Typography>
+              ) : null}
+              {sortedServices.length > 0 ? (
+                <PriceList>
+                  {sortedServices.map((service) => (
+                    <li key={service.id}>
+                      <PriceRow type="button" onClick={() => onServiceClick(service.id)}>
                         <Typography
                           component="span"
+                          className="price-name"
+                          sx={{ fontWeight: 600, fontSize: '1.125rem' }}
+                        >
+                          {localizedServiceName(service, locale)}
+                        </Typography>
+                        <Typography
+                          component="span"
+                          className="price-duration"
                           variant="body2"
                           color="text.secondary"
-                          sx={{ gridColumn: '1 / -1', mt: 0.5 }}
                         >
-                          {localizedServiceDescription(service, locale)}
+                          {t('book.durationMinutes', {
+                            minutes: formatServiceDurationRange(
+                              service.durationMinutes,
+                              service.durationMaxMinutes,
+                            ),
+                          })}
                         </Typography>
-                      ) : null}
-                    </PriceRow>
-                  </li>
-                ))}
-              </PriceList>
-            ) : null}
+                        <Typography
+                          component="span"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: '1.125rem',
+                            fontVariantNumeric: 'tabular-nums',
+                            textAlign: 'right',
+                          }}
+                        >
+                          {pricesVisible
+                            ? formatServicePriceRange(service.priceCents, service.priceMaxCents)
+                            : t('price.onRequest')}
+                        </Typography>
+                        {localizedServiceDescription(service, locale) ? (
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ gridColumn: '1 / -1', mt: 0.5 }}
+                          >
+                            {localizedServiceDescription(service, locale)}
+                          </Typography>
+                        ) : null}
+                      </PriceRow>
+                    </li>
+                  ))}
+                </PriceList>
+              ) : null}
+            </Box>
           </Box>
-        </Box>
-      </Container>
+        </Container>
+      ) : null}
 
-      {activeBrand.gallery.length > 0 ? (
+      {isSectionVisible(homepageConfig, 'styles') && galleryImages.length > 0 ? (
         <Container
           maxWidth="lg"
           component="section"
@@ -239,11 +272,11 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
               gap: 1.5,
             }}
           >
-            {activeBrand.gallery.map((item) => {
+            {galleryImages.map((item) => {
               const alt = locale === 'it' ? item.altIt : item.altDe
               return (
                 <Box
-                  key={item.src}
+                  key={item.id}
                   component="figure"
                   sx={{
                     m: 0,
@@ -278,112 +311,163 @@ export const HomePage: React.FunctionComponent<HomePageProps> = ({
         </Container>
       ) : null}
 
-      <Box component="section" sx={{ bgcolor: brand.stone, py: { xs: 7, md: 10 } }}>
-        <Container
-          maxWidth="lg"
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: { xs: 6, md: 10 },
-          }}
-        >
-          <Box>
-            <Typography variant="h2" sx={{ mb: 2.5 }}>
-              {t('home.hoursTitle')}
-            </Typography>
-            {openingHoursLoading ? <CircularProgress size={28} /> : null}
-            {openingHoursError ? <Typography>{t('home.hoursError')}</Typography> : null}
-            {openingHours ? (
-              <HoursList>
-                {weekdaysFromMonday.map((weekday, index) => {
-                  const intervals = openingHours[weekday]?.intervals ?? []
-                  const isToday = index === todayIndex
-                  const className = isToday ? 'is-today' : undefined
-                  return (
-                    <Box key={weekday} sx={{ display: 'contents' }}>
-                      <dt className={className}>
-                        {weekdayFormat.format(new Date(Date.UTC(2024, 0, 1 + index)))}
-                        {isToday ? (
-                          <Box
-                            component="span"
-                            sx={{ ml: 1, color: brand.orangeDeep, fontWeight: 600 }}
-                          >
-                            {t('home.today')}
-                          </Box>
-                        ) : null}
-                      </dt>
-                      <dd className={className}>
-                        {intervals.length === 0 ? (
-                          <Box component="span" sx={{ color: 'text.secondary' }}>
-                            {t('home.closed')}
-                          </Box>
-                        ) : (
-                          intervals
-                            .map((interval) => `${interval.start}–${interval.end}`)
-                            .join(', ')
-                        )}
-                      </dd>
-                    </Box>
-                  )
-                })}
-              </HoursList>
-            ) : null}
-          </Box>
-
-          <Box>
-            <Typography variant="h2" sx={{ mb: 2.5 }}>
-              {t('home.visitTitle')}
-            </Typography>
-            {salon ? (
-              <>
-                <Typography
-                  component="address"
-                  sx={{ fontStyle: 'normal', fontSize: '1.375rem', lineHeight: 1.4, mb: 2 }}
-                >
-                  {salon.name}
-                  <br />
-                  {salon.address}
+      {customSections.map((section) => {
+        const title = locale === 'it' ? section.titleIt : section.titleDe
+        const body = locale === 'it' ? section.bodyIt : section.bodyDe
+        return (
+          <Container
+            key={section.id}
+            maxWidth="lg"
+            component="section"
+            sx={{ pb: { xs: 7, md: 10 } }}
+          >
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  md: section.imageUrl ? '7fr 5fr' : '1fr',
+                },
+                gap: { xs: 3, md: 6 },
+                alignItems: 'center',
+              }}
+            >
+              <Box>
+                <Typography variant="h2" sx={{ mb: 1.5 }}>
+                  {title}
                 </Typography>
-                <Typography sx={{ mb: 1 }}>
-                  <Link href={telHref(salon.phone)}>{salon.phone}</Link>
-                </Typography>
-                <Typography>
-                  <Link href={mapsHref(salon)} target="_blank" rel="noopener noreferrer">
-                    {t('home.directions')}
-                  </Link>
-                </Typography>
-              </>
-            ) : null}
-
-            {activeBrand.stylists.length > 0 ? (
-              <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
-                <Typography variant="h2" sx={{ mb: 2 }}>
-                  {t('home.stylistsTitle')}
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                    gap: 2.5,
-                  }}
-                >
-                  {activeBrand.stylists.map((stylist) => (
-                    <Box key={stylist.name}>
-                      <Typography sx={{ fontWeight: 700 }}>{stylist.name}</Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                        {locale === 'it' ? stylist.roleIt : stylist.roleDe}
-                      </Typography>
-                      <Link href={telHref(stylist.phone)} variant="body2">
-                        {stylist.phone}
-                      </Link>
-                    </Box>
-                  ))}
-                </Box>
+                {body ? (
+                  <Typography sx={{ whiteSpace: 'pre-line', lineHeight: 1.7 }}>{body}</Typography>
+                ) : null}
               </Box>
-            ) : null}
-          </Box>
-        </Container>
-      </Box>
+              {section.imageUrl ? (
+                <Box
+                  component="img"
+                  src={section.imageUrl}
+                  alt={title}
+                  loading="lazy"
+                  sx={{
+                    width: '100%',
+                    maxHeight: 380,
+                    objectFit: 'cover',
+                    borderRadius: 1,
+                    border: `1px solid ${brand.orange}`,
+                  }}
+                />
+              ) : null}
+            </Box>
+          </Container>
+        )
+      })}
+
+      {isSectionVisible(homepageConfig, 'visit') ? (
+        <Box component="section" sx={{ bgcolor: brand.stone, py: { xs: 7, md: 10 } }}>
+          <Container
+            maxWidth="lg"
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: { xs: 6, md: 10 },
+            }}
+          >
+            <Box>
+              <Typography variant="h2" sx={{ mb: 2.5 }}>
+                {t('home.hoursTitle')}
+              </Typography>
+              {openingHoursLoading ? <CircularProgress size={28} /> : null}
+              {openingHoursError ? <Typography>{t('home.hoursError')}</Typography> : null}
+              {openingHours ? (
+                <HoursList>
+                  {weekdaysFromMonday.map((weekday, index) => {
+                    const intervals = openingHours[weekday]?.intervals ?? []
+                    const isToday = index === todayIndex
+                    const className = isToday ? 'is-today' : undefined
+                    return (
+                      <Box key={weekday} sx={{ display: 'contents' }}>
+                        <dt className={className}>
+                          {weekdayFormat.format(new Date(Date.UTC(2024, 0, 1 + index)))}
+                          {isToday ? (
+                            <Box
+                              component="span"
+                              sx={{ ml: 1, color: brand.orangeDeep, fontWeight: 600 }}
+                            >
+                              {t('home.today')}
+                            </Box>
+                          ) : null}
+                        </dt>
+                        <dd className={className}>
+                          {intervals.length === 0 ? (
+                            <Box component="span" sx={{ color: 'text.secondary' }}>
+                              {t('home.closed')}
+                            </Box>
+                          ) : (
+                            intervals
+                              .map((interval) => `${interval.start}–${interval.end}`)
+                              .join(', ')
+                          )}
+                        </dd>
+                      </Box>
+                    )
+                  })}
+                </HoursList>
+              ) : null}
+            </Box>
+
+            <Box>
+              <Typography variant="h2" sx={{ mb: 2.5 }}>
+                {t('home.visitTitle')}
+              </Typography>
+              {salon ? (
+                <>
+                  <Typography
+                    component="address"
+                    sx={{ fontStyle: 'normal', fontSize: '1.375rem', lineHeight: 1.4, mb: 2 }}
+                  >
+                    {salon.name}
+                    <br />
+                    {salon.address}
+                  </Typography>
+                  <Typography sx={{ mb: 1 }}>
+                    <Link href={telHref(salon.phone)}>{salon.phone}</Link>
+                  </Typography>
+                  <Typography>
+                    <Link href={mapsHref(salon)} target="_blank" rel="noopener noreferrer">
+                      {t('home.directions')}
+                    </Link>
+                  </Typography>
+                </>
+              ) : null}
+
+              {isSectionVisible(homepageConfig, 'stylists') && activeBrand.stylists.length > 0 ? (
+                <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
+                  <Typography variant="h2" sx={{ mb: 2 }}>
+                    {t('home.stylistsTitle')}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                      gap: 2.5,
+                    }}
+                  >
+                    {activeBrand.stylists.map((stylist) => (
+                      <Box key={stylist.name}>
+                        <Typography sx={{ fontWeight: 700 }}>{stylist.name}</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          {locale === 'it' ? stylist.roleIt : stylist.roleDe}
+                        </Typography>
+                        <Link href={telHref(stylist.phone)} variant="body2">
+                          {stylist.phone}
+                        </Link>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              ) : null}
+            </Box>
+          </Container>
+        </Box>
+      ) : null}
     </>
   )
 }

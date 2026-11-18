@@ -8,6 +8,10 @@ export function bookingSettingsPath(salonId: string): string {
   return `salons/${salonId}/settings/booking`
 }
 
+export function homepageSettingsPath(salonId: string): string {
+  return `salons/${salonId}/settings/homepage`
+}
+
 export function servicesCollectionPath(salonId: string): string {
   return `salons/${salonId}/services`
 }
