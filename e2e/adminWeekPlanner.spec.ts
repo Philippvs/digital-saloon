@@ -13,10 +13,6 @@ function plannerEntries(page: Page) {
   return planner(page).getByRole('button', { name: /^\d{2}:\d{2}–\d{2}:\d{2}, / })
 }
 
-function addSlots(page: Page) {
-  return planner(page).getByRole('button', { name: /^Termin eintragen am / })
-}
-
 test.describe('admin week planner @smoke', () => {
   test.beforeEach(async ({ page }) => {
     await signInAsDemo(page)
@@ -172,36 +168,12 @@ test.describe('admin week planner @smoke', () => {
     await expect(page.getByText('Storniert', { exact: true })).toBeVisible()
   })
 
-  test('enters an appointment by clicking a free time', async ({ page }) => {
-    const weekStart = addCalendarDays(plannerDefaultWeek(), 7)
-    const lastName = `Raster${Date.now().toString().slice(-6)}`
-    await page.goto(`/admin?week=${weekStart}`)
-
-    const slot = addSlots(page).first()
-    await expect(slot).toBeAttached()
-    const label = (await slot.getAttribute('aria-label')) ?? ''
-    const time = /um (\d{2}:\d{2})$/.exec(label)?.[1]
-    expect(time).toBeTruthy()
-    await slot.click()
-
-    await expect(page).toHaveURL(new RegExp(`/admin/manual\\?.*time=${time?.replace(':', '%3A')}`))
-    await page.getByRole('button', { name: /^Herrenhaarschnitt/ }).click()
-    await expect(page.getByRole('button', { name: new RegExp(`^${time}`) })).toHaveClass(
-      /MuiButton-contained/,
+  test('does not offer clickable free-time slots in the planner', async ({ page }) => {
+    await page.goto(`/admin?week=${addCalendarDays(plannerDefaultWeek(), 7)}`)
+    await expect(planner(page)).toBeVisible()
+    await expect(planner(page).getByRole('button', { name: /^Termin eintragen am / })).toHaveCount(
+      0,
     )
-
-    await page.getByLabel('Vorname').fill('Raster')
-    await page.getByLabel('Nachname').fill(lastName)
-    await page.getByLabel('Telefon').fill('+39 333 1112222')
-    await page.getByRole('button', { name: 'Termin anlegen' }).click()
-    await expect(page).toHaveURL(/\/admin\/reservations\//)
-
-    await page.goto(`/admin?week=${weekStart}`)
-    await expect(
-      planner(page).getByRole('button', {
-        name: new RegExp(`^${time}–\\d{2}:\\d{2}, Raster ${lastName}, Herrenhaarschnitt`),
-      }),
-    ).toBeVisible()
   })
 
   test('confirms an open request from the pending page', async ({ page }) => {

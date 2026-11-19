@@ -431,8 +431,6 @@ export type Messages = {
   'admin.totalRevenue': string
   'admin.plannerLabel': string
   'admin.plannerLegend': string
-  'admin.plannerAddAt': string
-  'admin.plannerAddHint': string
   'admin.plannerDayFree': string
   'admin.plannerCount': string
   'admin.plannerCountOne': string
@@ -917,8 +915,6 @@ export const de: Messages = {
   'admin.totalRevenue': 'Umsatz',
   'admin.plannerLabel': 'Wochenkalender',
   'admin.plannerLegend': 'Legende',
-  'admin.plannerAddAt': 'Termin eintragen am {date} um {time}',
-  'admin.plannerAddHint': 'Freie Zeit anklicken, um einen Termin einzutragen.',
   'admin.plannerDayFree': 'Noch frei',
   'admin.plannerCount': '{count} Termine',
   'admin.plannerCountOne': '1 Termin',
@@ -1394,8 +1390,6 @@ export const it: Messages = {
   'admin.totalRevenue': 'Fatturato',
   'admin.plannerLabel': 'Calendario settimanale',
   'admin.plannerLegend': 'Legenda',
-  'admin.plannerAddAt': 'Inserisci appuntamento {date} alle {time}',
-  'admin.plannerAddHint': 'Clicca su un orario libero per inserire un appuntamento.',
   'admin.plannerDayFree': 'Ancora libero',
   'admin.plannerCount': '{count} appuntamenti',
   'admin.plannerCountOne': '1 appuntamento',

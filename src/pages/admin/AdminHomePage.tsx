@@ -38,7 +38,6 @@ export type AdminHomePageProps = {
   onOpenReservationDetails: (reservationId: string) => void
   onEditReservation: (reservationId: string) => void
   onAddReservationClick: () => void
-  onAddReservationAt: (dateYmd: string, startTime: string) => void
   onListViewClick: () => void
 }
 
@@ -55,7 +54,6 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
   onOpenReservationDetails,
   onEditReservation,
   onAddReservationClick,
-  onAddReservationAt,
   onListViewClick,
 }) => {
   const { t, intlLocale } = useLocale()
@@ -144,7 +142,6 @@ export const AdminHomePage: React.FunctionComponent<AdminHomePageProps> = ({
                 canEdit: status === 'PENDING' || status === 'CONFIRMED',
               })
             }}
-            onAddAt={onAddReservationAt}
           />
         ) : null}
         <Menu

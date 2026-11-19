@@ -209,35 +209,7 @@ describe('planWeek', () => {
     })
   })
 
-  it('offers free, open, future start times for new appointments', () => {
-    const plan = planWeek({
-      reservations: [reservation('a', '2026-11-17T08:00:00.000Z', '2026-11-17T09:00:00.000Z')],
-      weekStartYmd: weekStart,
-      openingHours,
-      timeZone,
-      now: mondayMorning,
-    })
-    const [monday, tuesday] = plan.days
-    expect(monday.addStartMinutes).toEqual([])
-    expect(tuesday.addStartMinutes.map(hhmmOfMinute)).toEqual([
-      '08:00',
-      '08:30',
-      '10:00',
-      '10:30',
-      '11:00',
-      '11:30',
-      '14:00',
-      '14:30',
-      '15:00',
-      '15:30',
-      '16:00',
-      '16:30',
-      '17:00',
-      '17:30',
-    ])
-  })
-
-  it('does not offer times that have already passed today', () => {
+  it('marks today and the current minute when viewing this week', () => {
     const plan = planWeek({
       reservations: [],
       weekStartYmd: weekStart,
@@ -245,8 +217,7 @@ describe('planWeek', () => {
       timeZone,
       now: new Date('2026-11-18T13:40:00.000Z'),
     })
-    expect(plan.days[1].addStartMinutes).toEqual([])
-    expect(plan.days[2].addStartMinutes.map(hhmmOfMinute)).toEqual(['15:00', '15:30'])
+    expect(plan.days[1].isToday).toBe(false)
     expect(plan.days[2].isToday).toBe(true)
     expect(plan.nowMinute).toBe(14 * 60 + 40)
   })
@@ -281,6 +252,5 @@ describe('planWeek', () => {
     })
     expect([plan.firstHour, plan.lastHour]).toEqual([8, 18])
     expect(plan.nowMinute).toBeNull()
-    expect(plan.days.every((day) => day.addStartMinutes.length === 0)).toBe(true)
   })
 })
