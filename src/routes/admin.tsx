@@ -189,12 +189,6 @@ const AdminIndexRoute: React.FunctionComponent = () => {
       onAddReservationClick={() => {
         void navigate({ to: '/admin/manual', search: weekSearch })
       }}
-      onAddReservationAt={(dateYmd, startTime) => {
-        void navigate({
-          to: '/admin/manual',
-          search: { date: dateYmd, time: startTime, ...weekSearch },
-        })
-      }}
       onListViewClick={() => {
         void navigate({ to: '/admin/reservations', search: weekSearch })
       }}
