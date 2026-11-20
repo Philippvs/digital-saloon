@@ -210,6 +210,8 @@ export function buildBookingIcs(input: BookingEmailInput, manageUrl: string | nu
   const method = kind === 'cancelled' ? 'CANCEL' : 'PUBLISH'
   const eventStatus =
     kind === 'cancelled' ? 'CANCELLED' : input.status === 'CONFIRMED' ? 'CONFIRMED' : 'TENTATIVE'
+  // Bump SEQUENCE for updates/cancels so calendar clients replace the original invite.
+  const sequence = kind === 'confirmation' ? 0 : 1
 
   const lines = [
     'BEGIN:VCALENDAR',
@@ -226,6 +228,7 @@ export function buildBookingIcs(input: BookingEmailInput, manageUrl: string | nu
     `DESCRIPTION:${escapeIcsText(descriptionParts.join('\n'))}`,
     ...(input.salonAddress ? [`LOCATION:${escapeIcsText(input.salonAddress)}`] : []),
     `STATUS:${eventStatus}`,
+    `SEQUENCE:${sequence}`,
     'END:VEVENT',
     'END:VCALENDAR',
   ]
