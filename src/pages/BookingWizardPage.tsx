@@ -1,5 +1,5 @@
 import type * as React from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   Alert,
   Box,
@@ -155,6 +155,23 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
   const [notes, setNotes] = useState('')
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
   const [contactIssue, setContactIssue] = useState<BookingContactIssue | null>(null)
+  const timeSectionRef = useRef<HTMLDivElement | null>(null)
+  const shouldScrollToTimeRef = useRef(false)
+
+  const handleSelectDate = (dateYmd: string) => {
+    if (dateYmd === selectedDate) {
+      timeSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    shouldScrollToTimeRef.current = true
+    onSelectDate(dateYmd)
+  }
+
+  useLayoutEffect(() => {
+    if (!shouldScrollToTimeRef.current || selectedDate === null) return
+    shouldScrollToTimeRef.current = false
+    timeSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [selectedDate])
 
   const weekdays = [
     t('book.weekday.mo'),
@@ -518,7 +535,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                           size="small"
                           disabled={disabled}
                           variant="text"
-                          onClick={() => onSelectDate(ymd)}
+                          onClick={() => handleSelectDate(ymd)}
                           sx={{
                             minWidth: 36,
                             width: 36,
@@ -556,7 +573,7 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
                       size="small"
                       disabled={disabled}
                       variant="text"
-                      onClick={() => onSelectDate(ymd)}
+                      onClick={() => handleSelectDate(ymd)}
                       sx={{
                         minWidth: 36,
                         width: 36,
@@ -589,7 +606,12 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
           </Paper>
 
           {selectedDate !== null ? (
-            <Paper sx={{ p: { xs: 2, sm: 3 } }} component="section" aria-labelledby="step-time">
+            <Paper
+              ref={timeSectionRef}
+              sx={{ p: { xs: 2, sm: 3 } }}
+              component="section"
+              aria-labelledby="step-time"
+            >
               <Typography id="step-time" variant="h2" sx={{ fontSize: '1.15rem', mb: 2 }}>
                 {t('book.step.time')}
               </Typography>
