@@ -4,8 +4,10 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https'
 import { assertAdmin } from '../authz'
 import { functionsRegion, getSalonId } from '../config'
 import { isObject } from '../schemas'
+import { notifyCustomerCancelled, notifyCustomerRescheduled } from './customerNotify'
 import { toPublicReservationView } from './findByToken'
 import { lockIdForStart, updateReservationTransactional } from './reservationWrite'
+import { loadSalonContext } from './salonContext'
 
 const ACTIVE = new Set(['PENDING', 'CONFIRMED'])
 
@@ -95,11 +97,12 @@ export const adminCancelReservation = onCall({ region: functionsRegion }, async 
   if (!isObject(request.data)) throw new HttpsError('invalid-argument', 'Invalid payload.')
   const reservationId = requireReservationId(request.data)
   const { db, salonId, ref, snap } = await loadReservation(reservationId)
-  if (!ACTIVE.has(String(snap.data()?.status))) {
+  const beforeData = snap.data() ?? {}
+  if (!ACTIVE.has(String(beforeData.status))) {
     throw new HttpsError('failed-precondition', 'Reservation cannot be cancelled.')
   }
 
-  const startAt = new Date(String(snap.data()?.startAt))
+  const startAt = new Date(String(beforeData.startAt))
   const lockRef = db
     .collection('salons')
     .doc(salonId)
@@ -116,6 +119,13 @@ export const adminCancelReservation = onCall({ region: functionsRegion }, async 
     if (lockSnap.exists && lockSnap.data()?.reservationId === reservationId) {
       tx.delete(lockRef)
     }
+  })
+
+  const salon = await loadSalonContext(db, salonId)
+  await notifyCustomerCancelled({
+    reservationId,
+    data: beforeData,
+    salon,
   })
 
   const after = await ref.get()
@@ -183,6 +193,9 @@ export const adminUpdateReservation = onCall({ region: functionsRegion }, async 
   }
 
   const { serviceId, serviceIds } = resolveAdminServiceIds(request.data)
+  const { db, salonId, ref, snap } = await loadReservation(reservationId)
+  const beforeData = snap.data() ?? {}
+
   const result = await updateReservationTransactional(
     {
       reservationId,
@@ -202,15 +215,22 @@ export const adminUpdateReservation = onCall({ region: functionsRegion }, async 
           : null,
       enforceAdvanceRestrictions: false,
     },
-    undefined,
-    getSalonId(),
+    db,
+    salonId,
   )
 
   if (!result.ok) {
     throw new HttpsError('failed-precondition', result.message, { reason: result.code })
   }
 
-  const { ref } = await loadReservation(reservationId)
   const after = await ref.get()
+  const afterData = after.data() ?? {}
+  const salon = await loadSalonContext(db, salonId)
+  await notifyCustomerRescheduled({
+    reservationId,
+    before: beforeData,
+    after: afterData,
+    salon,
+  })
   return { reservation: viewOf(after) }
 })
