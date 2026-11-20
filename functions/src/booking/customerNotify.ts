@@ -2,7 +2,7 @@ import type { SalonContext } from './salonContext'
 import {
   customerEmailOf,
   isReservationScheduleChange,
-  sendBookingEmailWithBudget,
+  sendBookingLifecycleEmail,
   serviceIdsOf,
   type BookingEmailInput,
 } from './sendBookingEmail'
@@ -42,7 +42,7 @@ function baseInput(
   }
 }
 
-/** Cancel mail only when a customer email is present. */
+/** Cancel mail only when a customer email is present. Awaited fully so delivery is not raced. */
 export async function notifyCustomerCancelled(input: {
   reservationId: string
   data: ReservationFields
@@ -51,18 +51,18 @@ export async function notifyCustomerCancelled(input: {
 }): Promise<void> {
   const to = customerEmailOf(input.data)
   if (!to) return
-  await sendBookingEmailWithBudget(
+  await sendBookingLifecycleEmail(
     baseInput(input.reservationId, input.data, to, input.salon, {
       kind: 'cancelled',
-      status: 'CONFIRMED',
+      status: input.data.status === 'PENDING' ? 'PENDING' : 'CONFIRMED',
       managementToken: input.managementToken ?? null,
     }),
   )
 }
 
 /**
- * Reschedule mail only when email is present and start/services/duration changed.
- * Returns whether a schedule change was detected (for callers/tests).
+ * Reschedule mail only when the current reservation still has an email and
+ * start/services/duration changed. Does not fall back to a removed address.
  */
 export async function notifyCustomerRescheduled(input: {
   reservationId: string
@@ -85,10 +85,10 @@ export async function notifyCustomerRescheduled(input: {
   )
   if (!changed) return false
 
-  const to = customerEmailOf(input.after) ?? customerEmailOf(input.before)
+  const to = customerEmailOf(input.after)
   if (!to) return true
 
-  await sendBookingEmailWithBudget(
+  await sendBookingLifecycleEmail(
     baseInput(input.reservationId, input.after, to, input.salon, {
       kind: 'rescheduled',
       managementToken: input.managementToken ?? null,

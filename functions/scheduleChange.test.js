@@ -78,5 +78,6 @@ test('buildBookingIcs marks cancelled events with METHOD CANCEL', () => {
   )
   assert.match(ics, /METHOD:CANCEL\r\n/)
   assert.match(ics, /STATUS:CANCELLED\r\n/)
+  assert.match(ics, /SEQUENCE:1\r\n/)
   assert.match(ics, /UID:res-cancel@salonflow\.local\r\n/)
 })

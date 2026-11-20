@@ -389,14 +389,15 @@ function buildBookingEmailHtml(input: BookingEmailInput, manageUrl: string | nul
       </tr>`
     : ''
 
-  const manageSection = manageUrl
-    ? `
+  const manageSection =
+    manageUrl && kind !== 'cancelled'
+      ? `
       <div style="margin-top:24px;">
         <a href="${escapeHtml(manageUrl)}" style="display:inline-block;background-color:${palette.primary};color:#FFFFFF;text-decoration:none;font-weight:600;font-size:14px;padding:12px 20px;border-radius:2px;">
           ${labels.manageCta}
         </a>
       </div>`
-    : ''
+      : ''
 
   const footerContact = [input.salonAddress, input.salonPhone]
     .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
