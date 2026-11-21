@@ -606,9 +606,7 @@ export const adminServicesRoute = createRoute({
         saving={saveService.isPending}
         moving={moveServiceMutation.isPending}
         onSave={(serviceId, draft) => saveService.mutateAsync({ serviceId, draft })}
-        onMove={(serviceId, direction) =>
-          moveServiceMutation.mutateAsync({ serviceId, direction })
-        }
+        onMove={(serviceId, direction) => moveServiceMutation.mutateAsync({ serviceId, direction })}
         onBackClick={() => {
           void navigate({ to: '/admin/settings' })
         }}

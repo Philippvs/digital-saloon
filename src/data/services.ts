@@ -15,11 +15,7 @@ import { firestore } from '../firebase'
 import { getSalonId } from './salonConfig'
 import { servicesCollectionPath } from './salonPaths'
 import { serviceSchema, type Service } from './schemas'
-import {
-  normalizeServiceDocument,
-  sortServicesByOrder,
-  type ServiceDraft,
-} from './serviceForm'
+import { normalizeServiceDocument, sortServicesByOrder, type ServiceDraft } from './serviceForm'
 
 export type ServiceWithId = Service & { id: string }
 
@@ -84,10 +80,7 @@ export async function updateService(serviceId: string, draft: ServiceDraft): Pro
  * Moves a service one step up or down and reindexes every service's `sortOrder`
  * (0…n-1) so ties and missing values become a clean sequence.
  */
-export async function moveService(
-  serviceId: string,
-  direction: 'up' | 'down',
-): Promise<void> {
+export async function moveService(serviceId: string, direction: 'up' | 'down'): Promise<void> {
   const sorted = [...(await fetchAllServices())]
   const index = sorted.findIndex((service) => service.id === serviceId)
   const swapWith = direction === 'up' ? index - 1 : index + 1
