@@ -134,21 +134,6 @@ export const bookRoute = createRoute({
             resetScroll: true,
           })
         }}
-        onWeekAnchorChange={(anchorYmd) => {
-          void navigate({
-            to: '/book',
-            search: {
-              serviceIds: serializeServiceIds(selectedServiceIds),
-              step: '2',
-              date: search.date,
-              startAt: search.startAt,
-              week: weekStartMondayYmd(anchorYmd),
-              month: `${anchorYmd.slice(0, 8)}01`,
-            },
-            replace: true,
-            resetScroll: false,
-          })
-        }}
         onMonthAnchorChange={(anchorYmd) => {
           void navigate({
             to: '/book',

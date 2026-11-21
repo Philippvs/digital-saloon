@@ -29,6 +29,7 @@ import { useOpeningHoursAdmin } from '../hooks/useOpeningHoursAdmin'
 import { useSalon } from '../hooks/useSalon'
 import { useSaveBookingSettings } from '../hooks/useSaveBookingSettings'
 import { useSaveSalonDetails } from '../hooks/useSaveSalonDetails'
+import { useMoveService } from '../hooks/useMoveService'
 import { useSaveService } from '../hooks/useSaveService'
 import {
   useCreateEmployeeAccount,
@@ -596,13 +597,18 @@ export const adminServicesRoute = createRoute({
     const navigate = useNavigate()
     const services = useAllServices(true)
     const saveService = useSaveService()
+    const moveServiceMutation = useMoveService()
     return (
       <AdminServicesPage
         services={services.data}
         isLoading={services.isLoading}
         isError={services.isError}
         saving={saveService.isPending}
+        moving={moveServiceMutation.isPending}
         onSave={(serviceId, draft) => saveService.mutateAsync({ serviceId, draft })}
+        onMove={(serviceId, direction) =>
+          moveServiceMutation.mutateAsync({ serviceId, direction })
+        }
         onBackClick={() => {
           void navigate({ to: '/admin/settings' })
         }}

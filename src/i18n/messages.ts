@@ -108,11 +108,6 @@ export type Messages = {
   'book.selectedServicesCount': string
   'book.totalDuration': string
   'book.totalPrice': string
-  'book.weekPrev': string
-  'book.weekNext': string
-  'book.expandCalendar': string
-  'book.collapseCalendar': string
-  'book.noSlotsWeek': string
   'book.email': string
   'book.notes': string
   'book.notesPlaceholder': string
@@ -257,6 +252,8 @@ export type Messages = {
   'admin.noServices': string
   'admin.newService': string
   'admin.editServiceLabel': string
+  'admin.moveServiceUp': string
+  'admin.moveServiceDown': string
   'admin.edit': string
   'admin.editServiceTitle': string
   'admin.servicesKeepHint': string
@@ -568,11 +565,6 @@ export const de: Messages = {
   'book.selectedServicesCount': '{count} gewählt',
   'book.totalDuration': 'Gesamtdauer: {minutes} Min',
   'book.totalPrice': 'Gesamtpreis: {price}',
-  'book.weekPrev': 'Vorherige Woche',
-  'book.weekNext': 'Nächste Woche',
-  'book.expandCalendar': 'Monatsansicht aufklappen',
-  'book.collapseCalendar': 'Wochenansicht einklappen',
-  'book.noSlotsWeek': 'In dieser Woche sind keine Termine frei. Bitte nächste Woche prüfen.',
   'book.email': 'E-Mail-Adresse',
   'book.notes': 'Notizen / Wünsche (optional)',
   'book.notesPlaceholder': 'Hinweise oder Wünsche an den Friseur…',
@@ -731,6 +723,8 @@ export const de: Messages = {
   'admin.noServices': 'Noch keine Leistungen.',
   'admin.newService': 'Neue Leistung',
   'admin.editServiceLabel': '{name} bearbeiten',
+  'admin.moveServiceUp': '{name} nach oben',
+  'admin.moveServiceDown': '{name} nach unten',
   'admin.edit': 'Bearbeiten',
   'admin.editServiceTitle': 'Leistung bearbeiten',
   'admin.servicesKeepHint':
@@ -1047,11 +1041,6 @@ export const it: Messages = {
   'book.selectedServicesCount': '{count} selezionati',
   'book.totalDuration': 'Durata totale: {minutes} min',
   'book.totalPrice': 'Prezzo totale: {price}',
-  'book.weekPrev': 'Settimana precedente',
-  'book.weekNext': 'Settimana successiva',
-  'book.expandCalendar': 'Espandi vista mensile',
-  'book.collapseCalendar': 'Comprimi vista settimanale',
-  'book.noSlotsWeek': 'Nessun appuntamento libero in questa settimana. Prova la prossima.',
   'book.email': 'Indirizzo e-mail',
   'book.notes': 'Note / desideri (opzionale)',
   'book.notesPlaceholder': 'Indicazioni o desideri per il parrucchiere…',
@@ -1209,6 +1198,8 @@ export const it: Messages = {
   'admin.noServices': 'Nessun servizio ancora.',
   'admin.newService': 'Nuovo servizio',
   'admin.editServiceLabel': 'Modifica {name}',
+  'admin.moveServiceUp': 'Sposta {name} in alto',
+  'admin.moveServiceDown': 'Sposta {name} in basso',
   'admin.edit': 'Modifica',
   'admin.editServiceTitle': 'Modifica servizio',
   'admin.servicesKeepHint':

@@ -22,7 +22,11 @@ export type ServiceDraft = Pick<
   | 'priceCents'
   | 'priceMaxCents'
   | 'active'
+  | 'sortOrder'
 >
+
+/** Form output before `sortOrder` is attached on save. */
+export type ServiceFormDraft = Omit<ServiceDraft, 'sortOrder'>
 
 export type ServiceFormField =
   | 'nameDe'
@@ -108,6 +112,10 @@ export function normalizeServiceDocument(raw: Record<string, unknown>): Service 
     priceCents: Number(raw.priceCents),
     ...(priceMaxCents !== undefined ? { priceMaxCents } : {}),
     active: Boolean(raw.active),
+    sortOrder:
+      typeof raw.sortOrder === 'number' && Number.isFinite(raw.sortOrder)
+        ? Math.max(0, Math.min(9999, Math.round(raw.sortOrder)))
+        : 0,
     createdAt: String(raw.createdAt ?? ''),
     updatedAt: String(raw.updatedAt ?? ''),
   }
@@ -197,7 +205,7 @@ export function parsePriceCents(raw: string): number | null {
 
 export function validateServiceForm(
   input: ServiceFormInput,
-): ValidationResult<ServiceDraft, ServiceFormField> {
+): ValidationResult<ServiceFormDraft, ServiceFormField> {
   const issues: Partial<Record<ServiceFormField, FieldIssue>> = {}
   const nameDe = input.nameDe.trim()
   const nameIt = input.nameIt.trim()
@@ -305,12 +313,17 @@ export function validateServiceForm(
   }
 }
 
-/** Active services first, then by price like the public price list. */
-export function sortServicesForAdmin<T extends ServiceDraft>(services: readonly T[]): T[] {
+/** Display order: `sortOrder` ascending, then German name. */
+export function sortServicesByOrder<T extends Pick<ServiceDraft, 'sortOrder' | 'nameDe'>>(
+  services: readonly T[],
+): T[] {
   return [...services].sort(
-    (a, b) =>
-      Number(b.active) - Number(a.active) ||
-      a.priceCents - b.priceCents ||
-      a.nameDe.localeCompare(b.nameDe),
+    (a, b) => a.sortOrder - b.sortOrder || a.nameDe.localeCompare(b.nameDe, 'de'),
   )
+}
+
+/** Next `sortOrder` after the highest existing value (or `0` when empty). */
+export function nextServiceSortOrder(services: readonly Pick<ServiceDraft, 'sortOrder'>[]): number {
+  if (services.length === 0) return 0
+  return Math.max(...services.map((service) => service.sortOrder)) + 1
 }

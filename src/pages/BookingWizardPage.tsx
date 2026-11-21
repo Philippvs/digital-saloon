@@ -17,13 +17,10 @@ import {
 } from '@mui/material'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import * as v from 'valibot'
 
 import type { AvailableSlotDto, BookingFailure } from '../data/bookingApi'
 import {
-  addDays,
   addMonths,
   findEarliestAvailableDate,
   monthMatrix,
@@ -106,7 +103,6 @@ export type BookingWizardPageProps = {
   onSelectDate: (dateYmd: string) => void
   onSelectTime: (startAt: string) => void
   onClearTime: () => void
-  onWeekAnchorChange: (anchorYmd: string) => void
   onMonthAnchorChange: (anchorYmd: string) => void
   onSubmit: (input: {
     firstName: string
@@ -140,14 +136,12 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
   onSelectDate,
   onSelectTime,
   onClearTime,
-  onWeekAnchorChange,
   onMonthAnchorChange,
   onSubmit,
 }) => {
   const { t, locale, intlLocale } = useLocale()
   const pricesVisible = arePricesVisible()
 
-  const [calendarExpanded, setCalendarExpanded] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
@@ -217,11 +211,6 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
     month: 'long',
     timeZone: 'UTC',
   }).format(new Date(Date.UTC(year, monthIndex, 1)))
-  const weekParts = parseYmd(weekAnchorYmd)
-  const collapsedMonthLabel = new Intl.DateTimeFormat(intlLocale, {
-    month: 'long',
-    timeZone: 'UTC',
-  }).format(new Date(Date.UTC(weekParts.year, weekParts.monthIndex, 1)))
 
   useEffect(() => {
     if (step !== 2 || rangeLoading || rangeSlots === undefined) return
@@ -450,34 +439,21 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
             >
               <IconButton
                 size="small"
-                aria-label={calendarExpanded ? t('book.monthPrev') : t('book.weekPrev')}
-                onClick={() =>
-                  calendarExpanded
-                    ? onMonthAnchorChange(addMonths(monthAnchorYmd, -1))
-                    : onWeekAnchorChange(addDays(weekAnchorYmd, -7))
-                }
+                aria-label={t('book.monthPrev')}
+                onClick={() => onMonthAnchorChange(addMonths(monthAnchorYmd, -1))}
               >
                 <ChevronLeftIcon />
               </IconButton>
-              <Button
-                color="inherit"
-                onClick={() => setCalendarExpanded((prev) => !prev)}
-                endIcon={calendarExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                aria-label={
-                  calendarExpanded ? t('book.collapseCalendar') : t('book.expandCalendar')
-                }
+              <Typography
+                component="span"
                 sx={{ fontWeight: 600, fontSize: '1.05rem', textTransform: 'capitalize' }}
               >
-                {calendarExpanded ? monthLabel : collapsedMonthLabel}
-              </Button>
+                {monthLabel}
+              </Typography>
               <IconButton
                 size="small"
-                aria-label={calendarExpanded ? t('book.monthNext') : t('book.weekNext')}
-                onClick={() =>
-                  calendarExpanded
-                    ? onMonthAnchorChange(addMonths(monthAnchorYmd, 1))
-                    : onWeekAnchorChange(addDays(weekAnchorYmd, 7))
-                }
+                aria-label={t('book.monthNext')}
+                onClick={() => onMonthAnchorChange(addMonths(monthAnchorYmd, 1))}
               >
                 <ChevronRightIcon />
               </IconButton>
@@ -516,87 +492,49 @@ export const BookingWizardPage: React.FunctionComponent<BookingWizardPageProps> 
               ))}
             </Box>
 
-            {calendarExpanded ? (
-              <Stack spacing={0.5}>
-                {weeks.map((week, weekIndex) => (
-                  <Box
-                    key={weekIndex}
-                    sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}
-                  >
-                    {week.map((ymd, dayIndex) => {
-                      if (!ymd) return <Box key={`empty-${weekIndex}-${dayIndex}`} />
-                      const available = (byDate.get(ymd)?.length ?? 0) > 0
-                      const selected = ymd === selectedDate
-                      const past = ymd < todayYmd
-                      const disabled = !available || past
-                      return (
-                        <Button
-                          key={ymd}
-                          size="small"
-                          disabled={disabled}
-                          variant="text"
-                          onClick={() => handleSelectDate(ymd)}
-                          sx={{
-                            minWidth: 36,
-                            width: 36,
-                            height: 36,
-                            mx: 'auto',
-                            p: 0,
-                            borderRadius: '50%',
-                            fontWeight: selected ? 700 : 400,
-                            bgcolor: selected ? 'text.primary' : 'transparent',
-                            color: selected ? 'background.paper' : 'text.primary',
-                            '&:hover': {
-                              bgcolor: selected ? 'text.primary' : 'action.hover',
-                            },
-                            opacity: disabled ? 0.35 : 1,
-                            textDecoration: disabled ? 'line-through' : 'none',
-                          }}
-                        >
-                          {String(parseYmd(ymd).day).padStart(2, '0')}
-                        </Button>
-                      )
-                    })}
-                  </Box>
-                ))}
-              </Stack>
-            ) : (
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}>
-                {currentWeekDays.map((ymd) => {
-                  const available = (byDate.get(ymd)?.length ?? 0) > 0
-                  const selected = ymd === selectedDate
-                  const past = ymd < todayYmd
-                  const disabled = !available || past
-                  return (
-                    <Button
-                      key={ymd}
-                      size="small"
-                      disabled={disabled}
-                      variant="text"
-                      onClick={() => handleSelectDate(ymd)}
-                      sx={{
-                        minWidth: 36,
-                        width: 36,
-                        height: 36,
-                        mx: 'auto',
-                        p: 0,
-                        borderRadius: '50%',
-                        fontWeight: selected ? 700 : 400,
-                        bgcolor: selected ? 'text.primary' : 'transparent',
-                        color: selected ? 'background.paper' : 'text.primary',
-                        '&:hover': {
-                          bgcolor: selected ? 'text.primary' : 'action.hover',
-                        },
-                        opacity: disabled ? 0.35 : 1,
-                        textDecoration: disabled ? 'line-through' : 'none',
-                      }}
-                    >
-                      {String(parseYmd(ymd).day).padStart(2, '0')}
-                    </Button>
-                  )
-                })}
-              </Box>
-            )}
+            <Stack spacing={0.5}>
+              {weeks.map((week, weekIndex) => (
+                <Box
+                  key={weekIndex}
+                  sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}
+                >
+                  {week.map((ymd, dayIndex) => {
+                    if (!ymd) return <Box key={`empty-${weekIndex}-${dayIndex}`} />
+                    const available = (byDate.get(ymd)?.length ?? 0) > 0
+                    const selected = ymd === selectedDate
+                    const past = ymd < todayYmd
+                    const disabled = !available || past
+                    return (
+                      <Button
+                        key={ymd}
+                        size="small"
+                        disabled={disabled}
+                        variant="text"
+                        onClick={() => handleSelectDate(ymd)}
+                        sx={{
+                          minWidth: 36,
+                          width: 36,
+                          height: 36,
+                          mx: 'auto',
+                          p: 0,
+                          borderRadius: '50%',
+                          fontWeight: selected ? 700 : 400,
+                          bgcolor: selected ? 'text.primary' : 'transparent',
+                          color: selected ? 'background.paper' : 'text.primary',
+                          '&:hover': {
+                            bgcolor: selected ? 'text.primary' : 'action.hover',
+                          },
+                          opacity: disabled ? 0.35 : 1,
+                          textDecoration: disabled ? 'line-through' : 'none',
+                        }}
+                      >
+                        {String(parseYmd(ymd).day).padStart(2, '0')}
+                      </Button>
+                    )
+                  })}
+                </Box>
+              ))}
+            </Stack>
 
             {!rangeLoading && byDate.size === 0 ? (
               <Alert severity="info" sx={{ mt: 2 }}>
