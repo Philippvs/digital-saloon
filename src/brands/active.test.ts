@@ -44,6 +44,12 @@ describe('active brand module', () => {
     assertBrandModuleContract(module)
   })
 
+  it('rejects unknown VITE_BRAND values instead of silently falling back to kimm', async () => {
+    vi.stubEnv('VITE_BRAND', 'typo-salon')
+    const { getActiveBrandKey } = await import('./brandKey')
+    expect(() => getActiveBrandKey()).toThrow(/Unknown VITE_BRAND/)
+  })
+
   it('both brand modules satisfy the BrandModule contract', async () => {
     const { kimmModule } = await import('./kimm/module')
     const { salon1500Module } = await import('./salon1500/module')
